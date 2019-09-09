@@ -5,7 +5,7 @@
 
 ## JavaScript
 
-1. [变量与数据类型]()
+1. [变量与数据类型](https://github.com/muzishuiji/blogs/blob/master/JavaScript/variable.md)
 
 2. [垃圾回收和内存泄漏]()
 
