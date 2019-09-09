@@ -13,7 +13,7 @@
 
 5. [深拷贝与浅拷贝]()
 
-6. [原型链与继承]()
+6. [原型链与继承](https://github.com/muzishuiji/blogs/blob/master/JavaScript/prototype.md)
 
 7. [js中的New做了什么?](https://github.com/muzishuiji/blogs/blob/master/JavaScript/new.md)
 
