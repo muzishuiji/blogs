@@ -17,15 +17,17 @@
 
 7. [js中的New做了什么?](https://github.com/muzishuiji/blogs/blob/master/JavaScript/new.md) (已完成)
 
-8. [函数的节流与防抖]()
+8. [Object.prototype.toString.call是怎样准确获取到数据类型的?]()
 
-9. [Event Loop]()
+9. [函数的节流与防抖]()
 
-10. [Promise原理]()
+10. [Event Loop]()
 
-11. [模块化详解]()
+11. [Promise原理]()
 
-12. [设计模式]()
+12. [模块化详解]()
+
+13. [设计模式]()
 
 
 ## 浏览器
