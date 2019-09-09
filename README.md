@@ -5,7 +5,7 @@
 
 ## JavaScript
 
-1. [变量与数据类型](https://github.com/muzishuiji/blogs/blob/master/JavaScript/variable.md)
+1. [变量与数据类型](https://github.com/muzishuiji/blogs/blob/master/JavaScript/variable.md) (已完成)
 
 2. [垃圾回收和内存泄漏]()
 
@@ -13,9 +13,9 @@
 
 5. [深拷贝与浅拷贝]()
 
-6. [原型链与继承](https://github.com/muzishuiji/blogs/blob/master/JavaScript/prototype.md)
+6. [原型链与继承](https://github.com/muzishuiji/blogs/blob/master/JavaScript/prototype.md) (已完成)
 
-7. [js中的New做了什么?](https://github.com/muzishuiji/blogs/blob/master/JavaScript/new.md)
+7. [js中的New做了什么?](https://github.com/muzishuiji/blogs/blob/master/JavaScript/new.md) (已完成)
 
 8. [函数的节流与防抖]()
 
