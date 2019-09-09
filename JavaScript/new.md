@@ -58,5 +58,5 @@
 ![](https://github.com/muzishuiji/blogs/blob/master/imgs/0UEGJDO8%24I6_%60L%25M4R2K92O.png)
 
 
-好啦,确实是这样的结果,支持为止我们就完美的实现了自己的New函数,为自己鼓掌~
+好啦,确实是这样的结果,支持为止我们就完美的实现了自己的New函数,为自己鼓掌~~
 
