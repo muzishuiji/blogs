@@ -1,10 +1,5 @@
 我们都知道new 操作符可以创建一个构造函数的实例,那使用new 操作符调用函数和直接调用函数的区别在哪里呢?new操作符究竟做了哪些事情呢?一起来探究下~
-
-如下图所示:
-
-使用new 操作符调用Person, 返回值是一个对象,这个对象继承Person构造函数里定义的所有属性和方法.
-
-而简单调用Person方法的person1是undefined,这回死因为该方法没有直接的返回值,只是单纯的执行了一次调用操作.
+看下面这段代码:
 
     function Person (name, age, sex) {
         this.name = name;
@@ -22,6 +17,13 @@
     }
     var person = new Person("tom", 21, "famle");
     var person1 = Person("tom", 21, "famle");
+    
+运行截图如下:
+![](file:///C:/Users/hzljie/Desktop/H2EK@S_L4F%25D[)]$@DS%608OG.png)
+
+使用new 操作符调用Person, 返回值是一个对象,这个对象继承Person构造函数里定义的所有属性和方法.
+
+而简单调用Person方法的person1是undefined,这回死因为该方法没有直接的返回值,只是单纯的执行了一次调用操作.    
 
 我们再来测试一下,多次使用new操作符调用构造函数返回的对象是不是同一个.
 
