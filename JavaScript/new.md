@@ -20,7 +20,7 @@
     
 运行截图如下:
 
-![](file:///C:/Users/hzljie/Desktop/H2EK@S_L4F%25D[)]$@DS%608OG.png)
+![](https://github.com/muzishuiji/blogs/blob/master/imgs/H2EK%40S_L4F%25D%5B)%5D%24%40DS%608OG.png)
 
 使用new 操作符调用Person, 返回值是一个对象,这个对象继承Person构造函数里定义的所有属性和方法.
 
@@ -55,6 +55,7 @@
 
 运行结果的截图:
 
+![](https://github.com/muzishuiji/blogs/blob/master/imgs/0UEGJDO8%24I6_%60L%25M4R2K92O.png)
 
 
 好啦,确实是这样的结果,支持为止我们就完美的实现了自己的New函数,为自己鼓掌~
