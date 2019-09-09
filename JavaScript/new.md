@@ -19,6 +19,7 @@
     var person1 = Person("tom", 21, "famle");
     
 运行截图如下:
+
 ![](file:///C:/Users/hzljie/Desktop/H2EK@S_L4F%25D[)]$@DS%608OG.png)
 
 使用new 操作符调用Person, 返回值是一个对象,这个对象继承Person构造函数里定义的所有属性和方法.
