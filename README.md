@@ -37,8 +37,8 @@
 
 ## 读书笔记
 
-1. [JavaScript设计模式与开发实践读书笔记]: https://github.com/muzishuiji/javascript-books-reading-notes/tree/master/javasc%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B8%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5
+1. [JavaScript设计模式与开发实践读书笔记](https://github.com/muzishuiji/blogs/tree/master/reading-notes/javaScript-advanced-programming)
 
-2. [JavaScript高级程序设计读书笔记]: https://github.com/muzishuiji/javascript-books-reading-notes/tree/master/JavaScript%E9%AB%98%E7%BA%A7%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1
+2. [JavaScript高级程序设计读书笔记](https://github.com/muzishuiji/blogs/tree/master/reading-notes/javaScript-design-patterns-and-development-practice)
 
-3. [你不知道的JavaScript(上卷)读书笔记]: https://github.com/muzishuiji/javascript-books-reading-notes/tree/master/%E4%BD%A0%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84JavaScript(%E4%B8%8A%E5%8D%B7)
+3. [你不知道的JavaScript(上卷)读书笔记](https://github.com/muzishuiji/blogs/tree/master/reading-notes/javaScript-you-don't-know)
