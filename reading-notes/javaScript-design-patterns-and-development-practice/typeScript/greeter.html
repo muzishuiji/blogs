@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head><title>TypeScript Greeter</title></head>
+    <body>
+        <!-- <script src="greeter.js"></script> -->
+        <button id="buttton"></button>
+        <script>
+            var _getElementById = document.getElementById;
+            document.getElementById = function (id) {
+                alert(1);
+                return _getElementById(id);
+            }
+
+            var button = document.getElementById('button');
+        </script>
+    </body>
+
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+    <head><title>TypeScript Greeter</title></head>
+    <style>
+        #boll {
+            width: 30px;
+            height: 30px;
+            border-radius:  50%;
+            background: #cccccc;
+            position: relative;
+            top: 50;
+            left: 50;
+        }
+    </style>
+    <body>
+        <form action="http:// xxx.com/register" id="registerForm" method="post">
+            请输入用户名: <input type="text" name="username" />
+            请输入密码: <input type="password" name="password" />
+            请输入手机号码: <input type="tel" name="telphone" />
+            <button id="submit">提交</button>
+        </form>
+        <div id="boll"></div>
+        <script type="text/javascript" src="formValidator.js"></script>
+        <script type="text/javascript">
+            //动画算法的四个参数,已消耗的时间,小球的原始位置,小球的目标位置,动画持续的总时间
+            var tween = {
+                linear: function (t,b,c,d) {
+                    return c*t/d + b;
+                },
+                easeIn: function (t,b,c,d) {
+                    return c*(t/=d)*t + b;
+                },
+                strongEaseIn: function (t,b,c,d) {
+                    return c*(t/=d)*t*t*t*t + b;
+                },
+                strongEaseOut: function (t,b,c,d) {
+                    return c*((t=t/d - 1)*t*t*t*t + 1) + b;
+                },
+                sineaseIn: function (t,b,c,d) {
+                    return c*(t/=d)*t*t + b;
+                },
+                sineaseOut: function (t,b,c,d) {
+                    return c*((t=t/d - 1)*t*t + 1) + b;
+                }
+            }
+            //Animate类
+            var Animate = function (dom) {
+                this.dom = dom;             //进行运动的dom节点
+                this.startTime = 0;         //运动的开始时间
+                this.startPos = 0;          //运动的起始位置
+                this.endPos = 0;            //运动的结束位置
+                this.propertyName = null;   //css属性名
+                this.easing = null;         //缓动算法
+                this.duration = null;       //动画持续时间
+            }
+
+            //定义start函数,初始化Animate类
+            Animate.prototype.start = function (propertyName, endPos, duration, easing) {
+                this.startTime = new Date();
+                this.startPos = this.dom.getBoundingClientRect()[propertyName];  //返回某个dom元素的边框集合. top,left,right,bottom
+                this.endPos = endPos;
+                this.easing = tween[easing];
+                this.duration = duration;
+
+                var self = this;
+                var timeId = setInterval(function () { //异步执行缓动动画
+                    if(self.step() === false){ //如果已到达墓地位置
+                        clearInterval(timeId);
+                    }
+                }, 19);
+            }
+            //缓动函数
+            Animate.prototype.step = function() {
+                var t = new Date(); //当前时间
+                if(t >= this.startTime + this.duration) {  //如果已经到了一个运动周期,则手动设置小球位置,并结束计时
+                    this.update(this.endPos);
+                    return false;
+                }
+                var pos = this.easing(t - this.startTime, this.startPos, this.endPos, this.duration);  //计算运行距离
+                this.update(pos);
+            }
+
+            //更新小球的位置信息
+            Animate.prototype.update = function (pos) {
+                this.dom.style[this.propertyName] = pos + 'px';
+            }
+
+            //调用
+            var div = document.getElementById('div');
+            var animate = new Animate(div);
+            // animate.start('left', 500, 1000, 'strongEaseOut');
+            // animate.start('top', 500, 1000, 'strongEaseIn');
+
+
+
+            /****客户调用代码****** */
+            var registerForm = document.getElementById('registerForm');
+            var validataFunc = function () {
+                var validator = new Validator();
+                validator.add(registerForm.username, [{
+                    strategy: 'isNonEmpty',
+                    errorMsg: '用户名不能为空'
+                }, {
+                    strategy: 'minLength: 6',
+                    errorMsg: '用户名或长度不能小于6位'
+                }]);
+                validator.add(registerForm.password, [{
+                    strategy: 'isNonEmpty',
+                    errorMsg: '密码不能为空'
+                }, {
+                    strategy: 'minLength:10',
+                    errorMsg: '用户名或长度不能小于10位'
+                }]);
+                
+                validator.add(registerForm.password, [{
+                    strategy: 'isMobile',
+                    errorMsg: '手机号码格式不正确'
+                }]);
+                var errorMsg = validator.start();
+                return errorMsg;
+            }
+
+            registerForm.onsubmit = function () {
+                var errorMsg = validataFunc();
+                if(errorMsg) {
+                    alert(errorMsg);
+                    return false;
+                }
+            }
+        </script>
+    </body>
+</html>
