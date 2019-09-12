@@ -1,10 +1,15 @@
 我们先来看看toString方法,每个引用类型都可以调用toString方法
 
     Object.toString();   // "function Object() { [native code] }"
+
     Array.toString();    // "function Array() { [native code] }"
+
     Function.toString(); // "function Function() { [native code] }"
+
     Data.toString();     // "function Date() { [native code] }"
+
     RegExp.toString();   // "function RegExp() { [native code] }"
+    
     Array.toString === Object.toString;       // true
     Date.toString === Object.toString;        // true
     RegExp.toString === Object.toString;      // true

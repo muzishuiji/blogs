@@ -17,7 +17,7 @@
 
 7. [js中的New做了什么?](https://github.com/muzishuiji/blogs/blob/master/JavaScript/new.md) (已完成)
 
-8. [Object.prototype.toString.call是怎样准确获取到数据类型的?](https://github.com/muzishuiji/blogs/blob/master/JavaScript/Object.prototype.toString.call.md) (已完成)
+8. [Object.prototype.toString.call的原理](https://github.com/muzishuiji/blogs/blob/master/JavaScript/Object.prototype.toString.call.md) (已完成)
 
 9. [函数的节流与防抖]()
 
