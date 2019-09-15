@@ -43,7 +43,12 @@
         // 把处理构造函数之外的参数存起来
         const args = Array.prototype.slice.call(arguments, 1);
         obj.__proto__ = fun.prototype;   // 继承构造函数原型上的属性和方法
-        fun.apply(obj, args);            // 创建自己的私有属性,避免构造函数里有引用类型的变量时,不同的实例间相互污染
+        // 创建自己的私有属性(其实就是将构造函数上的属性和方法复制一份给自己),
+        // 避免构造函数里有引用类型的变量时,不同的实例间相互污染
+        let result = fun.apply(obj, args); 
+        if(result && (typeof result === 'object' || typeof result === 'function')) {
+            return result;
+        }
         return obj;
     }
     var pp1 = New(Person1, "pp1", 18, "famle");
