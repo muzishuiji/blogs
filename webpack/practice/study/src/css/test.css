@@ -1,3 +1,6 @@
 div:nth-of-type(odd) {
     background: red;
 }
+div, p {
+    font-size: 18px;
+}

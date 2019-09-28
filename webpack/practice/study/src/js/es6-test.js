@@ -4,6 +4,5 @@ const arr = [
     new Promise(() => {})
 ]
 arr.map(item => {
-    console.console.log((item));
-    
+    console.log((item));
 })

@@ -1,9 +1,14 @@
 
 {
-    "presets": [["@babel/preset-env", {
-        "targets": {
-            "chrome": "67" // 如果新特性已被支持,则不进行es6转es5
-        },
-        "useBuiltIns": "usage"  // 只polyfill用到的新特性
-    }], "@babel/preset-react"]
+    "presets": [
+        [
+            "@babel/preset-env", 
+            {
+                "targets": {
+                    "chrome": "67" // 如果新特性已被支持,则不进行es6转es5
+                }
+            }],
+            "@babel/preset-react"
+    ],
+    "plugins": ["@babel/plugin-syntax-dynamic-import"]
 }
