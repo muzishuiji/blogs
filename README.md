@@ -19,7 +19,7 @@
 
 8. [Object.prototype.toString.call的原理](https://github.com/muzishuiji/blogs/blob/master/JavaScript/Object.prototype.toString.call.md) (已完成)
 
-9. [函数的节流与防抖]()
+9. [函数的节流与防抖](https://github.com/muzishuiji/blogs/blob/master/JavaScript/debounce-throttle.md)  (已完成)
 
 10. [Event Loop]()
 
@@ -31,7 +31,7 @@
 
 ## webpack
 
-1. [webpack学习笔记]()
+1. [webpack学习笔记](https://github.com/muzishuiji/blogs/blob/master/webpack/webpack-study.md)  (已完成)
 
 ## 浏览器
 
