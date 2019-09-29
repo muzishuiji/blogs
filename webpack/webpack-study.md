@@ -590,3 +590,239 @@ sourceMap越完整,打包出来的代码的体积就会越大,打包速度就会
     config.plugins = makePlugins(config);
     module.exports = config;
 
+### loader和plugin
+
+1. loader的作用: 帮助我们去处理模块,当我们需要对代码的逻辑做一层包装的时候就可以编写一个对应的loader.比如: 我们需要实现界面展示的国际化, 需要对函数添加异常捕获等.
+
+2. 编写一个loader的大致流程:
+
+* 1.创建loader对应的文件夹,以及js,编写对应的处理逻辑,代码示例:
+
+        const LoaderUtils = require('loader-utils');
+        // loaders的导出函数最好不要使用箭头函数,因为使用箭头函数你会找不到想要的this.
+        module.exports = function(source) {
+            const options = LoaderUtils.getOptions(this);
+            const result = source.replace('dongdong', options.name);
+            return this.callback(null, result);  
+        }
+
+* 2.在webpack中做以下配置
+
+        // 这里我们把编写的loaders放在loaders目录中
+        // loaders的查找顺序,先从node_modules里查找,然后从loaders中查找
+        resolveLoader: {
+            modules: ['node_modules', './loaders']
+        },
+        // 这样我们就对js文件引入了两个loader
+         rules: [
+            {
+                test: /\.js$/,
+                use: [
+                    {
+                        loader: 'replaceLoader',
+                        options: {
+                            name: 'muzishuiji1'
+                        }
+                    },
+                    {
+                        loader: 'replaceLoaderAsync',
+                        options: {
+                            name: 'hello114'
+                        }
+                    }
+                ]
+            }
+        ]
+
+3. plugin的作用: plugin生效的场景,在打包的某个时刻想要做一些处理逻辑的时候,比如: 在新的打包代码生成的时候先清空dist目录的插件(clean-webpack-plugin),多用于文件的创建和移除操作.
+
+4. 编写一个plugin的大致流程:
+
+我们一起来写一个在打包后的代码中创建一个copyright.txt的文本的plugin.
+
+* 1.在项目下创建plugins文件夹,创建copyright-webpack-plugin.js文件,示例代码如下:
+
+        class CopyrightWebpackPlugin {
+            constructor(options) {
+            }
+            apply(compiler) {
+                // compiler 是webpack的实例
+                // compiler hook,我们可以拿到webpack的生命周期,
+                // 所以可以让我们在特定的时刻做一些处理逻辑
+                // compile是一个同步的钩子函数
+                compiler.hooks.compile.tap('CopyrightWebpackPlugin', (compilation) => {
+                    console.log('compiler')
+                })
+                // emit是一个异步的钩子函数
+                compiler.hooks.emit.tapAsync('CopyrightWebpackPlugin', (compilation, cb) => {
+                    debugger;
+                    compilation.assets['copyright.txt'] = {
+                        source:function() {
+                            return 'copyright by muzishuiji'
+                        },
+                        size: function() {
+                            return 21;
+                        }
+                    }
+                    cb();
+                })
+            }
+        }
+        module.exports = CopyrightWebpackPlugin;
+
+* 2.在webpack中进行以下配置
+
+        // 引入对应的插件
+        const CopyrightWebpackPlugin = require('./plugins/copyright-webpack-plugin.js');
+        // 实例化plugin
+        plugins: [
+            new CopyrightWebpackPlugin()
+        ]
+
+5. loader是一个函数,插件是一个类.因为插件通常是一个构造函数,在使用的时候实例化一个对象.
+
+### bundler源码编写
+
+当我们要对一个项目做打包的时候,我们首先需要对项目的入口文件用到的模块做分析,然后在对其他的入口文件引入的模块做分析.
+
+1. 解析对应文件的依赖
+
+        const moduleAnalyser = (filename) => {
+            const content = fs.readFileSync(filename, 'utf-8');
+            // 生成抽象语法树ast
+            const ast = parser.parse(content, {
+                sourceType: 'module'
+            })
+            const dependencies = {}
+            // 对入口文件的依赖分析
+            traverse(ast, {
+                // 引入语模块的语句
+                ImportDeclaration({node}) {
+                    const dirname = path.dirname(filename)
+                    const newFile = dirname + node.source.value.replace("./", "/");
+                    dependencies[node.source.value] = newFile;
+                }
+            })     
+            // ast, code, options
+            // code即为编译生成的,可在浏览器上运行的代码
+            const { code } = babel.transformFromAst(ast, null, {
+                presets: ["@babel/preset-env"]
+            })
+            return {
+                filename,
+                code,
+                dependencies
+            }
+        }
+
+2. dependencies Graph(依赖图谱)
+
+        const makeDependenciesGraph = (entry) => {
+            const entryModule = moduleAnalyser('./src/index.js');
+            // 借用队列实现递归调用
+            const graphArray = [ entryModule ]
+            for(let i = 0; i < graphArray.length; i++) {
+                const item = graphArray[i];
+                const { dependencies } = item;
+                if(dependencies) {
+                    for(let j in dependencies) {
+                        graphArray.push(
+                            moduleAnalyser(dependencies[j])
+                        )
+                    }
+                }
+            }
+            const graph = {}
+            graphArray.forEach(item => {
+                graph[item.filename] = {
+                    dependencies: item.dependencies,
+                    code: item.code
+                }
+            });
+            return graph;
+        }
+
+3. 完整源代码
+
+        const fs = require('fs');
+        const parser = require('@babel/parser');
+        const traverse = require('@babel/traverse').default;
+        const babel = require('@babel/core');
+        const path = require('path');
+        const moduleAnalyser = (filename) => {
+            const content = fs.readFileSync(filename, 'utf-8');
+            // 生成抽象语法树ast
+            const ast = parser.parse(content, {
+                sourceType: 'module'
+            })
+            const dependencies = {}
+            // 对入口文件的依赖分析
+            traverse(ast, {
+                // 引入语模块的语句
+                ImportDeclaration({node}) {
+                    const dirname = path.dirname(filename)
+                    const newFile = dirname + node.source.value.replace("./", "/");
+                    dependencies[node.source.value] = newFile;
+                }
+            })
+            
+            // ast, code, options
+            // code即为编译生成的,可在浏览器上运行的代码
+            const { code } = babel.transformFromAst(ast, null, {
+                presets: ["@babel/preset-env"]
+            })
+            return {
+            filename,
+            code,
+            dependencies
+            }
+        }
+
+        // 创建依赖图谱
+        // 返回一个文件和图谱对应的map结构
+        const makeDependenciesGraph = (entry) => {
+            const entryModule = moduleAnalyser('./src/index.js');
+            // 借用队列实现递归调用
+            const graphArray = [ entryModule ]
+            for(let i = 0; i < graphArray.length; i++) {
+                const item = graphArray[i];
+                const { dependencies } = item;
+                if(dependencies) {
+                    for(let j in dependencies) {
+                        graphArray.push(
+                            moduleAnalyser(dependencies[j])
+                        )
+                    }
+                }
+            }
+            const graph = {}
+            graphArray.forEach(item => {
+                graph[item.filename] = {
+                    dependencies: item.dependencies,
+                    code: item.code
+                }
+            });
+            return graph;
+        }
+
+        // 
+        const gernerateCode = (entry) => {
+            const graph =JSON.stringify(makeDependenciesGraph(entry));
+            return `
+                (function(graph) {
+                    function require(module) {
+                        function localRequire(relativePath) {
+                            return require(graph[module].dependencies[relativePath])
+                        }
+                        var exports = {};
+                        (function(require, exports, code) {
+                            eval(code);
+                        })(localRequire, exports, graph[module].code);
+                        return exports;
+                    };
+                    require('${entry}')
+                })(${graph})
+            `
+        }
+        const generate = gernerateCode('./src/index.js');
+        console.log(generate)

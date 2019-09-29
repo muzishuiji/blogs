@@ -1,0 +1,1 @@
+concolse.log('hello lijie');

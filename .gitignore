@@ -2,8 +2,9 @@
 
 # dependencies
 /node_modules
-/webpack/practice/study/node_modules
-/webpack/practice/study/dist
+**/node_modules
+**/dist
+
 /.pnp
 .pnp.js
 
