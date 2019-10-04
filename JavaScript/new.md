@@ -46,10 +46,7 @@
         // 创建自己的私有属性(其实就是将构造函数上的属性和方法复制一份给自己),
         // 避免构造函数里有引用类型的变量时,不同的实例间相互污染
         let result = fun.apply(obj, args); 
-        if(result && (typeof result === 'object' || typeof result === 'function')) {
-            return result;
-        }
-        return obj;
+        return result instanceof Object ? result : obj;
     }
     var pp1 = New(Person1, "pp1", 18, "famle");
     var pp2 = New(Person1, "pp2", 28, "male"); 
