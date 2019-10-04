@@ -153,9 +153,31 @@
     return arr.reduce((acc, val) => Array.isArray(val) ? acc.concat(myFlat(val)) : acc.concat(val), [])
   }
   
-  // 使用基础方法实现
-  
+## 使用requestAnimationFrame实现setInterval
 
+  function setInterval(callback, interval) {
+    let timer
+    const now = Date.now
+    let startTime = now()
+    let endTime = startTime
+    const loop = () => {
+      timer = window.requestAnimationFrame(loop)
+      endTime = now()
+      if (endTime - startTime >= interval) {
+        startTime = endTime = now()
+        callback(timer)
+      }
+    }
+    timer = window.requestAnimationFrame(loop)
+    return timer
+  }
+
+  let a = 0
+  setInterval(timer => {
+    console.log(1)
+    a++
+    if (a === 3) cancelAnimationFrame(timer)
+  }, 1000)
 
   
   
