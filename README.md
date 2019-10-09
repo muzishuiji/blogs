@@ -29,7 +29,7 @@
 
 13. [设计模式]()
 
-14. [关于代码设计,我的一些思考]()
+14. [关于代码设计,我的一些思考](https://github.com/muzishuiji/blogs/blob/master/JavaScript/code-design.md) (会持续更新)
 
 ## webpack
 
