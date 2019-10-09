@@ -29,6 +29,8 @@
 
 13. [设计模式]()
 
+14. [关于代码设计,我的一些思考]()
+
 ## webpack
 
 1. [webpack学习笔记](https://github.com/muzishuiji/blogs/blob/master/webpack/webpack-study.md)  (已完成)
