@@ -69,6 +69,12 @@ module.exports = {
         new webpack.DllReferencePlugin({
             manifest: path.resolve(__dirname, '../dll/react.manifest.json'),
         })
+        // 我们可以通过providePlugin暴露某个模块中的单个导出值
+        // 这样可以很好的与tree shaking结合,将lodash库中的其他没用到的部分去掉
+        // new webpack.ProvidePlugin({
+        //     join: ['lodash', 'join']
+        // })
+        // 可以通过imports-loader来覆盖某一个模块的this
     ],
     performance: false,
     output: {
