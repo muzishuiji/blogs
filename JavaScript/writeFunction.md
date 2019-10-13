@@ -66,6 +66,39 @@
 * 提前返回-返回接收余下的参数且返回结果的新函数.
 * 言之执行-返回新函数,等待执行
 
+## 实现数组去重,数组乱序,sleep
+
+    // 数组去重
+    function arraySet(arr) {
+        if(!Array.isArray(arr)) {
+          throw Error('arr is not an array');
+        }
+        return [...new Set(arr)];
+    }
+    // 数组乱序
+    function disorder(arr) {
+        if(!Array.isArray(arr)) {
+          throw Error('arr is not an array');
+        }
+        let tempArr = [];
+        while(arr.length) {
+          let index = Math.floor(Math.random() * arr.length);
+          tempArr.push(arr[index]);
+          arr.splice(index, 1);
+        }
+        return tempArr;
+    }
+    function mySleep(delay) {
+      let startTime = +new Date
+      while(true) {
+        if(+new Date - startTime >= delay) {
+          break;
+        }
+      }
+    }
+    mySleep(3000)
+    console.log('111');    // 停顿了三秒钟
+ 
 ## 实现 a == 1 && a == 2 && a ==3
   
     // 写法一
@@ -120,6 +153,8 @@
     obj1.age;    // 1
     obj1.age;    // 2
     obj1.age;    // 3
+
+## Promise
   
 ## Promise.all
 
@@ -143,7 +178,7 @@
         })
     }
     
-## 手写Promise
+## Promise
 
     // 创建三个用于表示状态的常量
     const PENDING = 'pending';
@@ -289,7 +324,19 @@
       console.log(value)
     })
 
+## Promise.retry
+
+
 ## Array.prototype.flat 实现数组扁平化
+
+    // 使用reduce和concat结合实现数组扁平化
+    function myFlat(arr) {
+      if(!Array.isArray(arr)) {
+        return arr;
+       }
+      return arr.reduce((acc, val) => Array.isArray(val) ? acc.concat(myFlat(val)) : acc.concat(val), [])
+    }
+## Array.prototype.filter 实现数组扁平化
 
     // 使用reduce和concat结合实现数组扁平化
     function myFlat(arr) {

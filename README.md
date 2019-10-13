@@ -29,7 +29,26 @@
 
 13. [设计模式]()
 
-14. [关于代码设计,我的一些思考](https://github.com/muzishuiji/blogs/blob/master/JavaScript/code-design.md) (会持续更新)
+14. [JavaScript常用函数的实现]()
+
+15. [关于代码设计,我的一些思考](https://github.com/muzishuiji/blogs/blob/master/JavaScript/code-design.md) (会持续更新)
+
+## Vue
+
+1. [Vue.nextTic()](https://github.com/muzishuiji/blogs/blob/master/JavaScript/code-design.md)
+
+2. [前端路由Vue-Router](https://juejin.im/post/5d6f729f51882571ed61e1f2)
+
+## React
+
+1. [React生命周期和使用技巧]()
+
+2. [虚拟DOM]()
+
+3. [PropTypes]()
+
+4. [高阶组件]()
+
 
 ## webpack
 
