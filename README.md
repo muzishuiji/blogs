@@ -29,7 +29,7 @@
 
 13. [设计模式]()
 
-14. [JavaScript常用函数的实现]()
+14. [JavaScript手写代码系列](https://github.com/muzishuiji/blogs/blob/master/JavaScript/writeFunction.md)
 
 15. [关于代码设计,我的一些思考](https://github.com/muzishuiji/blogs/blob/master/JavaScript/code-design.md) (会持续更新)
 
