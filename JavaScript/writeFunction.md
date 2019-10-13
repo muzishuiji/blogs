@@ -153,30 +153,6 @@
     obj1.age;    // 1
     obj1.age;    // 2
     obj1.age;    // 3
-
-## Promise
-  
-## Promise.all
-
-    Promise.myAll = function(promises) {
-        return new Promise((resolve, reject) => {
-            // Array.from将可迭代对象转换成数组
-            let promiseArray = Array.from(promises);
-            let index = 0;
-            let result = [];
-            for(let i = 0, len = promiseArray.length; i < len; i++) {
-                Promise.resolve(promiseArray[i]).then(function(value) {
-                    result.push(value);
-                    if(i === len - 1) {
-                        resolve(result);
-                    }
-                }, (err) => {
-                    reject(err);
-                    return;
-                })
-            }
-        })
-    }
     
 ## Promise
 
@@ -323,6 +299,28 @@
     }).then(value => {
       console.log(value)
     })
+  
+## Promise.all
+
+    Promise.myAll = function(promises) {
+        return new Promise((resolve, reject) => {
+            // Array.from将可迭代对象转换成数组
+            let promiseArray = Array.from(promises);
+            let index = 0;
+            let result = [];
+            for(let i = 0, len = promiseArray.length; i < len; i++) {
+                Promise.resolve(promiseArray[i]).then(function(value) {
+                    result.push(value);
+                    if(i === len - 1) {
+                        resolve(result);
+                    }
+                }, (err) => {
+                    reject(err);
+                    return;
+                })
+            }
+        })
+    }
 
 ## Promise.retry
 
