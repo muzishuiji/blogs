@@ -6,13 +6,13 @@
 
 2. webpack.config.js 是 webpack 默认的打包配置文件,可以通过--config 参数来指定其他的打包配置文件
 
-3. webpack-cli 使得我们可以直接在命令号里执行 webpack 命令
+3. webpack-cli 使得我们可以直接在命令行里执行 webpack 命令
 
 4. chunks, 存放每个文件对应的 id 值,和相关联的文件的 id 值
 
 5. chunksName, 每个文件对应的名字,和相关的文件的名字.
 
-6. mode,打包模式,默认是 production.development 模式打包出来的文件时非压缩的.production 模式打包出来的文件时压缩过的.
+6. mode,打包模式,默认是 production, development 模式打包出来的文件时非压缩的, production 模式打包出来的文件时压缩过的.
 
 ### loader
 
@@ -27,19 +27,19 @@
 3. file-loader 会把我们的图片资源打包到对应的目录下
    url-loader 会帮我们把图片打包成 base64 字符串,然后在打包的 js 中导出这个 baose64 字符串,在引用到它的 js 中引入.
 
-4. 图片比较小的话,把图片打包成 base64 是可取的,但是如果图片很大,打包成的 base64 字符串就会很大,这也会导致打包后的 js 体积很大,如果图片比较大的情况,我们则把它打包成图片而不是 base64 字符串.我们可以通过配置 limit,来帮我们把图片大小小于 limit 的图片打包成 base 格式的,大于 limit 的图片打包成图片文件.
+4. 图片比较小的话,把图片打包成 base64格式 是可取的,但是如果图片很大,打包成的 base64格式的字符串就会很大,这也会导致打包后的 js 体积很大,如果图片比较大的情况,我们则把它打包成图片而不是 base64 字符串.我们可以通过配置 limit,来帮我们把图片大小小于 limit 的图片打包成 base64 格式的,大于 limit 的图片打包成图片文件.
 
-5. loader 的执行顺序是后引入的先执行.
+5. loader 的执行顺序是后引入的先执行,我的理解有点像栈结构,后进先出.
 
 ### loader
 
-1. html-webpack-plugin 会在打包结束后,自动生成一个 html 文件,并把打包生成的 js 都自动引入到这个 html 文件中.
+1. `html-webpack-plugin` 会在打包结束后,自动生成一个 html 文件,并把打包生成的 js 都自动引入到这个 html 文件中.
 
-2. plugin 可以在 webpack 运行到某个时刻帮助 webpack 做一些事情.
+2. plugin 可以拿到 webpack 的生命周期, 在 webpack 运行到某个时刻帮助 webpack 做一些事情.
 
 ### entry 与 output
 
-1. 如果页面用到的静态 js 资源需要放到 cdn 上,则可以在 output 的 publicPath 里面配置静态资源所在地址,这样打包后的 index.html 里引入的打包的 js 的 src 都会包含这里配置的地址.
+1. 如果页面用到的静态 js 资源需要放到 cdn 上,则可以在 `output` 的 `publicPath` 里面配置静态资源所在地址,这样打包后的 index.html 里引入的打包的 js 的 src 都会包含这里配置的地址.`publicPath`指定资源的引入地址.
 
 ### sourceMap
 
@@ -53,7 +53,7 @@
 
 3. inline-cheap-source-map
 
-打包报错信息只映射到行,不映射到具体那一列的字符,且只会关注业务代码里的报错.
+打包报错信息只映射到行,不映射到具体哪一列的字符,且只会关注业务代码里的报错,不关注引入的第三方模块的报错
 
 4. inline-cheap-module-source-map
 
@@ -128,11 +128,11 @@ changeOrigin: true; // 解决 origin 的请求限制
 
 secure: false; // 解除 https 协议下的安全限制
 
-// 设置请求头的相关配置
-header: {
-host: '',
-cookie: ''
-}
+      // 设置请求头的相关配置
+      header: {
+         host: '',
+         cookie: ''
+      }
 
 6.  webpackDevServer 解决单页面应用路由的问题.
 
@@ -271,7 +271,7 @@ maxAsyncRequests 对异步模块进行代码分割的最大模块数
 
 1. 我们可以借用可视化的打包分析工具来分析哪些模块重复打包,或者体积过大,能否进行拆分,按需引入,以减少打包后的体积,对于体积比较大的模块有没有更好的替代方案,等等.
 
-2) 开发的时候应该注重代码的使用率,这样尽可能减少页面首次加载的代码体积.
+2) 开发的时候应该注重代码的使用率(可以通过谷歌调试工具中的Coverage来查看代码的使用率),这样尽可能减少页面首次加载的代码体积.
 
 3) preloading
 
@@ -537,6 +537,8 @@ sourceMap越完整,打包出来的代码的体积就会越大,打包速度就会
                 })
             )
         });
+        // 通过dllPlugin来打包公共模块,下次打包则不需要对公共模块做重复打包,
+        // 直接引入模块对应的dll文件即可
         const files = fs.readdirSync(path.resolve(__dirname, '../dll'));
         files.forEach((file) => {
             if(/.*\.dll.js/.test(file)) {
