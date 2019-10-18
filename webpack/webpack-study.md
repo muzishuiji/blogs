@@ -711,6 +711,12 @@ sourceMap越完整,打包出来的代码的体积就会越大,打包速度就会
 ### bundler源码编写
 
 当我们要对一个项目做打包的时候,我们首先需要对项目的入口文件用到的模块做分析,然后在对其他的入口文件引入的模块做分析.
+手写bundler的过程也就是理解webpack打包的核心原理的过程.关于这一过程描述如下:
+
+* 获取入口文件的抽象语法树,分析入口文件的依赖,存放在dependencies数组中
+* 使用babel编译ES6的代码,生成可在浏览器端运行的code,返回入口文件的信息,filename, code, dependencies
+* 遍历dependencies,获取依赖文件的filename, code, dependencies等信息,存放在graph对象中,形成入口文件的依赖图谱
+* 将入口文件的code(处理后的代码),和入口文件的依赖的code,输出到打包后的js中
 
 1. 解析对应文件的依赖
 
