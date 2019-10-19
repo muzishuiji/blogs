@@ -69,7 +69,7 @@ bind函数的原理就是返回一个使用apply绑定了this的函数.
 
     const currying = (fn, ...args) => {
       return args.length < fn.length
-              ? (...arguments) => curry(fn, ...args, ...arguments)
+              ? (...arguments) => currying(fn, ...args, ...arguments)
               : fn(...args);
     }
     function countTotal(a, b, c, d) {
