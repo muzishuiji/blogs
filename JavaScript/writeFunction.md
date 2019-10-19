@@ -13,7 +13,7 @@
       let sym = Symbol();
       // 给传进来的this对象创建一个独一无二的属性,避免属性污染
       thisArg[sym] = this;
-      let result =  thisArg[sym](args);
+      let result =  thisArg[sym](...args);
       delete thisArg[sym];   
       return result;
     }
@@ -35,7 +35,7 @@
         let sym = Symbol();
         // 给传进来的this对象创建一个独一无二的属性,避免属性污染
         thisArg[sym] = this;
-        let result =  args ? thisArg[sym](args) : thisArg[sym]();
+        let result =  args ? thisArg[sym](...args) : thisArg[sym]();
         delete thisArg[sym];   
         return result;
       }
