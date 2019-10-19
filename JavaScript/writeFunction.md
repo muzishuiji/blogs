@@ -40,7 +40,28 @@
         return result;
       }
     
-   
+## bind
+
+bind函数的原理就是返回一个使用apply绑定了this的函数.
+
+    Function.prototype.myBind = function (context) {
+        if(!context) {
+            context = typeof window === 'undefined' ? global : window;
+        }
+        const _this = this
+        const args = [...arguments].slice(1);
+        return function F() {
+            // 如果该函数是以new运算符调用,则不对this做修改
+            if(_this instanceof F) {
+                return new _this(...args, ...argumrnts)
+            }
+            console.log(context)
+            return _this.apply(context, args.concat(...arguments));
+        }
+    }
+    func.myBind(obj)(); // 111
+    func.myBind()();    // 145
+
 ## 函数柯里化
 
 我个人的理解,函数柯里化就是定义一个已知函数fn,有n个参数,实现一个柯里化函数curry, 调用curry函数将fn函数传入,curry函数主要负责把后面调用的函数参数都收集起来,
