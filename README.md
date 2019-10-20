@@ -25,7 +25,7 @@
 
 11. [Promise原理]()
 
-12. [模块化详解]()
+12. [模块化详解](https://mp.weixin.qq.com/s/MPEhWlS9KiIc9I6Of5GpOQ) (收集了一篇比较详细的)
 
 13. [设计模式]()
 
