@@ -35,9 +35,9 @@
 
 ## Vue
 
-1. [Vue.nextTic()](https://github.com/muzishuiji/blogs/blob/master/JavaScript/code-design.md)
+1. [Vue.nextTick()](https://juejin.im/post/5d6f2b5f518825421c080325)  (已完成)
 
-2. [前端路由Vue-Router](https://juejin.im/post/5d6f729f51882571ed61e1f2)
+2. [前端路由Vue-Router](https://juejin.im/post/5d6f729f51882571ed61e1f2) (已完成)
 
 ## React
 
