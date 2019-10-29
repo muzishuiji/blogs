@@ -568,4 +568,20 @@ Promise的实现原理几句话很难说清楚,这里分享一个地址, [史上
         }
     })
 
+### 21. 实现一个简易的迭代器
+
+        // 实现一个简单的迭代器
+        const makeIterator = arr => {
+            let nextIndex = 0;
+            return {
+                next: () => 
+                    nextIndex < arr.length
+                    ? { value: arr[nextIndex++], done:false }
+                    : { value: undefined, done:true }
+            }
+        }
+        const it = makeIterator(['八月', '深化'])
+        console.log(it.next()) //  { value: "人月", done: false }
+        console.log(it.next()) // { value: "神话", done: false }
+        console.log(it.next()) // {value: undefined, done: true }
 
