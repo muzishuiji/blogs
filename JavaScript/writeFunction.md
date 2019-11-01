@@ -585,3 +585,31 @@ Promise的实现原理几句话很难说清楚,这里分享一个地址, [史上
         console.log(it.next()) // { value: "神话", done: false }
         console.log(it.next()) // {value: undefined, done: true }
 
+### 22. 异步处理并发请求
+
+        var arr = [], i = 0
+        function resolveAjax(arr, max, callback) {
+            var fetchArr = []
+            function toFetch() {
+                if(i === arr.length) {
+                    return Promise.resolve()
+                }
+                let one = arr[i++]
+                one.then(() => fetchArr.splice(fetchArr.indexOf(one), 1))
+                fetchArr.push(one)
+                let p
+                if(fetchArr.length >= max) {
+                    p = Promise.race(fetchArr)
+                }
+                return p.then(() => toFetch())
+            }
+            toFetch().then(() => Promise.all(fetchArr).then(() => {
+                callback()
+            }))
+        }
+        for(var i = 0; i < 100; i++) {
+            arr.push(fetch('http://127.0.0.1:6002/?time=' + Math.random()))
+        }
+        resolveAjax(arr, 100, () => {
+            console.log('111');
+        })
