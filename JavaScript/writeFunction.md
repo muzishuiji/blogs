@@ -196,6 +196,24 @@
     sum(1, 2, 3)(4);   // 24
     sum(1, 2, 3, 4);   // 24
 
+实现动态接收参数的函数柯里化:
+
+    function sum(...args) {
+       var _adder = function() {
+         args.push(...arguments)
+         return _adder
+       }
+       _adder.toString = function() {
+         return args.reduce((pre, cur) => {
+            return pre + cur
+         }, 0)
+       }
+       return _adder
+    }
+    sum(1)(2)(3)(4);   // 10
+    sum(1, 2)(3)(4);   // 10
+    sum(1, 2, 3)(4);   // 10
+    sum(1, 2, 3, 4);   // 10
 
 ### 11. 实现 a == 1 && a == 2 && a ==3
 实现原理: 要实现这个效果,我们首先想到变量a必然是一个引用类型的数据,我们需要巧妙的利用 `==` 在比较时两边的数据会发生隐式转换这一特性, 具体转换规则如下:
