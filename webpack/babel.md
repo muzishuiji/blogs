@@ -1,9 +1,9 @@
 # Babel
 
-##
+## Babel 简介
 
 1. babel 的处理过程总共分为三个阶段， 解析，转换，生成。
-2. babel 本身不具有任何转转化功能，它把转换的功能都分解到一个个 plugin 里面，当我们不配置任何插件时，经过 babel 的代码输入和输出是相同的。
+2. babel 本身不具有任何转换功能，它把转换的功能都分解到一个个 plugin 里面，当我们不配置任何插件时，经过 babel 的代码输入和输出是相同的。
 3. babel 的插件分为两种
 
 - 语法插件
@@ -31,7 +31,7 @@
       [
         // 第一个是名字
         "env",
-        // 第二个元素是对象.列出配置线
+        // 第二个元素是对象.列出配置项
         {
           // 该参数项可以配置以特定的模块化格式来输出代码,如果配置成false则不进行模块化处理
           "module": false
@@ -46,11 +46,11 @@
 9. babel-require 会对 require 命令引入的文件进行转码.
 10. babel-polyfill
 
-babel 默认只转换 js 语法,而不转换新的 API,比如 iterator, generator,set,mao,proxy,reflect,aymbol,promise 等全局对象,babel-polyfill 内部集成了 core-js 和 regenerator.
+babel 默认只转换 js 语法,而不转换新的 API,比如 iterator, generator,set,map,proxy,reflect,symbol,promise 等全局对象,babel-polyfill 内部集成了 core-js 和 regenerator.
 
 缺点:
 
-- 使用<pre>babel-polyfill</pre>会导致打出来的包非常大,因为 babel-polyfill 是一个正题,把所有的方法都加到原型脸上比如我们只是用来 Array.from,但它把 Object.defineProperty 也给加上了,这个问题可以通过单独使用 core-js 的摸个类库来解决.
+- 使用<pre>babel-polyfill</pre>会导致打出来的包非常大,因为 babel-polyfill 是一个整体,把所有的方法都加到原型链上比如我们只是用了 Array.from,但它把 Object.defineProperty 也给加上了,这个问题可以通过单独使用 core-js 的某个类库来解决.
 
 - babel-polyfill 会污染全局变量,给很多类的原型上都做了修改,如果我们开发的是一个类库供给其它开发者使用,这种情况会变得非常不可控.
 
@@ -75,4 +75,4 @@ babel 默认只转换 js 语法,而不转换新的 API,比如 iterator, generato
     })
 
 13. babel-loader 一个用于和构建工具相结合,对 js 进行转译处理的 loader.
-14. babel-upgrade 用于 babel 配置升级的转换
+14. babel-upgrade 用于 babel 配置升级的转换(主要是使用的是旧版本的 label,又暂时不想改配置项,就可以使用这个插件,仍旧沿用旧的配置项,这个插件可以帮助我们把旧的配置项对应的映射成新的配置项.)
