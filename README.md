@@ -12,7 +12,7 @@
 
 3. [作用域与闭包]()
 
-4. [深拷贝与浅拷贝]()
+4. [深拷贝与浅拷贝](https://github.com/muzishuiji/blogs/blob/master/JavaScript/deep-shallow-copy.md) (已完成)
 
 5. [原型链与继承](https://github.com/muzishuiji/blogs/blob/master/JavaScript/prototype.md) (已完成)
 
