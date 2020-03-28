@@ -60,6 +60,10 @@
 
 主要介绍与 JavaScript 有关的一些基础知识,熟练使用 TypeScript 的一个重要前提是要了解 JavaScript.
 
+1. TypeScript 即 JavaScript, TypeScript 是带有文档的 JavaScript;
+2. TypeScript 让 JavaScript 更美好,
+3. 学习 JavaScript 仍然是必要的;
+
 ### 2.1 相等
 
 ### 2.2 引用
