@@ -262,7 +262,7 @@ rxjs 将副作用先转化为数据源,将副作用隔离在管道流处理之�
 
 4. 斟酌变量名
 
-布尔值或者返回值是布尔类型的函数,命名以is,has,should开头.
+布尔值或者返回值是布尔类型的函数,命名以 is,has,should 开头.
 
     // Dirty
     const done = current => goal
@@ -279,11 +279,11 @@ rxjs 将副作用先转化为数据源,将副作用隔离在管道流处理之�
 
 5. 遵循设计模式
 
-对于React,遵循以下几个最佳实践:
+对于 React,遵循以下几个最佳实践:
 
-* 单一职责原则,确保每个功能都完整完成一项功能,比如更细粒度的组件拆分,同时也要便于测试.
-* 不要把组件内部的依赖强加给使用方
-* lint规则尽量严格
+- 单一职责原则,确保每个功能都完整完成一项功能,比如更细粒度的组件拆分,同时也要便于测试.
+- 不要把组件内部的依赖强加给使用方
+- lint 规则尽量严格
 
 函数式编程,只要为每个功能写一遍,剩下的就是记住并调用它
 
@@ -319,5 +319,68 @@ rxjs 将副作用先转化为数据源,将副作用隔离在管道流处理之�
 
     // Clean
     const [language, country] = locale.split('-');
-9. 推荐在typescript中开启strict模式,强制使用良好的开发习惯.
 
+9. 推荐在 typescript 中开启 strict 模式,强制使用良好的开发习惯.
+
+## 第六篇 <<精读 optional chaining>>
+
+1. 一个完整草案的标准文档结构是怎样的?
+
+- 起因
+
+为什么要增加这个新特性?
+
+- 其他语言是否有现成的实现版本
+
+参考已有的版本进行归纳总结,可以增加思考角度的全面性.
+
+- 是否有不支持的情况
+
+对于不支持的点是否有意而为之,为什么?
+
+- 暂不考虑的点
+
+是性价比低,使用场景少,或者实现成本高的原因,为什么某些已经想到的点暂不考虑.
+
+2. optional chaining
+
+
+    var street = user.address?.street;
+    // 定义没有某个属性时的返回
+    // option chaining属性可以和Nullish Coalescing结合,为
+    // 某个不存在的值制定默认值, ?? 可以理解为默认场景下的 ||
+    var street = user.address?.street??300;
+    // 用在方法上
+    interator.renturn?.()??function(){}
+    // 视图调用某些未被实现的方法
+    if(myForm.checkValidity?.() === false){
+      return;
+    }
+    // Optional Chaining的语法有三种使用场景:
+    obj?.prop   // 可选的静态属性
+    obj?.[expr] // 可选的动态属性
+    func?.(...args)   // 可选的函数调用
+
+3. 需要注意的是`optional chaining`只对紧跟在其后的属性负责,不对跟在其后的整个表达式负责.
+
+4. `optional delete`
+
+
+    delete a?.b
+    a == null ? true : delete a.b
+
+## 第七篇 <<React Hooks 最佳实践>>
+
+## 第八篇 <<useRef 与 createRef 的区别>>
+
+1. useRef 技能用在 FunctionComponent,createRef 仅能用在 ClassComponent;
+
+Hooks 不能用在 ClassComponent,且 createRef 并没有 Hooks 的效果,其值会随着 FunctionComponent 的重复执行而不断被初始化;
+
+2. 避免在 render 函数中直接去修改 Ref,这是因为 render 阶段的代码可能会被随时取消或重做,FunctionComponent 增加了内置调度系统,为了优先响应用户操作,可能会暂停某个 react 组件的渲染
+
+   function App() {
+    const valueRef = React.useRef();
+    valueRef.current += 1;
+    return <div />;
+   }

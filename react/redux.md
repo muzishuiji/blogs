@@ -36,6 +36,62 @@ Flux 最大的特点,就是数据的单向流动.
 
 Redux 在 dispatch action 后,到达 Store 钱的这一段,可以任意操作 action 和 Store,很容易实现灵活的日志打印,错误收集,api 请求.路由等操作.
 
+3. Redux 的三大原则
+
+- 单一数据源
+
+整个应用的 state 被存储在一颗 object tree 中,并且整个 object tree 只存在于唯一一个 store 中;
+
+- State 是只读的
+
+唯一改变 state 的方法就是触发 action,action 是一个用于描述已发生事件的普通对象.
+
+- 使用纯函数来执行修改
+
+为了描述 action 如何改变 state tree,你需要编写 reducers.reducers 只是一些纯函数,接收先前的 state 和 action,并返回新的 state.
+
+4. Redux 和 Flux
+
+redux 和 flux 一样将模型的更新逻辑全部集中于一个特定的层(flux 的 store,Redux 里的 reducer),flux 和 redux 都不允许程序直接修改数据,而是用一个叫做 action 的普通对象来更改进行描述
+
+而不同于 flux,redux 并灭有 dispatcher 的概念,原因是它依赖纯函数来替代事件处理器,纯函数构建简单,不需要额外的实体来管理它们.
+
+和 flux 的另一个重要区别,是 redux 设想你永远不会变动你的数据,你可以很好的使用普通对象和数组来管理 state,同时配合`...`运算符或一些库,如 immutable,来保持数据的不可变性;虽然写不纯的 reducer 来变动数据技术上是可行的,但是并不推荐,不纯的 reducer 会使一些开发特性,如时间旅行,记录/回放或热加载不可实现.
+
+5. Immutable
+
+Immutable 是一个可实现持久数据结构的 JavaScript 库,它性能很好,并且符合 JavaScript Api 语言的习惯.
+
+redux 不在意你如何存储 state,state 可以是普通对象,不可变对象,或其它类型.
+
+6. 我们可以将一个大的 reducer 拆分成多个子 reducer,每个 reducer 只负责全局 state 中的一部分,每个 reducer 的 state 参数都不同,分别对应它管理的那部分 state 数据.
+
+7. store 有以下职责:
+
+- 维持应用的 state;
+- 提供 getState()方法获取 state;
+- 提供 dispatch(action)方法更新 state;
+- 通过 subscribe(listener)注册监听器;
+- 通过 subscribe(listener)返回的函数注销监听器
+
+8. createStore
+
+
+    // createStore
+    import { createStore } from "redux";
+    import todoApp from "./reducers";
+    let store = createStore(todoApp);
+
+createStore()的第二个参数是可选的,用于设置 state 的初始状态,这对开发同构应用时非常有用,服务端 redux 应用的 state 结构可以与客户端保持一致,name 客户端可以从网络接收到的服务端 state 用于本地数据初始化.
+
+    let store = createStore(todoApp, window.STATE_FROM_SERVER)
+
+9. 数据在 redux 应用中是如何流动的
+
+可以手动监听 state 数据的改变,如果使用了 react redux 这类的绑定库,可以调用 component.setState(newState)来更新;
+
+10. 注意: 你可以直接使用 store.subscribe()来编写容器组件,但不建议这么做,因为这样会无法使用 react redux 带来的性能优化,推荐使用 react redux 的 connect()方法来生成.
+
 ## Redux 的一些方法
 
 1. Store.dispatch(currentState, action)
@@ -233,3 +289,5 @@ applyMiddleware 函数中间件的主要目的是修改 dispatch,返回多个中
 - Redux 使用
 
 实际上就是调用 dispatch, 触发循环遍历 reducer 函数,更新 state.
+
+**Redux 的出现的最重要的目的是为了让 state 的变化变得可预测**
