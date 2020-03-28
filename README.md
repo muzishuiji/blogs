@@ -64,6 +64,10 @@
 
 1. [Node 开发实战学习笔记](https://github.com/muzishuiji/blogs/blob/master/node/node-study.md) (已完成)
 
+## 数据结构与算法
+
+花三个月的时间把 leetCode 的算法题基本都刷一遍,并且把一些常见题目,巧妙的揭发整理成一套刷题笔记.
+
 ## 读书笔记
 
 1. [JavaScript 设计模式与开发实践读书笔记](https://github.com/muzishuiji/blogs/tree/master/reading-notes/javaScript-advanced-programming) (已完成)

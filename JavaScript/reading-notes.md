@@ -380,7 +380,215 @@ Hooks 不能用在 ClassComponent,且 createRef 并没有 Hooks 的效果,其值
 2. 避免在 render 函数中直接去修改 Ref,这是因为 render 阶段的代码可能会被随时取消或重做,FunctionComponent 增加了内置调度系统,为了优先响应用户操作,可能会暂停某个 react 组件的渲染
 
    function App() {
-    const valueRef = React.useRef();
-    valueRef.current += 1;
-    return <div />;
+   const valueRef = React.useRef();
+   valueRef.current += 1;
+   return <div />;
    }
+
+## 第九篇 <<精读 React 高阶组件>>
+
+1. HOC 的适用范围
+
+对比 HOC 范式 `compose(render)(state)`与父组件(Parent Component)的范式`render(render(state))`,如果完全利用 HOC 来实现 React 的 implement,将擦欧总与 view 分离,也未尝不可,但并不优雅.HOC 本质上是统一功能抽象,强调逻辑与 UI 分离,但在实际开发中,前端无法逃离 DOM,而逻辑与 DOM 的相关性主要呈现 3 种关联形式.
+
+- 与 DOM 相关,建议使用父组件,类似于原生 HTML 编写.
+- 与 DOM 不相关,如校验,权限,请求发送,数据转换这类,通过数据变化间接控制 DOM,可以使用 HOC 抽象.
+- 交叉的不部分,DOM 相关,但可以做到完全内聚,即这些 DOM 不回话外部有关联,均可.
+
+HOC 适合做和 DOM 不相关,又是多个组件的共性操作.例如表单的校验和数据请求(react-refetch).
+
+    connect(props => ({
+      usersFetch: `/users?status=${props.status}&page=${props.page}`,
+      useStatsFetch: {url: `/users/stats`, force: true }
+    }))(UsersList)
+
+通过高阶组件可以将更细粒度的组件组合成 Selector 与 Search
+
+Props Proxy 的两个作用: **提取 state** 和 **操作 props**
+
+    function formFactoryFactory({
+      validator,
+      trigger = 'onChange',
+      ...
+    }) {
+      return FormFactory(WrappedComponent) {
+        return class Decorator extends React.Component {
+          getBind(trigger, validator) {
+            ...
+          }
+          render() {
+            const newProps = {
+              ...this.props,
+              [trigger]: this.getBind(trigger, validator)
+            }
+            // 高阶组件为WrappedComponent加上一层校验追踪
+            return <WrappedComponent { ...newProps } />
+          }
+        }
+      }
+    }
+    // 调用
+    formFactoryFactory({
+      validator: (value) => {
+        return value !== ''
+      }
+    })(<Input placeholder="请输入..." />)
+
+
+    import { createForm } from 'rc-form';
+    class Form extends React.Component {
+      submit = () => {
+        this.props.form.validateFields((error, value) => {
+          console.log(error, value)
+        })
+      }
+      render() {
+        const { getFieldError, getFieldDecorator } = this.props.form;const errors = getFieldError('required)
+        return (
+          <div>
+            {getFieldDecorator('required', {
+              rules: [{ required: true }],
+            })(<Input />)}
+            {errors ? errors.join(','): null}
+            <button onClick={this.submit}>submit</button>
+          </div>
+        )
+      }
+    }
+    export createForm()(Form)
+
+**组合优于继承**
+
+## 第十篇 <<入坑 react 前没有人会告诉你的事>>
+
+1. 要做好基于 react 的前端架构,你不仅需要对自己的业务了如指掌,还需要对各种解决方案的特性以及适合怎样的业务形态了如指掌.
+
+2. react 生态如此活跃和庞大,对于新手来说经常会迷茫同一个功能选择哪个技术的问题,毕竟不了解,你可能没有办法选择更适合自己项目业务场景的技术.这就是 react 给开发者的考验.
+
+## 第十一篇 <<useEffect 完全指南>>
+
+1. Function Component 是更彻底的状态驱动抽象,甚至没有 class component 生命周期的概念,只有一个状态,而 React 负责同步到 DOM.
+
+2. 学习启发式思考和逐层递进的方式写作.
+
+3. 每次 Render 都有自己的 Props 和 State.
+
+可以认为每次 Render 的内容都会形成一个快照并保留下来,因此当状态变更而 Rerender 时,就形成了 N 个 Render 状态,而每个 Render 状态都拥有自己固定不变的 Prop 与 State.
+
+    function Counter() {
+      const [count, setCount] = useState(0)
+      return (
+        <div>
+          <p>You clicked { count } times</p>
+          <button onClick={() => setCount(count + 1)}>Click me</button>
+        </div>
+      )
+    }
+
+每次点击时,count 只是一个存在与 render 函数中的不会变的常量.所以每次 Render 的过程中,count 的值都会被固化为: 1,2,3,像下面这样:
+
+    // During first render
+    function Counter() {
+      const count = 0;  // returned by useState
+      // ...
+      <p>You clicked {count} times</p>
+      // ...
+    }
+    // after a click, our function is called again
+    function Counter() {
+      const count = 1;  // renturned by useState
+      // ...
+      <p>You clicked {count} times</p>
+      // ...
+    }
+    // after another click, our function is called again
+    function Counter() {
+      const count = 2;  // renturned by useState
+      // ...
+      <p>You clicked {count} times</p>
+      // ...
+    }
+
+其实不仅是对象,函数在每次渲染时也是独立的,这就是 Capture Value 特性.
+
+`useEffect`也一样具有`Capture Value`的特性,`useEffect`在实际 DOM 渲染完毕后执行,那 `useEffect`拿到的值也遵循`Capture Value`的特性.`useEffect`在每次 Render 的过程中,拿到的 count 都是固化下来的常量.
+
+4. 如何绕过 Capture Value
+
+利用`useRef`就可以绕过 Capture Value 的特性,可以认为 red 在所有 Render 过程中保持着唯一引用,因此对 Ref 的复制或取值,拿到的都只有一个最终状态,而不会在每个 render 间存在隔离.
+
+    function Example() {
+      const [count, setCount] = useState(0);
+      const latestCount = useRef(count);
+
+      useEffect(() => {
+        // Set the mutable latest value
+        latestCount.current = count;
+        setTimeout(() => {
+          // Read the mutable latest value
+          console.log(`You clicked ${latestCount.current} times`);
+        }, 3000);
+      });
+      // ...
+    }
+
+5. 用同步取代生命周期
+
+Function Component 不存在生命周期,所以不要把 Class Component 的生命周期概念搬过来试图对号入座,Function Component 仅描述 UI 状态,React 会将其同步到 DOM,仅此而已.
+
+6. 不要对 Dependencies 撒谎
+
+一定要诚实引入 useEffect 内部用到的所有依赖,不然会产生意想不到的错误,但是诚实有的时候也会带来麻烦,如下面的代码:
+
+    // 这样的代码会导致频繁的生成/销毁定时器,带来了一定的性能负担
+    useEffect(() => {
+      const id = setInterval(() => {
+        setCount(count + 1);
+      }, 1000);
+      return () => clearInterval(id);
+    }, [count]);
+
+使用 react 提供的`useReducer`可以创建一个局部的`Redux`,这样不管在更新数据时需要依赖多少变量,在调用更新的动作里都不需要依赖任何变量.
+
+    const [state, dispatch] = useReducer(reducer, initialState);
+    const { count, step } = state;
+
+    useEffect(() => {
+      const id = setInterval(() => {
+        dispatch({ type: "tick" }); // Instead of setCount(c => c + step);
+      }, 1000);
+      return () => clearInterval(id);
+    }, [dispatch]);
+
+7. useCallback
+
+useCallback 可以将我们创建一个有状态依赖的函数,当以来状态发生变化时,该函数会重新创建,这样依赖该函数的 useEffect 也会重新执行.给函数添加依赖使得逻辑内聚.
+
+通常,一个 Class Componnet 的普通取数需要考虑这些点:
+
+- 在 DidMount 初始化发请求
+- 在 DidUpdate 判断取数参数是都变化,变化后就调用取数函数重新取数
+- 在 unmount 生命周期添加 flag,在 didMount, didUpdate 两处做兼容,当组件销毁时取消取数,避免内存泄漏.
+
+这样的取数据过程,需要在不同的生命周期里维护多套逻辑,如果换成 Function Component 的话,会是这样的.
+
+    function Article({id}) {
+      const [article, setArticle] = useState(null)
+      // 副作用,在依赖发生变化后,取数据之后更新数据, 然后再组件销毁的时候
+      清除相关副作用
+      useEffect(() => {
+        let didCancel = false;
+        async function fetchData() {
+          const article = await API.fetchArticle(id)
+          if(!didCancel) {
+            setArticle(article)
+          }
+        }
+        fetchData()
+        return () => {
+          didCancel = true
+        }
+      },[API.fetchArticle, id])
+    }
+
+学会忘记可以更好的理解,不要把别的模式的固有思维套结再另一个模式上去理解.
