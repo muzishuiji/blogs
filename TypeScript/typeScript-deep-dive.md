@@ -227,39 +227,538 @@ IIFE 允许 TypeScript 通过变量\_super 来捕获基类,这种方式在来体
 
 ### 3.2 箭头函数
 
+1. 箭头函数设计的主要目的如下:
+
+- 你不再需要书写 function;
+- 从语义上说,它包含了 this 的意义;
+- 从语义上说,它包含了 argument 的意义;
+
+2. 什么情况下使用箭头函数?
+   如果你想保证函数在任何时候调用都有确定的 this 或者你不会再函数体中使用到 this,那么推荐你使用箭头函数;如果你想让 this 成为调用时的陕西该文,你应该使用普通函数,如果你准备使用 arguments 关键字,那么也应该使用普通函数.
+3. 你可以利用箭头函数直接返回一个对象字面量.
+
+   var foo = () => ({
+   bar: 1232
+   });
+
 ### 3.3 rest 参数
+
+    function aaa(...rest) {
+      console.log(rest);   //  [1, 2, 3, 4, 5], 函数的所有参数组成的数组
+    }
+    aaa(1,2,3,4,5)
 
 ### 3.4 let
 
+1. let 用于创建块级作用域的变量;存在暂时性死区;不允许重复声明;
+
 ### 3.5 const
+
+1. const 用于创建块级作用域的常量;存在暂时性死区;必须在声明的时候初始化,且不能通过重新赋值的方式去修改它;不允许重复声明;
 
 ### 3.6 解构
 
+1. 对象的解构
+
+   var { w,x, ...remaining } = { w: 1,x: 2,y: 3, z: 4}
+   console.log(w,x,remaining); // 1 2 {y: 3, z: 4}
+
+2. 数组的解构
+
+   const [x, ,...remaining] = [1,2,3,4]
+   console.log(w,x,remaining); // 1 [3,4]
+
+解构可以减少代码的体积,并能够提高代码的可读性和可维护性
+
 ### 3.7 扩展运算符
+
+1. 扩展运算符比较多的用在数组的解构,对象的解构, 对象和数组的浅拷贝, 对象的扩展, rest 参数等.
 
 ### 3.8 for...of
 
+1. for...of 存在于 TypeScript 和 ES6 中,它能按照你的预期去迭代数组.
+
+   var someArray = [9,2,5];
+   for(var item of someArray) {
+   console.log(item); // 8,2,5
+   }
+
+2. 生成 Javascript
+
+对于目标 ES6 之前的编译版本来说,TypeScript 中的 for...of 会被编译成标准的 for 循环.
+
+      var someArray = [9,2,5]
+      for(var item of someArray) {
+         console.log(item)
+      }
+      // 编译为如下所示
+      for(var _i = 0; _i < someArray.length; _i++) {
+         var item = someArray[_i];
+         console.log(item)
+      }
+
+需要注意的是 for...of 操作符只能用在类数组,数组或者 string 类型的数据上,如果在 TypeScript 中将 for...of 操作符用在不是 array 或 string 类型的数据上,会抛出错误.注意,将来的 TypeScript 版本可能会删除此限制.
+
 ### 3.9 迭代
+
+1. 通常,迭代是一个实现以下接口的对象;
+
+   interface Iterator<T> {
+   next(value?: any): IteratorResult<T>;
+   return>(value?:any): IteratorResult<T>;
+   throw?(e?: any): IteratorResult<T>;
+   }
+   // 这个接口允许你从属于对象的一些序列或集合中取出一个值
+   // 下面代码中的 iteratorResult 是 value 和 done 的键值对
+   interface IteratorResult<T> {
+   done: boolean;
+   value: T;
+   }
 
 ### 3.10 模板字符串
 
+1. 模板字符串, `` , 设计模板字符串的目的有 3 个
+
+- 字符串插值
+- 多行字符串
+- 标记模板(标记模板允许你创建功能强大的字符串实用程序.)
+  标记模板的使用示例如下:
+
+
+      var say = 'a bird in hand > two in the bush';
+      var html = htmlEscape`<div> i could just like to say: ${say} </div>`;
+      // 一个简单的标记函数
+      function htmlEscape(literals: TemplateStringsArray, ...placeholders: string[]) {
+         let result = "";
+         // 将字面量与占位符替换
+         for(let i = 0; i < placeholders.length; i++) {
+            result += literals[i];
+            result += placeholders[i]
+                        .replace(/&/g, "&amp;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#39;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+         }
+         // 添加最后一个文本
+         result += literals[literals.length - 1];
+         return result
+      }
+
 ### 3.11 Promise
+
+1. 在使用基于回调的异步时,要记住以下两点:
+
+- 永远不要调用两次回调函数;
+- 永远不要抛出错误;
+
+2. Promise 的出现可以让我们在 JavaScript 代码中以同步的方式来处理异步;
+
+3. TypeScript 和 Promise
+
+TypeScript 的优点在于它通过 Promise 链能够理解从 Promise 传过来的值,并作相应的类型推断
+
+      Promise.resolve(123)
+         .then(res => {
+            // res被推断为number类型
+            return true
+         })
+         .then(res => {
+            // res被推断为boolean类型
+         })
+      // 它也能正确推断返回值为Promise的任何非包装函数
+      function iReturnPromiseAfterlSecond(): Promise<string> {
+         return new Promise(resolve => {
+            setTimeout(() => resolve('hello world!", 1000))
+         })
+      }
+      Promise.resolve(123)
+         .then(res => {
+            // res被推断为number类型
+            return iReturnPromiseAfterlSecond();
+         })
+         .then(res => {
+            // res被推断为string类型
+            console.log(res);
+         })
+
+4. 将一个回调风格的函数 Promise 化
+
+   const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+   // 使用 util 模块可以实现将一个回调风格的函数 Promise 化
+   import fs from 'fs';
+   import util from 'util';
+   const readFile = util.promiseify(fs.readFile)
+
+5. 我们可以使用`Promise.all`和`Promise.race`来实现并行流程的控制
 
 ### 3.12 generators
 
+1. `function*` 是一个用来创建 `generators` 函数的语法.调用一个`generators`函数会返回一个`generators`对象.而这个`generators`对象只是遵循了迭代器的接口(即 next, return 和 throw 函数).
+
+2. 设计`generators`的关键目的有两个.
+
+- 惰性迭代器
+
+generators 函数可以用来创建惰性迭代器,例如,下面的函数根据需要会返回无限的整数列表;
+
+      function* infiniteSequence() {
+         var i = 0;
+         while(true) {
+            yield i++;
+         }
+      }
+      var iterator = infiniteSequence()
+      while(true) {
+         console.log(iterator.next());  // { value: xxx, done: false } 可以无限执行
+      }
+      // 如果迭代结束,你将会获得 `{ done: true }`
+
+- 外部控制执行
+
+generators 可以让一个函数暂停执行,并将继续执行的权力交给调用者.这种控制权让我们能够更好的控制一部逻辑的执行.
+
+总结如下:
+
+- yeild 允许一个`generators`函数暂停执行,并且将恢复执行的权力交给外部系统;
+- 外部系统可以将值推入`generators`函数体
+- 外部系统可以将一个异常抛入`generators`函数体
+
 ### 3.13 async/await
+
+1. `async/await` 是`generator`的语法糖,从写法上我们就能有一个直观的感受;
+
+   function foo = WrapToReturnPromise(function\* () {
+   try {
+   var val = yield getMeAPromise()
+   console.log(val)
+   } catch(err) {
+   console.log('Error', err.message)
+   }
+   })
+   async function foo() {
+   try {
+   var val = await getMeAPromise()
+   console.log(val)
+   } catch(err) {
+   console.log('Error', err.message)
+   }
+   }
+
+2. 在 TypeScript 中使用`async/await`:
+
+
+      function delay(milliseconds: number, count: number): Promise<number> {
+         return new Promise<number>(resolve => {
+            setTimeout(() => {
+               resolve(count);
+            }, milliseconds);
+         });
+      }
+      // 异步函数总是返回一个Promise
+      async function dramaticWelcome(): Promise<void> {
+         console.log("hello");
+         for (let i = 0; i < 5; i++) {
+            // 等待Promise<number>转换为数字
+            const count: number = await delay(500, i);
+            console.log(count);
+         }
+         console.log("world~");
+      }
+      dramaticWelcome();
 
 ## 第 4 章 TypeScript 项目构成
 
-本章将会介绍 TypeScript 项目中的编译上下文,声明空间,魔魁啊,命名空间和动态导入表达式.
+TypeScript 项目中的编译上下文,声明空间,模块,命名空间和动态导入表达式.
+
+### 4.1 编译上下文
+
+1. 编译上下文可以用来给文件分组,告诉`TypeScript`哪些文件时有效的,哪些时无效的.除此之外,编译上下文还包含正在被使用的编译选项的信息.
+
+### 4.2 声明空间
+
+1. 在`TypeScript`中,存在两种声明空间: 类型声明空间和变量声明空间.
+
+2. 类型声明空间
+
+类型声明空间包含用来当作类型注解的内容:
+
+      class Foo {}
+      iterface Bar {}
+      type Bas = {};
+      // 你可以将Foo, Bar, Bas 作为类型注解使用
+      let foo: Foo;
+      let bar: Bar;
+      let bas: Bas;
+
+3.  变量声明空间
+
+变量声明包含可用作变量的内容,在上文中`class Foo`提供了一个类型 Foo 到类型声明空间,此外它还提供了一个变量 Foo 到变量声明空间,如下所示:
+
+      class Foo {}
+      const someVar = Foo;
+      const someOtherVar = 12;
+
+我们不能把`type`和`interface`定义的内容当作变量使用, 同样,使用 var,let,const 生命的变量,只能在变量声明空间使用,不能用作类型注解.
+
+### 4.3 模块
+
+1. 全局模块
+
+包含全局命名空间下的所有变量声明和函数声明.
+
+2. 文件模块
+
+ES6 提供了`export` 和 `import`来帮助我们创建文件模块,在文件中使用`import`时,它不仅允许你使用从其他文件导入的内容,还会将此文件标记为一个模块,在文件内定义的声明也不会"污染"全局命名空间.
+
+推荐将`TypeScript`编译为符合`commonjs`规范的 JavaScript 代码
+
+3. `import/require` 只是导入类型
+
+它实际上只做了两件事:
+
+- 导入 foo 模块的所有类型信息;
+- 确定 foo 模块运行时的依赖关系;
+
+你可以仅仅加载类型信息,而没有运行时的依赖关系; (我的理解就是仅仅`import`了对应的模块,但是没有使用对应模块的属性和方法,未产生依赖关系)
+
+4. 懒加载的原理就是只在使用到对应模块的时候取导入对应的模块;
+
+
+      import foo = require('foo'); // 原始的加载只被用作了类型注解.
+      export function loadFoo() {
+         // 这是懒加载foo,原始的加载只被用作类型注解
+         // 现在你可以用_foo来作为一个变量使用了
+      }
+
+懒加载通常在以下情景中使用:
+
+- 在 Web App 里,当你在特定路由上加载 JavaScript;
+- 在 Node 应用里,当你只想加载特定模块,用来加快启动速度时;
+
+学习编写声明文件开始你的 TypeScript 之旅;
+
+### 4.4 命名空间
+
+`TypeScript`提供了`namespace`关键字来描述这种分组:
+
+      namespace Utility {
+         export function log(msg) {
+            console.log(msg)
+         }
+         export function error(msg) {
+            console.log(msg)
+         }
+      }
+      // 用例
+      Utility.log('call me');
+      Utility.error('maybe');
+      // namespace关键字编译后的JavaScript代码
+      (function (Utility) {
+         // 添加属性至Utility
+      })(Utility || Utility = {})
+
+### 4.5 动态导入表达式
+
+ES 的新语法支持在程序的任意位置异步加载一个模块,webpack bundler 有一个拆分代码的功能,它允许你将代码拆分为很多块,这些块在将来可以异步下载,因此,你可以在程序中首先提供一个最小的程序启动包,并在将来异步加载其他模块.
+
+webpack 实现代码分割的方式有两种:
+
+- 使用 import();
+- require.ensure(); (这是 webpack 的具体实现)
+
+如果我们期望 TypeScript 的输出保留 import()语句,而不是将其转化为其他任何代码,我们可以在`tsconfig.json`中配置`"module": "esnext"`,`TypeScript`生成模拟的`import`,该语句将会输入以便 webpack 进行代码拆分.
+
+      // 动态import代码示例
+      import(/* webpackChunkName: "momentjs" */ 'moment')
+         .then(moment => {
+            // 懒加载的模块拥有所有的类型,并且能够自动完成工作
+            // 类型检查会工作,代码引用也会工作
+            const time = moment().format();
+            console.log('TypeScript >= 2.4.0 Dynamic Import Expression');
+            console.log(time)
+         })
+         .catch(err => {
+            console.log('Failed to load moment', err)
+         })
 
 ## 第 5 章
 
-学习如何快速创建一个 TypeScript 项目
+快速创建一个 TypeScript 项目
+
+1. 管理依赖项
+
+- 1. devDependencies
+     项目仅在开发时需要依赖的包(如 TypeScript,你只需要用它来做构建和编译,生产环境不需要使用带有 TypeScript 的包);
+- 2.  peerDependencies
+      如果你的项目依赖了 PackageA, PackageA 模块又依赖了 PackageB, 那么在安装的时候你会发现目录结构是以下形式:
+
+            MyProject
+            |- node_modules
+               |- PackageA
+                  |- node_modules
+                     |- PackageB
+
+如果你想要需要 PackageB,你会发现当前项目的 node_modules 目录查找不到 PackageB, 它不会进入 PackageA 模块下的 `node_modules` 下查找,所以为了解决这种问题, `如果安装我,那么你最好安装 X.Y,Z`,我们可以将需要安装的模块写在 `peerDependencies` 中,示例如下:
+
+      {
+         "peerDependencies": {
+            "PackageB": "1.0.0"
+         }
+      }
+
+这样,安装 `PackageA`的 时候 `node_modules`的目录结构如下:
+
+      MyProject
+      |- node_modules
+         |- PackageA
+         |- PackageB
+
+- 3. dependencies
+
+项目在生产环境需要依赖的包,比如'axios', 'antd'这类依赖包;
 
 ## 第 6 章
 
-学习 TypeScript 的类型系统,通过学习,将能够理解并灵活运用类型注解,将为我们进一步了解类型系统做好铺垫.
+1. 需要注意的是:
+
+- TypeScript 的类型系统是可选的,因此,你的 JavaScript 就是 TypeScript.
+- TypeScript 不会阻止 JavaScript 的运行,即使类型错误也不例外,这让你的 JavaScript 逐步迁移至 TypeScript;
+
+### 6.1 基本概念
+
+1. 基本类型注解
+
+   let num: number;
+   let str: string;
+   let bool: boolean;
+   num = 123;
+   num = '0123'; // 错误
+   str = 123; // 错误
+   bool = true;
+   bool = 'false'; // 错误
+
+2. 数组注解
+
+   let boolArray: boolean[]
+   let numArray: number[]
+
+3. 接口注解
+
+   接口是 TypeScript 的一个核心知识,它能将多个类型注解合并为一个类型注解.通常是多个地方使用的类型注解定义为一个接口注解;
+
+   iterface Name {
+   first: string;
+   second: string;
+   }
+   let name: Name;
+   name = {
+   // 错误,没有 second 属性
+   first: 'jone'
+   }
+
+4. 内联类型注解
+
+内联注解和接口注解的区别就是,内联类型为特定的某个变量定义类型约束,而接口是为一类的变量定义类型约束.如果你发现多次使用了享用的内联注解,就可以考虑将其抽象为接口注解;
+
+      let name: {
+         first: string;
+         second: string;
+      }
+      name = {
+         first: 'Jone',
+         second: 'deo'
+      }
+
+5. any
+
+TypeScript 提供的类型系统的"后门",它可以赋值给任何类型的变量,也能被任何类型的数据赋值.
+
+      let power: any;
+      power = '123';
+      power = 112;
+
+6. null 和 undefined
+
+在类型系统中，JavaScript 中的 null 和 undefined 字面量和其他被标注为 any 的变量一样，都能被赋值给任意类型的变量.但是默认不支持给 null 和 undefined 类型的变量赋值其他类型的数据.
+
+      let num: number;
+      let str: string;
+      num = null
+      str = undefine;
+      let aaa: null;
+      aaa = '111'; // 错误
+
+7. void
+
+void 用来表示一个函数没有返回值:
+
+      function log(message: string): void {
+         console.log(message)
+      }
+
+8. 泛型,由传入数据的类型来定义约束
+
+   function reverse<T>(items: T[]): T[] {
+   const toreturn = [];
+   for (let i = items.length - 1; i >= 0; i--) {
+   toreturn.push(items[i]);
+   }
+   return toreturn;
+   }
+   const sample = [1, 2, 3];
+   const reversed = reverse(sample);
+   console.log(reversed); // 这样 ts 会推断 reversed 是一个 number 类型的数组
+   // 以下操作会判错
+   // reversed[0] = '1'
+   // reversed = ['1'. '2']
+
+9. 联合类型
+
+简单理解就是 a | b
+
+      let StrOrNum: string | number
+
+10. 交叉类型
+
+简单理解就是 a & b
+
+      function extend<T, U>(first: T, second: U): T & U {
+         const result = <T & U>{};
+         for (let id in first) {
+            (<T>result)[id] = first[id];
+         }
+         for (let id in second) {
+            if (!result.hasOwnProperty(id)) {
+               (<U>result)[id] = second[id];
+            }
+         }
+         return result;
+      }
+      const x = extend({ a: "hello" }, { b: 42 });
+      // 现在x拥有了 a 属性和 b 属性
+      const a = x.a;
+      const b = x.b;
+
+11. 元组类型
+
+JavaScript 并不支持元组,开发者通常只能使用数组来表示元组,但是 TypeScript 类型支持它,使用 [typeofmember1, ypeofmember2]能够为元组添加类型注解,元组可以包含任意数量的成员;
+
+      let nameNumber: [string, number];
+      // 正确
+      nameNumber = ['jerry', 221345];
+      // 错误
+      nameNumber = ['jerry', '221345'];
+
+12. 类型别名
+
+当你想要使用联合类型和交叉类型的时候,推荐使用类型别名,这样可以可以提供一个更具语义化的名称.
+
+        type strOrNum = string | number;
+        // 用法和其他符号一样
+        let sample: strOrNum;
+        sample = 123;
+        sample = true; // 错误
 
 ## 第 7 章
 
