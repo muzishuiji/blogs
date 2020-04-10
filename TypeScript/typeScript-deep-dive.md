@@ -760,6 +760,1309 @@ JavaScript 并不支持元组,开发者通常只能使用数组来表示元组,�
         sample = 123;
         sample = true; // 错误
 
+### 6.2 迁移 JavaScript 至 TypeScript
+
+1. 改造过程中的几个关键点.
+
+(1) 减少错误
+
+初期可以尝试使用类型断言和 any 来减少已有的 JavaScript 代码的类型错误,但这不是推荐的做法,尽可能的修复这些语法错误.
+
+(2) 第三方 JavaScript 代码
+
+你可以为一个第三方库创建一个声明文件,也可以创建一个针对特定库的声明文件,如 jquery.d.ts.
+
+      var regex = /^[+-]?(\d+\.\d+|\d+|\.\d+)$/
+
+如果你想在某些内容上添加显示的注解,并且你会在类型声明空间中使用它,可以用 type 关键字来实现.
+
+      declare type JQuery = any;
+      declare var $: JQuery;
+
+(3) 第三方 npm 模块
+
+      // 定义一个全局模块
+      declare module 'jquery';
+      // 在必要时导入它
+      import * as $ from 'jquery'
+
+(4) 额外的非 JavaScript 资源
+
+      // 你只需要在global.d.ts中添加如下代码
+      declare module '*.css';
+      // 引用的地方
+      import * as styles from './some/file.css';
+
+### 6.3 @types
+
+1. 使用@types
+
+你可以通过 npm 来安装和使用@types,例如为 jquery 添加声明文件.
+
+      npm install @types/jquery --save-dev
+
+2. 全局@types
+
+在默认情况下,TypeScript 会自动包含支持全局使用的任何定义.例如: jquery,你能够在项目中全局使用\$;
+
+3. 模块@types
+
+对于 jquery 来说,通常建议使用模块,安装模块@types 之后,不需要进行特别的配置,你就可以像使用模块一样使用它了.
+
+      import * as $ from 'jquery';
+
+4. 控制全局
+
+你可以在 tsConfig 的 compilerOptions.types 选项,引入有意义的类型,控制需要包含的全局变量,我暂时理解为不做配置的模块的全局变量是不可以在代码中访问到的.
+
+      {
+         "compilerOptions": {
+            "types": [
+               // 只允许使用jquery的@types包,及时安装了另一个声明文件,它的全局变量也不会泄露到你的代码中
+               'jquery'
+            ]
+         }
+      }
+
+### 6.4 环境声明
+
+1. 学习为第三方 JavaScript 库编写环境声明模式,是一种为 TypeScript 写注解的比较好的实践.
+
+
+      // 先从为一个简单的变量编写声明开始
+      declare var foo: any;
+
+2. 变量
+
+
+      // 声明全局变量process
+      declare let process: any;
+      // 如今已经有node库的声明文件node.d.ts,所以我们能够直接使用process变量
+      // 这里建议将process定义为接口,方便其他人扩充这些全局变量,并且告诉TypeScript有关这些变量的修改
+      interface Process {
+         exitWithLogging(code?: number): void;
+      }
+      process.exitWithLogging = function() {
+         console.log('excting');
+      }
+
+### 6.5 接口
+
+1. 内联注解与接口注解, TypeScript 的接口是开放的和可扩展的.
+
+
+      declare const myPoint: { x: number; y: number };
+      interface Point {
+         x: number;
+         y: number;
+      }
+      declare const myPoint: Point;
+
+2. 类可以实现接口.
+
+如果 i 希望在类中使用必须要遵循的接口(类)或别人定义的对象结构,可以使用 implements 关键字来确保兼容性.
+
+      interface Point {
+         x: number;
+         y: number;
+      }
+      class MyPoint implements Point {
+         x: number;
+         y: number;  // 必须与Point保持一致
+      }
+      // implements 限制了类示例的结构
+      let foo: Point = new MyPoint()
+
+3. 并非每个接口都容易实现
+
+你可以使用接口声明 JavaScript 中可能存在的任意(甚至是疯狂的)结构.
+
+### 6.6 枚举
+
+1. 数字枚举与数字类型
+
+TypeScript 的枚举类型是基于数字的,这意味着可以将它赋值给枚举类型的示例,任何其他与数字类型相兼容的对象也可以.
+
+      enum Color {
+         Red,
+         Green,
+         Blue
+      }
+      let col = Color.Red;  // 数字类型的变量
+      col = 0;
+
+2. 数字枚举与字符串枚举
+
+
+      enum Tristate {
+         False,
+         True,
+         Unkown
+      }
+      // 编译后的JavaScript
+      var Tristate;
+      (function(Tristate) {
+         Tristate[ (Tristate['False'] = 0) ] = 'False'
+         Tristate[ (Tristate['True'] = 0) ] = 'True'
+         Tristate[ (Tristate['Unkown'] = 0) ] = 'Unkown'
+      })(Tristate || (Tristate = {}))
+      // 编译后的JavaScript对象是:
+      // 创建一个枚举类型的值相当于创建了一个数字到字符串的双向映射
+      {
+         0: "False"
+         1: "True"
+         2: "Unkown"
+         False: 0
+         True: 1
+         Unkown: 2
+      }
+
+3. 指定与数字枚举相关联的数字
+
+
+      // 默认与枚举相关联的数字是0,1,2
+      enum Color {
+         DarkRed = 3,  // 3
+         DarkGreen,    // 4
+         DarkBlue      // 5
+      }
+
+4. 你可以指定数字枚举来更好的标记你的枚举值(我的理解就是枚举值的一种描述)
+
+
+      enum AnimalFlags {
+         None = 0,
+         HasClaws = 1 << 0,
+         CanFly  = 1 << 1,
+         EatsFish = 1 << 2,
+         Endangered = 1 << 3
+      }
+
+5. 字符串枚举
+
+我们可以将默认的数字枚举指定为字符串枚举
+
+      export enum EviTypeEnum {
+         UNKNOWN = '',
+         PASSPORT_VISA = 'passport_visa',
+         PASSPORT = 'passport',
+         SIGHTED_STUDENT_CARD = 'sighted_terudent_card'
+      }
+
+6. 常量枚举
+
+
+      const enum Tristate {
+         False,
+         True,
+         Unkown
+      }
+      const liel = Tristate.False;
+      // 默认情况下,上述代码会被编译为
+      let lie = 0;
+      // 不会为枚举类型生成任何JavaScript代码,因为在这个例子中,
+      // 运行时没有Tristate变量,因为它使用内联语法,我们可以使用编译标记--preserveConstEnums,
+      // 它会编译出var Tristate的定义,一边你在运行时可以手动使用 Tristate[' false '] 或 Tristate[0]
+
+7. 有静态方法的枚举
+
+我的理解就是使用枚举值来做 switch 的分支的值,这样使得等于对应枚举值的变量可以调用某个方法执行一些处理逻辑.
+
+8. 开放式枚举
+
+**只有在不适用模块时,开放式美剧才有意义,而你应该使用模块**
+
+开放式枚举意味着你可以跨多个文件拆分和扩展枚举的定义.你可以把一个枚举对象的定义拆分至多个块中,但需要注意的是,只有在声明它的第一个枚举时,可以省略初始化的代码.
+
+      enum Color {
+         Red,  // 可以省略
+         Green,
+         Blue
+      }
+      enum Color {
+         DarkRed = 3,  // 省略会报错
+         DarkGreen,
+         DarkBlue
+      }
+
+### 6.7 lib.d.ts
+
+1. 当你安装 TypeScript 时,会顺带安装一个 lib.d.ts 声明文件,这个文件包含 JavaScript 运行时及 DOM 中存在的各种常见的 JavaScript 环境声明(如 window,Date,Math 等).
+
+- 它自动包含在 TypeScript 项目的编译上下文中;
+- 它能让你快速开始书写经过类型检查的 JavaScript 代码;
+
+2. 你可以通过指定 --noLib 的编译器命令行标记或者在 tsConfig.json 中指定选项 noLib: true,从上下文中排除 lib.d.ts 声明文件, 但这样你就失去了类型检查的功能
+
+3. 创建 globals.d.ts,对已有接口声明做扩展,或者自定义一些全局的变量声明
+
+
+      interface Window {
+         helloWorld(): void;
+      }
+      window.helloWorld = () => console.log("hello world");
+      window.helloWorld();
+      interface Math {
+         seedrandom(seed?: string): void;
+      }
+      Math.seedrandom()
+
+4. 如果有必要的话,你可以定义自己的 lib.d.ts,常见的原因有:
+
+- 运行 JavaScript 的环境与基于标准浏览器运行时的环境有很大不同.
+- 你希望在代码里严格控制全局变量,例如, lib.d.ts 将 item 定义为全局变量.
+
+你可以定义自己的声明文件,typescript 将提取该文件进行类型检查.
+
+5. --lib 选项可以和 --target 选项解耦
+
+你可以选择只将 Promise 编译为 ES6 的版本,其他的嗲吗编译为 ES5 的版本
+
+      "compilerOptions": {
+         "lib": ["dom", "es6"]
+      }
+
+6. 可以通过引入 core-js 模块下的子模块,在旧的 JavaScript 引擎中为你 polyfill Map, Set, Promise 这类运行时功能.示例代码如下:
+
+
+      import 'core-js/es/symbol';
+      import 'core-js/es/map';
+      import 'core-js/es/promise';
+
+### 6.8 函数
+
+1. 函数注解
+
+
+      function foo(sampleParameter: { bar: number }) {}
+
+2. 返回类型注解
+
+   function foo(sampleParameter: { bar: number }): number {}
+
+3. 可选参数
+
+
+      function foo(bar: number, bas?: string): void {
+
+      }
+      foo(123);
+      foo(123, 'hello');
+
+4. 函数的重载
+
+可以通过多次声明函数头,根据传入参数的不同来实现函数的重载.
+
+      function padding(all: number);
+      function padding(topandbottom: number, leftandright: number);
+      function padding(top: number, right: number, bottom: number,left: number);
+      // 实际的函数应该包含重载函数的所有情况
+      function padding(a: number, b?: number, c?: number, d?: number) {
+         if(b === undefined && c === undefined && d === undefined) {
+            b =c =d =a
+         } else if(c === undefined && d === undefined){
+            c = a;
+            d = b;
+         }
+         return {
+            top: a,
+            right: b,
+            bottom: c,
+            left: d
+         }
+      }
+
+5. 声明函数
+
+
+      type LongHand = {
+         (a:number): number
+      }
+      type ShortHand = (a: number) => number;
+      // 如果你想实现函数的重载,只能使用第一种方式
+      type LongHandOverload = {
+         (a:number): number;
+         (a: string): string;
+      }
+
+### 6.9 可调用
+
+1. 你可以使用类型别名或接口来表示一个可被调用的类型注解,它可以表示一个返回值为 string 的函数.
+
+
+      interface ReturnString {
+         (): string;
+      }
+      declare const foo: ReturnString;
+      const bar = foo();
+
+2. 一个接口可提供多个调用注解,来指定特殊的函数重载.
+
+
+      interface Overloaded {
+         (foo: string): string;
+         (foo: number): number;
+      }
+      // 接口的一个实现
+      function stringOrNumber(foo: number): number;
+      function stringOrNumber(foo: string): string;
+      function stringOrNumber(foo: any): any {
+         if(typeof foo === 'number') {
+            return foo * foo;
+         } else if(typeof foo === 'string') {
+            return `hello ${foo}`
+         }
+      }
+      // 调用接口的主体当作变量的类型注解
+      const overloaded: Overloaded = stringOrNumber;
+      // 内联注解
+      const overloaded: {
+         (foo: string): string;
+         (foo: number): number;
+      } = (foo: any) => foo;
+
+3. 如果你不需要做函数的重载,typeScript 允许你使用简单的箭头函数类型的注解.
+
+
+      const simple: (foo: number) => string = foo => foo.toString();
+
+4. 可实例化
+
+可实例化是可调用类型注解的一种特殊情况,它用 new 作为前缀.
+
+      interface CallMeWithNewToGetString {
+         new(): string;
+      }
+      declare const Foo: CallMeWithNewToGetString;
+      const bar = new Foo();  // bar被推断为string类型
+
+### 6.10 类型断言
+
+1. as Foo 与 <foo>
+
+
+      let foo: any;
+      let bar = <string>foo;  // 现在bar的类型是string
+
+2. 类型断言与类型转换
+
+类型断言之所以不被称为类型转换,是因为转换通常意味着是某种运行时的支持.但是,类型断言是一个纯粹的编译时语法,同时,它为编译器提供了分析代码的方法.
+
+3. 错误的断言会因为避开了 ts 的语法校验而出错.
+
+
+      interface Foo {
+         bar: number;
+         bas: string;
+      }
+      const foo = {} as Foo;  // 这时编译器不会发生错误警告
+      interface Foo {
+         bar: number;
+         bas: string;
+      }
+      const foo = <Foo>{
+         // 编译器会提供关于Foo属性的代码提示,
+         // 但是如果开发人员依然忘记添加相关属性,编译器也不会发出错误警告
+      }
+      interface Foo {
+         bar: number;
+         bas: string;
+      }
+      const foo: Foo{
+         // 编译器会提供Foo属性的代码提示
+      }
+
+4. 两个不互为子集的类型做类型断言会报错,这是我们可以使用双重断言,首先将其断雁城兼容所有类型的 any.
+
+
+      function handler() {
+         // 错误: Event 和 HTMLElement 中的任何一个都不能被赋值给另外一个
+         const element = event as HTMLElement;
+      }
+      // 双重断言
+      function handler() {
+         const element = (event as any) as HTMLElement; // ok
+      }
+
+基本上,当 S 类型是 T 类型的子集,或者 T 类型是 S 类型的子集时,S 能被成功断言成 T(S as T).毫无根据的断言是危险的,如果你想这么做,可以使用 any.
+
+### 6.11 Freshness
+
+1. 为了让检查对象的字面量类型变得更容易,TypeScript 提供了一个 Freshness 的概念(它也会被称为更严格的字面量检查),严格的类型检查会发生在对象字面量上,因为在这种情况下,那些实际没用到的属性可能会拼写错误或被误用.
+
+
+      function logIfHasName(something: { name?: string }) {
+         if(something.name) {
+            console.log(something.name)
+         }
+      }
+      const person = { name: 'matt', job: 'being awesome' };
+      const animal = { name: 'cow', diet: 'wfasssfd' }
+      logIfHasName(person);
+      logIfHasName();
+      // 在包含name属性的基础上,可以包含字面量约束之外的属性
+      logIfHasName({ neme: 'adsadasdasdfdsf' }); // 报错,对象字面量必须指定已知属性,name属性不存在.
+
+2. 我的理解 Freshness 就是对象属性的可选状态,标记为可选的属性可以不必包含,但是包含定义之外的属性就会报错.
+
+
+      interface State {
+         foo: string;
+         bar?: string;
+      }
+      const s: State = {
+         foos: 'ddd'  // 报错,不能定义约束之外的属性
+      }
+      const s1: State = {
+         foo: 'ddd',
+      }
+      const s2: State = {
+         foo: 'ddd',
+         sdd: 'sadasd'  // 报错,不能定义约束之外的属性
+      }
+
+### 6.12 类型保护
+
+在条件块中,TypeScript 的类型推断会根据条件块里确定的变量类型,作出针对性的推断.
+
+      // typeof
+      function doSome(x: number | string) {
+         if (typeof x === 'string') {
+            // 在这个块中,typescript知道x必须是string类型的
+            console.log(x.subtr(1)) // 错误, subtr方法没有存在于string上
+            console.log(x.substr(1))
+         }
+         x.substr(1)  // 错误,无法判断x是string
+      }
+      // instanceof
+      class Foo {
+         foo = 123;
+         common = '13'
+      }
+      class Bar {
+         bar = 123;
+         common = '123'
+      }
+      // ts会根据一直类型做语法校验.
+      function foStuff(arg: Foo | Bar) {
+         if(arg instanceof Foo) {
+            console.log(arg.foo);  // 正确
+            console.log(arg.bar);  // 错误
+         }
+         if(arg instanceof Bar) {
+            console.log(arg.foo);  // 错误
+            console.log(arg.bar);  // 正确
+         }
+      }
+      // in
+      interface A {
+         x: number;
+      }
+      interface B {
+         y: string;
+      }
+      function doStuff(q: A | B) {
+         if('x' in q) {
+            // q: A
+         } else {
+            // q: B
+         }
+      }
+      // 字面量,则是一堆枚举值,在if语句块里确定所属类型
+      type TriState = 'yes' | 'no' | 'unknown';
+      function logOutState(state: TriState) {
+         if(state === 'yes') {
+            console.log('user selected yes');
+         } else if(state === 'no') {
+            console.log('user selected no');
+         } else {
+            console.log('unknown');
+         }
+      }
+      // 使用自定义的类型保护
+      class Foo {
+         foo = 123;
+         common = '13'
+      }
+      class Bar {
+         bar = 123;
+         common = '123'
+      }
+      // 用户自定义的类型保护(罗嗦无用的类型保护)
+      function isFoo(arg: Foo | Bar): arg is Foo {
+         return (arg as Foo).foo !== undefined;
+      }
+      // ts会根据一直类型做语法校验.
+      function foStuff(arg: Foo | Bar) {
+         if(isFoo(arg)) {
+            console.log(arg.foo);  // 正确
+            console.log(arg.bar);  // 错误
+         } else {
+            console.log(arg.foo);  // 错误
+            console.log(arg.bar);  // 正确
+         }
+      }
+
+2. 类型保护和回调函数
+
+typescript 并不能假设类型保护在回调中一直有效,所以我们可以考虑将在回调函数中使用的属性事先用另一个变量存储起来.
+
+### 6.13 字面量类型
+
+1. `extends string` 和 `= string`的区别
+
+
+      export const createCookieManager = <T extends string>(key: string) => {
+         const cookieManager = {
+            set: (value: T, expires?: string): void => setCookie(key, value, expires),
+            get: () : T|null => getCookie(key)
+         }
+         return cookieManager;
+      }
+      export const createCookieManager = < T = string >(key: string) => {
+         const cookieManager = {
+            set: (value: T, expires?: string): void => setCookie(key, value, expires),
+            get: () : T|null => getCookie(key)
+         }
+         return cookieManager;
+      }
+
+= string 是默认泛型, 所以 T 还是可以传入别的类型的值,而 extends 是约束泛型,传入的值只能是 string 类型或者 string 类型的子集.
+
+2. 字符串字面量
+
+
+      let foo: 'Hello';
+      foo = 'bar'; // 错误,bar 不能复制给类型 Hello
+
+3. boolean 和 number 字面量
+
+
+      type OneToFive = 1 | 2 | 3 | 4 | 5;
+      type Bools = true | false;
+
+4. 推断
+
+
+      function iTakeFoo(foo: 'foo') {}
+      const test = {
+         someProp: 'foo'
+      }
+      iTakeFoo(test.someProp); // 错误,string 类型的参数不能赋值给 foo 类型的参数
+      // 我们可以使用类型断言来解决
+      const test = {
+         someProp: 'foo' as 'foo'
+      }
+      iTakeFoo(test.someProp);
+      // 或者类型注解
+      type Test = {
+         someProp: 'foo'
+      }
+      const test: Test = {
+         someProp: 'foo' // 推断 someProp 永远是 foo
+      }
+      iTakeFoo(test.someProp);
+
+5. 基于字符串的枚举
+
+
+      function strEnum<T extends string>(o: Array<T>): { [K in T]: K} {
+         return o.reduce((res, key) => {
+            res[key] = key;
+            return res;
+         }, Object.create(null))
+      }
+      // 创建 k:v
+      const Direction = strEnum(['North', 'South', 'East', 'West'])
+      const D4 = strEnum(['1' , '2', '4' , '5'])
+      // 创建一个类型, 这个类型是一串字符串的枚举
+      type Direction = keyof typeof Direction
+      let simple: Direction;
+      simple = 'North';
+      simple = 'anything'; // 报错,只能是 North
+
+### 6.14 readonly
+
+1. typescript 允许你在接口里使用 readonly 来标记属性,你可以在接口里标记一个或多个属性为 readOnny,也可以指定类的属性为 readonly,你也可以使用泛型 T 来标记一个类型的属性为 readonly.
+
+
+      // 在函数参数中使用readonly
+      function foo(config: { readonly bar: number, readonly bas: number }) {
+         // ...
+      }
+      const config = { bar: 123, bas: 123 }
+      foo(config);  // config则不会被改变
+      // 在接口和类中使用readonly
+      type Foo = {
+         readonly bar: number;
+         readonly bas: number;
+      }
+      const foo: Foo = { bar: 123, bas: 456 }
+      foo.bar = 456;  // 错误: foo.bar是只读属性
+      class Foo {
+         readonly bar = 1;
+         readonly bas: string;
+         constructor() {
+            this.baz = 'hello'
+         }
+      }
+
+2. 决定不可变
+
+你可以把索引签名标记为只读
+
+      interface Foo {
+         readonly [x:number]: number
+      }
+      const foo: Foo = { 0: 123, 2: 345 }
+      console.log(foo[0]); // 正确
+      // 如果你想以不变的方式使用原生的JavaScript数组,可以使用TypeScript提供的ReadonlyArray<T>接口
+      let foo3: ReadonlyArray<number> = [1, 2, 3];
+      foo3.push(4); // 错误,在ReadonlyArray上不存在push,因为它会改变数组
+
+3.  自动推断
+    一些情况下,编译器会把一些特定的属性推断为 readonly,例如在一些 class 中,只有一个 getter,没有 setter,它就能被推断为是只读的.
+
+          class Person {
+             firstName: string = 'John';
+             lastName: string = 'Doe';
+             get fullName() {
+                return this.firstName + this.lastName;
+             }
+          }
+          const person1 = new Person();
+          person1.fullName = 'dadads'; // 错误,fullName属性是只读的
+
+4.  readonly 只能保证属性不能直接被使用者修改,但是当你把这个属性交给其他没有做出这种保证的使用者时,他们可以修改它;
+
+
+      const foo1: {
+         readonly bar: number
+      } = {
+         bar: 123
+      }
+      foo1.bar = 444; // 报错
+      // readonly只能保证属性不能被创建的对象直接修改,但是不能保证不能够被引用修改.
+      function iMutateFoo(foo: { bar: number }) {
+         foo.bar = 456;
+      }
+      iMutateFoo(foo1)
+      // console.log(foo1.bar); // 456, 没有做出不可修改的保证,可以修改
+      interface Foo {
+         readonly bar: number
+      }
+      let foo2: Foo = {
+         bar: 123
+      }
+      function iMutateFoo1(foo: Foo) {
+         foo.bar = 456; // 错误,bar属性是只读的, 做出了不可修改的保证
+      }
+      iMutateFoo1(foo2)
+      console.log(foo2.bar); // 456
+
+### 6.15 泛型
+
+1. 设计泛型的关键动机是在成员之间提供有意义的类型约束,这些成员可以是类的实例成员,类的方法,函数的参数,函数返回值.
+
+
+      // 约束一个队列的数据类型的泛型
+      class Queue1<T> {
+         private data: T[] = [];
+         push = (item: T) => this.data.push(item);
+         pop = ():T => this.data.shift()
+      }
+      const queue1 = new Queue1<number>()
+      queue1.push(0)
+      queue1.push('0');
+      // 你可以为创建的成员函数添加泛型
+      class Utility {
+         reverse< T >(items: T[]): T[] {
+            const toreturn= []
+            for(let i = items.length; i >= 0; i--) {
+               toreturn.push(items[ i ]);
+            }
+            return toreturn
+         }
+      }
+
+2. 泛型用于函数参数约束
+
+
+      // 只使用一次的泛型
+      declare function parse< T >(name: string): T;
+      // 这相当于一个如下的类型断言
+      declare function parse(name: string): any;
+      const something = parse('something') as TypeOfSomething
+      // 用于加载json文件的返回值函数,它会返回任何你传入的类型的Promise
+      const getJSON= < T >(config: { url: string; headers? { [key: string]: string } }): Promise< T > => {
+         const fetchConfig = {
+            method: 'GET',
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            ...(config.headers || {})
+         };
+         return fetch(config.url, fetchConfig).then< T >(response => response.json())
+      }
+      type LoadUserResponse = {
+         user: {  // 内联注解
+            name: string;
+            email: string
+         }[];
+      }
+      getJSON< LoadUserResponse >({ url: 'xxx' })
+      // 用泛型T标注你希望参数匹配的类型
+      declare function send< T >(arg: T): void;
+      send< SomeType >({
+         x: 123
+      });  // 如果  {x: 123} 与 SomeType类型不匹配,则会报错
+
+### 6.16 类型推断
+
+1. 从右向左通过赋值推断;
+2. 根据 return 语句从底部推断函数的返回值;
+3. 根据约束的数据类型推断;
+4. 根据赋值的数据类型推断; `var a = 123; // number类型`
+5. 存在无法推断一个变量的类型的清醒
+
+1) 未指明函数的参数类型
+
+2) 调用的相关函数是一些 JavaScript 的库函数
+
+有一个编译器标记 noImplicitAny 可以捕获这些 Bug,标记 noImplicitAny 用来指示编译器,在无法判断一个变量的类型时,发出一个错误(或者只将其作为一个隐式的 any).此时,你可以:
+
+- 通过显示添加 any 的类型注解,让它成为一个 any 类型;
+- 通过一些更准确的类型注解来帮助 TypeScript 推断类型.
+
+### 6.17 类型兼容性
+
+1. 只要类型的结构匹配,类型的名称不同是可以的;
+
+
+      interface Point {
+         x: number;
+         y: number;
+      }
+      class Point2D {
+         constructor(public x: number, public y: number) {}
+      }
+      let p: Point;
+      p = new Point2D(1,2); // 可以.两种类型结构相同
+
+2. 变体
+
+对简单类型 Base 和 Child 来说,如果 Child 时 Base 的子类,则 Child 的实例能被赋值为 Base 类型的变量.
+
+在由 Base 和 Child 组合的复杂类型的类型兼容性中,它取决于相似场景下的 Base 与 Child 的变体;
+
+- 协变: 只在一个方向兼容;
+- 逆变: 只在相反的方向兼容;
+- 双向协变: 包括同一个方向和不同方向的兼容;
+- 不变: 如果类型不完全相同,则它们是不兼容的;
+
+3. 可选参数和 rest 参数是兼容的,而可选参数和不可选参数,只有在 strictNullChecks 为 false 时兼容.
+
+
+      let foo = (x: number, y: number) => {};
+      let bar = (x?: number, y?: number) => {};
+      let bas = (...args: number[]) => {};
+
+4. 双向协变
+
+Child 时 Base 的子类, 数组的协变需要所有的函数 Array< Child >都能赋值给 Array< Base >, push（t：Child）能被赋值给 push（t：Base），这都可以通过函数参数双向协变来实现。
+
+5. 枚举与数字类型相互兼容,但是不同枚举的枚举变量是不兼容的.
+
+
+      enum Status  {
+         Ready,
+         Waiting
+      }
+      enum Color {
+         Red,
+         Blue,
+         Green
+      }
+      let status1 = Status.Ready;
+      let num = 0;
+      status1 = num;
+      num = status1;
+      let color = Color.Red;
+      status1 = color; // error
+
+6. 只要两个类的实例成员和方法相同,那么他们就是同一类型,构造函数和静态成员不起作用.鸭子理论.
+7. 泛型
+
+
+      interface Empty< T > { }
+      let x: Empty< number >;
+      let y: Empty< string >;
+      // 类型参数只有在被成员使用时,才会影响兼容性
+      x = y;  // ok.兼容
+      // 类型参数T被成员data使用,会影响兼容性兼容性,导致x 和 y 不兼容
+      interface Empty1< T > {
+         data: T
+      }
+      let x1: Empty1< number >;
+      let y1: Empty1< string >;
+      x1 = {
+         data: 4
+      };
+      x1 = y1 // error, 不兼容
+
+8. 不变性,不变性是唯一合理的选项,这里有一个关于协变和逆变的例子,它被认为对数组是不安全的.
+
+
+      class Animal {
+         constructor(public name: string) { }
+      }
+      class Cat extends Animal {
+         meow() {
+            console.log('cat')
+         }
+      }
+      let animal = new Animal('animal');
+      let cat = new Cat('cat');
+      // 多态  Animalnimal <= Cat
+      animal = cat;  // ok, 因为cat类型具有animal类型所有的属性和方法
+      cat = animal;  // error, 因为animal类型没有cat属性的meow方法
+      // 演示每个数组形式
+      let animalArr: Animal[] = [animal];
+      let catArr: Cat[] = [cat];
+      // 明显的坏处坏处: 逆变
+      // Animalnimal <= Cat
+      catArr = animalArr;  // 可以,如果有逆变逆变
+      catArr[0].meow();    // 允许,但在运行时会报错
+
+      // 另一个坏处坏处: 协变协变
+      // Animalnimal <= Cat
+      animalArr = catArr;  // 可以,如果有协变
+
+      animalArr.push(new Animal('sadasd')); // 添加一个animal至catArr
+      catArr.forEach(c => c.meow());  // 允许,但是会在运行时报错
+
+### 6.18 never
+
+1. never 类型就是 TypeScript 中的底部类型,它代表一些永远都不会发生的事情.nerver 类型会用在如下的场景:
+
+- 一个从来都不会有返回值的函数,例如函数内含有 while(true) {} 的话;
+- 一个总会抛出错误的函数, 如 function foo() { throw new Error('Not Implemented') }, foo 的返回类型是 never;
+
+2. never 类型只能被赋值给另外一个 never 类型,因此你可以用它来进行编译时的全面检查.
+3. never 与 void 的差异
+
+- void 表示没有任何类型,never 表示永远不存在的值的类型.
+- 当一个函数返回空值时,它会返回一个 void;但是,当一个函数根本没有返回值,或者总是抛出错误时,它会返回一个 never.
+- 当 strictNullCheck 为 false 时,void 指可以被赋值的类型,但是 never 不能赋值给 never 以外的类型.
+
+### 6.19 辨析联合类型
+
+1. 枚举类型下发生的类型推断:
+
+
+      interface Square {
+         kind: 'square',
+         size: number
+      }
+      interface Rectangle {
+         kind: 'rectangle';
+         width: number;
+         height: number;
+      }
+      interface Circle {
+         kind: 'circle',
+         redius: number;
+      }
+      type Shape = Square | Rectangle | Circle;
+
+      function area(s: Shape) {
+         if (s.kind === 'square') {
+            // 现在TypeScript知道s的类型是Square
+            // 所以,你能够安全的使用size属性
+            return s.size * s.size;
+         } else {
+            // 不是Square类型的,因此TypeScript将会推算出s一定是Rectangle类型的
+            return s.width * s.height;
+         }
+      }
+      // 当有人添加了一个枚举类型时,我们期望TypeScript能在需要的地方抛出错误抛出错误
+      function area(s: Shape) {
+         if (s.kind === 'square') {
+            return s.size * s.size;
+         } else if (s.kind === 'rectangle'){
+            return s.width * s.height;
+         } else {
+            // 错误: circle类型的数据不能被赋值给never类型
+            const _exhaustiveCheck: never = s
+         }
+      }
+
+      function area(s: Shape) {
+         if (s.kind === 'square') {
+            return s.size * s.size;
+         } else if (s.kind === 'rectangle'){
+            return s.width * s.height;
+         } else if (s.kind === 'circle') {
+            // 类型检查会强制你添加一个条件
+            return Math.PI * s.redius * 2;
+         } else {
+            // 错误: circle类型的数据不能被赋值给never类型
+            const _exhaustiveCheck: never = s
+         }
+      }
+
+2. strictNullChecks
+
+对于 area 函数, 如果你使用 strictNullChecks 做检查,你需要返回 \_exhaustiveCheck 变量,类型为 nevernever,否则 TypeScript 会抛出并非所有的路径都有返回值的错误
+
+3. 版本控制
+
+版本控制,你可以使用一个枚举类型的值来做版本控制,将版本 0 标记为 undefined,这会在使用了 strictNullChecks 选项的时候正常工作
+
+      type DTO = {
+         version: undefined,  // 版本0
+         name: string,
+      } | {
+         version: 1,
+         firstName: string,
+         lastName: string
+      } | {
+         version: 2,
+         firstName: string,
+         middleName: string,
+         lastName: string
+      }
+
+4. Redux
+
+使用联合类型的一个流行的库时 Redux,下面是一个 redux 的使用示例:
+
+      import { createStore } from 'redux';
+      type Action = {
+         type: 'INCREMENT';
+      } | {
+         type: 'DECREMENT';
+      };
+      /**
+      * 这是一个reducer,一个带有(state, action) => state的纯函数签名
+      * 它描述了一个行为--如何将一个状态转化为另一个状态状态
+      * 状态的形状取决于你,可以是一个原始数据类型,一个数组,一个对象
+      * 甚至可以是一个Imutablemutable.js的数据结构
+      * 最重要的是,如果状态改变了,你不应该改变状态对象,而应该返回一个新对象
+      * 在这个例子中,我们使用了switch语句和字符串,但是如果对你的项目有意义,你可以使用一个
+      * 遵循不同约定的辅助函数(如映射函数)
+      */
+      function counter(state = 0, action: Action) {
+         switch (action.type) {
+            case 'INCREMENT':
+                  return state + 1;
+            case 'DECREMENT':
+                  return state - 1;
+            default:
+                  return state;
+         }
+      }
+      // 创建一个新的redux仓库仓库,用来存储你的应用的状态
+      // 它的api是是 { subscribesubscribe, dispatchdispatch, getState }
+      let store = createStore(counter)
+      /**
+      * 根据返回更改的状态,你可以使用subscribe()来更新界面
+      * 在通常情况下,你需要使用一个视图绑定库
+      * 而不是直接使用subscribe
+      * 但是将当前状态保存到localStore里面也很方便
+      */
+      store.subscribe(() => console.log(store.getState()));
+      // 改变状态唯一的方式就是dispatch一个动作
+      // 这些动作可以序列化,记录和存储,然后重播
+      store.dispatch({ type: 'INCREMENT' })
+      //1
+      store.dispatch({ type: 'INCREMENT' })
+      // 2
+      store.dispatch({ type: 'DECREMENT' })
+      // 1
+
+### 6.20 索引签名
+
+1. TypeScript 的索引签名必须是 string 或 number 类型的.
+2. JavaScript 在任何一个对象索引签名上都会隐式调用 toString 方法.而在 TypeScript 中.如果你传入引用类型的签名,TypeScript 则强制你必须对引用类型的索引调用 toString()方法.
+
+
+      let obj = {
+         toString() {
+            console.log('toString called');
+            return 'Hello'
+         }
+      }
+      let obj1 = {
+         aa: 'sadasd'
+      }
+      let foo: any = {};
+      foo[ obj ] = 'world'  // error
+      foo[ obj.toString() ] = 'world'  // ok
+
+3. 你可以声明一个索引签名
+
+
+      const foo2: {
+         [index: string]: { message: string; name: string }
+      } = {}
+      foo['a'] = { message: 'dsds', name: 'dsfd' }
+
+4. 当你声明一个索引签名时,所有明确的成员都必须符合索引签名;
+
+
+      interface Foo: {
+         [key: string]: number;
+         x: number;
+         y: number;
+      }
+      interface Bar: {
+         [key: string]: number;
+         x: number;
+         y: string;  // 错误,属性y的值必须是number类型
+      }
+
+5. 我们可以使用一组有限的字符串字面量来作为索引签名的联合类型.
+
+
+      type Index = 'a' | 'b' | 'c';
+      type FromIndex = { [k in Index]?: number }
+      const good: FromIndex = { b: 1, c: 2 }
+      // 错误,d属性不存在于FromIndex类型上
+      const bad: FromIndex = {b: 1, c: 2, d: 3}
+
+6. 同时拥有 string 和 number 类型的索引签名
+
+同时拥有 string 和 number 类型的索引签名,不是常见的,但是 TypeScript 支持它,string 类型的索引签名比 number 类型的索引签名更严格
+
+      interface ArrStr {
+         [key: string]: string | number; // 必须包括所有成员的类型
+         [index: number]: string;  // 字符串索引类型的子集
+      }
+
+7. 索引签名的嵌套
+
+
+      interface NestedCss {
+         // 有效变量
+         color?: string;
+         // 字符串索引
+         [selector: string]: string | NestedCss
+      }
+      const example: NestedCss = {
+         color: 'red',
+         '.subclass': {
+            color: 'blue'
+         }
+      }
+      // colour不会捕获到错误,不要用这种方式把字符串索引与有效变量混合使用
+      const failsSilently: NestedCss = {
+         colour: 'red'
+      }
+      // 相反,我们要把索引签名分离到自己的属性里,如命名为nestnest,或者children, subnodes等
+      interface NestedCss1 {
+         color?: string;
+         nest?: {
+            [selector: string]: NestedCss1
+         }
+      }
+      const example1: NestedCss = {
+         color: 'red',
+         nest: {
+            '.subclass': {
+                  color: 'blue'
+            }
+         }
+      }
+      const failsSilently1: NestedCss1 = {
+         colour: 'red' // 错误,未知属性 colour
+      }
+
+8. 你可以使用交叉类型来创建一个兼容旧类型的新类型,但这样创建的类型只能为已存在的 TypeScript 类型建模,不能用作新创建的对象的类型约束
+
+
+      type FieldState = {
+         value: string;
+      }
+
+      type FromState = {
+         isValid: boolean; // 错误,不符合索引签名
+         [filedName: string]: FieldState
+      }
+      // 报错是因为添加的索引签名并不兼容它原有的类型,使用交叉类型可以解决上述问题
+      type FromState1 = {
+         isValid: boolean
+      } & {
+         [filedName: string]: FieldState
+      }
+
+      // 需要注意的是,你可以声明它为已存在的TypeScript类型建模,但是你不能使用TypeScript创建如下的对象
+      type FromState2 = {
+         isValid: boolean
+      } & {
+         [filedName: string]: FieldState
+      }
+      // 可以将它用于从某些地方获取的JavaScript对象
+      declare const foo3: FromState2
+      const isValidBool = foo3.isValid;
+      const somethingFieldState = foo['something']
+      // 使用它来创建一个对象将不起作用,报错
+      const bar2: FromState2 = {
+         isValid: false
+      }
+
+### 6.21 类型移动
+
+1. 复制类型和值
+
+
+      class Foo { }
+      const Bar = Foo;
+      let bar: Bar;  // 错误,不能找到Bar
+
+
+      namespace importing {
+         export class Foo { }
+      }
+      // 如果你使用命名空间或模块,那么就只能使用import关键字
+      // 这个import技巧,仅适用于类型和变量
+      import Bar1 = importing.Foo;
+      let bar1: Bar1  // ok
+
+2. 捕获变量的类型
+
+你可以通过 typeof 告诉编译器,一个变量的类型与其他类型相同.
+
+      let foo = 123;
+      let bar: typeof foo;  // bar类型与foo类型相同
+      bar = 456;
+      bar = '789'; // error
+
+3. 捕获成员的类型
+
+
+      class Foo {
+         foo: number;
+      }
+      declare let _foo: Foo;
+      let bar: typeof _foo.Foo;
+
+4. 捕获字符串类型
+   许多 JavaScript 库和框架都是用原始的 JavaScript 字符串,你可以使用 const 定义一个字符串字面量.
+
+
+      // 捕获字符串的类型与值
+      const foo = 'Hello World';
+      // 使用捕获到的类型
+      let bar: typeof foo;
+      // bar 只能被赋值为 Hello World
+      bar = 'Hello World'; // 可以
+      bar = 'other';  // 错误
+
+5. 捕获键的名称
+
+
+      const colors = {
+         red: 'red',
+         blue: 'blue'
+      };
+      type Colors = keyof typeof colors;
+      let color: Colors;
+      color = 'red';  // ok
+      color = 'blue'; // ok
+      color = 'other color'; // error
+
+### 6.22 异常处理
+
+1. 错误子类型
+
+- 1. RangeError
+
+当数字类型的变量或参数超出其有效范围时,会出现 RangeError 的错误提示;
+
+`console.log(new Array(10000000000)); // RangeError: 数组长度无效`
+
+- 2. ReferenceError
+
+当引用无效时,会出现 ReferenceError 的错误提示;
+
+`console.log(notValidVar); // ReferenceError: notValidVar is not defined`
+
+- 3. SyntaxError
+
+当解析无效的 JavaScript 代码时,会出现 SyntaxError 的错误提示.
+
+`1 *** 3 // SyntaxError: 无效的标记`
+
+- 4. TypeError
+
+变量或参数不是有效类型时,会出现 TypeError 的错误提示.
+
+`'1.2'.toPrecision(1); // TypeError: '1.2'.toPrecision is not a function.`
+
+- 5. URIError
+
+当向 encodeURI（）和 decodeURI（）传入无效参数时，会出现 URIError 的错误提示。
+
+`decodeURI('%'); // URIError: URL异常`
+
+2. 让你需要抛出一个错误时,尽量使用 Error,而不是一个字符串,这样会带来痛苦的调试体验,并使日志中的错误分析复杂化.
+
+3. 并不是一定要 throw 一个错误,你可以将错误作为回调函数的第一个参数传递.
+
+
+      function myFunction(callback: (e: Error)) {
+         doSomething(function() {
+            if(someError) {
+               callback(new Error('something wrong'))
+            } else {
+               callback()
+            }
+         })
+      }
+
+4. 错误捕获存在的一些问题
+
+- 1. 不清楚从哪里抛出的错误,当对一块代码使用 try...catch 来捕获错误的时候,会导致代码审查人员不知道错误具体是由哪个函数抛出的.
+
+- 2. 你可以单独给每个函数的执行添加 try...catch 来捕获错误,但是如果两个函数值之间有一些牵连的情况,代码会显得混乱.
+
+- 3. 抛出错误并不总是最合适的选择,我们可以借助类型系统来更好地处理错误的返回.
+
+
+      function validate(
+         value: number;
+      ): {
+         error?: string;
+      }{
+         if(value < 0 || value > 100) {
+            return { error: 'valid value' }
+         }
+      }
+
+除非你想用通用的方式(try/catch)来处理错误,或者不要抛出错误(开发环境可以抛出错误);
+
+### 6.23 混合
+
+1. 混合是一个函数.
+
+- 传入一个构造函数;
+- 创建一个带有新功能,并且扩展构造函数的新类;
+- 返回这个新类;
+
+2. 混合的示例如下
+
+
+      // 1. 创建一个构造函数
+      type Constructor< T = {} > = new (...args: any[]) => T;
+      // 2. 扩展一个类并返回它, 一个扩展自Base类的函数
+      function TimesTamped< TBase extends Constructor>(Base: TBase) {
+         return class extends Base {
+            timestamp = Date.now();
+         }
+      }
+
+### 6.24 ThisType
+
 ## 第 7 章
 
 本章将介绍 React JSX 中如何使用 TypeScript
