@@ -2063,9 +2063,190 @@ Child 时 Base 的子类, 数组的协变需要所有的函数 Array< Child >都
 
 ### 6.24 ThisType
 
+1. ThisType< T >的接口,在 lib.d.ts 中只是被声明为空的接口,除了可以在对象字面量上下文中被识别外,该接口的作用等同于任何一个空接.
+
+
+      // 使用 --noImplicitThis 进行编译
+      type Point = {
+         x: number;
+         y: number;
+         moveBy(dx: number, dy: number): void;
+      };
+      let p: Point = {
+         x: 10,
+         y: 20,
+         moveBy(dx, dy) {
+            this.x += dx;  // this具有Point的类型
+            this.y += dy;
+         }
+      }
+      let foo = {
+         x: 'hello',
+         f(n: number) {
+            this; // {x: string, f(n: number): void }
+         }
+      }
+      let bar = {
+         x: 'hello',
+         f(this: { message: string }) {
+            this;  // { message:string }
+         }
+      }
+      // 使用 --noImplicitThis进行编译
+      obj.f = function(n) {
+         return this.x - n;  // this具有与obj相同的类型
+      }
+      obj[' f '] = function(n) {
+         return this.x - n;  // this具有与obj相同的类型
+      }
+      // 使用 --noImplicitThis进行编译
+      type ObjectDescriptor< D & M > = {
+         data?: D,
+         methods?: M & ThisType< D & M >; // 在 D & M方法中,this的类型
+      }
+      function mekeObject< D & M >(desc: ObjectDescriptor< D,M >): D & M {
+         let data: object = desc.data || {};
+         let methods: object = desc.methods || {};
+         return { ...data, ...methods } as D & M;
+      }
+      let obj = makeObject({
+         data: { x: 0, y: 0 },
+         methods: {
+            moveBy(dx: number, dy: number) {
+               this.x += dx; // 强化this的类型
+               this.y += dy;
+            }
+         }
+      });
+      obj.x = 10;
+      obj.y = 20;
+      obj.moveBy(5,5);
+
 ## 第 7 章
 
-本章将介绍 React JSX 中如何使用 TypeScript
+1. TypeScript 支持 jsx 转换和代码分析,JSX 是 ECMAScripy 的类似于 XML 的语法扩展,没有特定的语义,它不由引擎或浏览器实现,JSX 被各种转义器使用,并把它们接收的内容转换为标准的 ECMAScript;
+2. React 渲染 HTML 和组件的依据是首字母的大小写,foo 被认为是 HTMK 标签,而 Foo 则被认为是一个组件,他们分别触发 React.createElement('div')和 React.createElement(MyComponent).
+3. react-jsx.d,ts 已经定义了所有主要标签的类型.
+
+
+      declare namespace JSX {
+         interface IntrinsicElements {
+            a: React.HTMLAttributes;
+            abbr: React.HTMLAttributes;
+            div: React.HTMLAttributes;
+            span: React.HTMLAttributes;
+         }
+      }
+
+4. 函数组件
+
+
+      type Props = {
+         foo: string;
+      }
+      const MyComponent: React.FunctionComponent< Props > = props => {
+         return <span>{props.foo}</span>
+      }
+      <MyComponent foo="bar" />;
+
+5. 类组件
+
+
+      type Props = {
+         foo: string;
+      }
+      class MyComponent extends React.Component< Props, {} > = props => {
+         render() {
+            return <span>{props.foo}</span>
+         }
+      }
+      <MyComponent foo="bar" />;
+
+6. 接收组件的实例
+
+React 类型声明文件提供了 React.ReactElement<T>,它可以让你通过传入<T/>,来注解类组件实例化的结果.
+
+      class MyComponent extends React.Component {
+         render() {
+            return <div>hello</div>
+         }
+      }
+      const foo: ReactElement<MyComponent> = <MyComponent />;  // 正确,注解类组件实例化的结果就是组件T
+      const bar: ReactElement<MyComponent> = <NotMyComponent />;  // 正确
+
+7. 可以接收 props,并使用 JSX 渲染的组件
+
+
+      const X: React.Component<Props> = foo; // 来自其他地方
+      <X {...props} />
+
+8. 泛型组件
+
+
+      type SelectProps<T> = { items: T[] };
+      class Select<T> extends React.Component<SelectProps<T>, any> {};
+      // 用例
+      const Form = () => <Select<string> items={['a','b']}>
+
+9. 泛型函数
+
+
+      function foo<T>(x: T): T {
+         return x;
+      }
+      const foo = <T>(x: T) => T; // 错误: T标签没有关闭
+      // 使用extends来提示编译器这是个泛型
+      const foo = <T extends {}>(x: T) => x;
+
+10. 强类型的 ref
+    使用强类型 ref 的基本做法是,将变量初始化为 ref 和 null 的联合类型,然后将其初始化为回调;
+
+          class Example extends React.Component {
+             example() {
+                // ...
+             }
+             render() {
+                return <div>Foo</div>
+             }
+          }
+          class Use {
+             exampleRef: Example | null  = null;
+             return <Example ref={exampleRef => (this.exampleRef = exampleRef) } />
+          }
+          // 使用原生元素也是一样的
+          class FocusingInput extends React.Component< { value: string; onChange: { value: string } => any }, {}> {
+             input: HTMLInputElement | null = null;
+             render() {
+                return (
+                   <input ref={input => (this.input = input)}
+                      value={this.props.value}
+                      onChange={e => {
+                         this.props.onChange(e.target.value)
+                      }}
+                   />
+                )
+             }
+          }
+
+11. defaultProps 的另一种写法
+
+
+      class Hello: React.SFC<{
+         compiler?: string;
+         framework
+      }> = ({
+         compiler = 'TypeScript',
+         framework
+      }) => {
+         return (
+            <div>
+               <div>{compiler}</div>
+               <div>{framework}</div>
+            </div>
+         )
+      }
+
+12. 你可以通过自定义 jsxFactory 转义器来转化 jsx 部分,使用与默认的 React 方式不同的 jsx factory.
 
 ## 第 8 章
 
