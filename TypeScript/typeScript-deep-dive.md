@@ -2250,24 +2250,571 @@ React 类型声明文件提供了 React.ReactElement<T>,它可以让你通过传
 
 ## 第 8 章
 
-这一章将介绍编译选项,会着重介绍 noImpliciAny 和 strictNullChecks。.
+1.  boolean 选项
+    选项为 boolean 的 compilerOptions,可以指定为 tsconfig.json 下的 compilerOptions
+
+          {
+             "compilerOptions": {
+                "someBooleanOption": true
+             }
+          }
+          // 或者使用命令行, 所有这些选项的默认值都是false
+          tsc --someBooleanOption
+
+2.  noImplicitAny
+
+noImplicitAny 选项,当开启这个选项时,标记无法被推断的类型的情况;
+
+      function log(someArg) {  // 错误: someArg 是 any 类型的
+         sendDataToServer(someArg);
+      }
+
+你可以选择为 someArg 添加类型注解,或者直接将其标记为 any.
+
+3. strictNullChecks
+
+默认情况下, null 和 undefined 都可以被赋值给 TypeScript 中的所有类型.
+
+      let foo: number = 123;
+      foo = null;  // ok
+      foo = undefined; // ok
+
+非严格模式下,undefined 可能导致运行时错误.
+
+      interface Member {
+         name: string;
+         age?: number;
+      }
+      getMember().then((member: Member) => {
+         // toString属性可能是undefined
+         // 在严格模式下,这个错误将会在编译时被捕获.
+         const stringifyAge = member.age.toString()
+      })
+
+- 1. 非空断言操作符
+
+我们可以使用非空断言操作符来断言运算对象是非 null 和非 undefined 的.
+
+      // 用 --strictNullChceks开启严格模式进行编译
+      function validateEntity(e?: Entity) {
+         // 如果e是null,undefined或其他无效的实体,则抛出错误
+      }
+      function processEntity() {
+         validateEntity(e);
+         let a = e.name;  // 错误: e 可能是undefined
+         let b = e!.name;  // 可以,我们已经断言e是非undefined
+      }
+
+- 2. 明确赋值断言操作符
+
+告诉编译器我已为相关变量或属性做了初始化或者赋值操作.
+
+      class C {
+         foo: number;
+         bar: string = 'hello';
+         baz: boolean; // 错误,属性baz没有初始化,也没有在构造器中被赋值
+         constructor() {
+            this.foo = 42;
+         }
+      }
+      // 你可以使用感叹号,明确赋值断言操作符,告诉TypeScript你已经在其他任何地方对他进行了初始化
+      class C {
+         foo: number;
+         bar: string = 'hello';
+         baz: boolean; // 错误,属性baz没有初始化,也没有在构造器中被赋值
+         constructor() {
+            this.foo = 42;
+         }
+      }
+      // 你可以在变量声明的时候使用明确赋值断言操作符
+      let a: number[];
+      let b!: number[]
+      initilize()
+      a.push(4);  // 错误: 在变量赋值之前被使用
+      b.push(4);  // 可以,因为做了断言
+      function initilize() {
+         a = [0, 1, 2, 3];
+         b = [0,1,2,3]
+      }
 
 ## 第 9 章
 
-本章介绍在 TypeScript 中常见的错误的原因及错误的处理办法.
+1. 解读错误
+
+TypeScript 是一门专注于帮助开发人员的编程语言,当错误出现时,它会尽可能提供非常有用的错误信息.
+
+2. 错误信息分裂
+
+- 1. 简洁的错误信息
+
+简洁的错误信息提供了一个编译器对错误号及错误信息的常规描述.
+
+      TS2345: Argument of type '{ foo: number; bar: () => string; }' is not assignable to parameter of type 'somethingComplex';
+
+- 2. 详细的错误信息
+
+详细的错误信息会一步步引导你找到错误的根本原因,IDE 通常会在详细的错误提示之后显示一个简洁的版本.如果你想寻找类似的错误,可以使用简洁的错误信息版本的错误编号 TSXXX;
+
+3. 常见的错误
+
+- 1. TS2304
+
+使用了一些第三方库,但是并未声明时抛出错误;
+
+- 2. TS2307
+
+将第三方库作为模块来使用了,但是缺少与之对应的环境声明文件则会抛出错误;
+
+- 3. TS1148
+
+你需要指定 --module 选项或者在 jsconfig.json 里面配置 module 选项,否则无法编译模块.
+
+- 4. 捕获不能有类型注解的简短变量
+
+
+      try {
+         somsthing()
+      } catch(e) {
+         // 捕获不能有类型注解的尖端变量
+         // 使用类型保护
+         if(e instanceof Error) {
+
+         }
+      }
+
+- 5. 接口 ElementClass 不能同时扩展两个 Component 类型
+
+当编译上下文中同时含有两个 react.d.ts 时,会发生这种错误,修复方法如下:
+
+(1) 删除 node_modules 和任何 package-lock(或 yarn-lock),然后再执行一次 npm install;
+
+(2) 如果这不起作用,就去查找无效的模块,并将其报告给相关项目,你所使用的模块都应该将 react.d.ts 作为 peerDependencies,而不是 dependencies 来使用.
 
 ## 第 10 章
 
-这一章将介绍 TypeScript 开发与测试中常用的一些工具,如 npm,jest,Prettier,Husky, Eslint, Changelog 等.
+1. 你只需运行 npm audit 即可对你的 Node 项目进行审查,它将高亮显示包以及包依赖项中存在的任何漏洞.
+2. Jest 是一个出色的单元测试选项,它提供了良好的 TyeScript 支持,它提供了全局的 test 函数并内酯类全局的 except 断言语法.
+3. Jest 内置了对 async/await 的支持
+4. 选择 jest 的理由
+
+- 内置的断言库
+- 强大的 TypeScript
+- 非常可靠的测试观察模式
+- 快照测试
+- 内置的测试覆盖率报告
+- 内置的 async/await 支持
+
+4. 我们可以使用 Husky 帮助我们在提交前自动格式化代码;
 
 ## 第 11 章
 
-本章将介绍在真实项目中使用 TypeScript 时的一些小技巧和一些好的建议.
+### 11.1 名义化类型
+
+1. 使用字面量类型.
+
+
+      // 泛型Id类型
+      type Id<T extends string> = {
+         type: T;
+         value: string;
+      }
+      // 特殊的Id类型
+      type FooId = Id<'foo'>;
+      type BarId = Id<'bar'>;
+      // 可选: 构造函数
+      const createFoo = (value: string): FooId => ({ type: 'foo', value });
+      const createBar = (value: string): BarId => ({ type: 'bar', value });
+      let foo = createFoo('sample');
+      let bar = createBar('sample');
+      foo = bar;  // 错误
+      foo = foo;
+
+优点: 不需要进行类型断言.
+
+缺点: 如上面的结构 `{type, value}`可能不那么尽如人意,而且需要服务器序列化支持.
+
+2. 使用枚举
+
+在 TypeScript 中,枚举提供一定程度的名义化类型.如果两个枚举的命名不同,则它们不相等.利用这一事实,来为结构上兼容的类型提供名义化类型.
+
+- 创建一个只有名字的枚举
+- 利用这个枚举与实体结构创建一个交叉类型(&)
+
+
+      //为结构上兼容的类型提供名义化类型
+      enum FooIdBrand { };
+      type FooId = FooIdBrand & string;
+      enum BarIdBrand { };
+      type BarId = BarIdBrand & string;
+      let fooId: FooId;
+      let barId: BarId;
+      // 类型安全
+      fooId = barId;  // 错误
+      barId = fooId;  // 错误
+      // 新建
+      fooId = 'foo' as FooId;
+      // 两种类型都与基础的类型兼容
+      let str: string;
+      str = fooId;
+      str = barId;
+
+3. 使用接口来打破类型的兼容性
+
+- 在类型上添加一个不用的属性,用来打破类型兼容性.
+- 在需要时使用类型断言
+
+      // 使用接口打破类型的兼容性兼容性
+      interface FooId extends String {
+         _fooIdBrand: string;  // 防止类型错误
+      }
+      interface BarId extends String {
+         _barIdBrand: string;  // 防止类型错误
+      }
+      // 用例
+      let fooId: FooId;
+      let barId: BarId;
+      // 类型安全
+      fooId = barId;   // error
+      barId = fooId;   // error
+      fooId = <FooId>barId;   // error
+      barId = <BarId>fooId;   // error
+      // 新建
+      fooId = 'foo' as any;
+      barId = 'bar' as any;
+      // 如果你需要以字符串作为基础基础
+      var str: string;
+
+### 11.2 状态函数
+
+1. 在其他编程语言中,有一个常见的特性是,它们使用 static 关键字来增加函数变量的生命周期,使其超出函数的调用范围.
+
+
+      void called() {
+         static count = 0;
+         count++;
+         printf("called: %d", count);
+      }
+      int main() {
+         called();
+         called();
+         return 0;
+      }
+
+由于 JavaScript/TypeScript 并没有静态函数的功能,你可以使用一个包裹着本地变量的抽象变量,比如 class.
+
+      const { called } = new class {
+         count=0;
+         called = () => {
+            this.count++;
+            console.log("called: ${this.count}")
+         }
+      }();
+      called();
+      called();
+
+### 11.3 柯里化
+
+1. 柯里化是一个接收一系列参数之后在开始运算的函数.
+
+
+      const curry = (fn, ...args) => {
+         return args.length < fn.length ? (...arguments) => curry(fn, ...args, ...arguments) : fn(...args)
+      };
+      function countTotal(a, b, c, d) {
+         return a + b + c + d;
+      }
+      var sum = curry(countTotal);
+      sum(1)(2)(3)(4);
+
+### 11.4 泛型的实例化类型
+
+1. 你想为一个特定的类型创建专用的版本,方式是将它复制到一个新变量里,并用具体类型代替泛型的类型注解.
+
+
+      class Foo<T> {
+         foo: T;
+      }
+      const FooNumber = Foo as { new (): Foo<number> }; // 用Foo的实例去约束FooNumber的类型.
+
+2. 如果你在基类上使用修饰器,继承类可能没有与基类相同的行为,因为它不再被修饰器包裹.
+3. 如果灭有一个单独的类,你仍然需要写出一个有效的强制/断言模式.
+
+
+      function id<T>(x: T) {
+         return x;
+      }
+      const idNum = id as { (x: number): number }
+
+### 11.5 对象字面量的惰性初始化
+
+1. 惰性初始化简单理解就是给变量定义一个类型约束,可以在之后再对改变量的相关属性做初始化.
+
+
+      interface foo {
+         bar: number;
+         bas: string;
+      }
+      let foo = {} as Foo;
+      foo.bar = 123;
+      foo.bas = 'hello world';
+
+### 11.6 类是有用的
+
+### 11.7 默认导出是有害的
+
+1. 默认导出是不推荐的做法,建议直接使用 export 导出,然后使用结构的形式导入.
+2. 不使用默认导出的理由.
+
+- 1. 可发现性差,如果导入出错,没办法获得智能提示
+
+- 2. 使用 export 导出的内容,ts 可以根据模块的到处信息给与开发者有用的提示,包括一些拼写错误的提示.
+
+- 3. 默认导出与 Dommonjs 互用的时候体验很不好
+
+引入导出的模块必须使用 `const {default} = require('module/foo')` 而不是 `const { Foo } = require('module/foo')`
+
+- 4. 非默认到处的模块能够被更好的识别,从而可以帮你实现以来的模块的自动导入的功能
+
+### 11.8 减少 setter 属性的使用
+
+1. 要尽量使用更精确的 set/get 函数(如 setBar,getBar),减少使用 setter/getter,这样可以使得开发者更明确的知道自己调用的函数将会发生什么样的改变.
+
+### 11.9 谨慎使用--outFile
+
+### 11.10 TypeScript 的静态构造函数
+
+1. ts 和 js 一样没有静态构造函数,但是你可以通过 static 类实现相同的效果.
+
+
+      class MyClass {
+         static initalize() {
+
+         }
+      }
+      MyClass.initalize();
+
+### 11.11 单例模式
+
+1. 全局变量,对于类来说可以使用单例来控制,也可以使用命名空间实现, 对于大部分使用者来说,通过创建一个模块实现.
+
+### 11.12 函数参数
+
+1. 如果函数参数比较多,可以考虑传入一个对象,然后以结构的方式接收处理,这样足够简洁清晰,且有利于发现错误和进行代码审查.
+
+### 11.13 构建切换
+
+1. 通过设置和使用 process.env.NODE_ENV 变量可以实现构建环境的切换.
+
+### 11.14 barrel
+
+1. barrel 就像一个容器,它的作用是将分散在多个模块的导出合并到一个模块里.
+
+### 11.15 创建数组
+
+### 11.16 类型安全的 Event Emitter
+
+### 11.17 Reflect Metadata
+
+### 11.18 协变与逆变
+
+1. 粗浅的理解,协变时从父类到子类, 逆变是从子类到父类.
+2. 在 TypeScript 中,参数类型是双向协变的,也就是说既是协变又是逆变的,而这并不安全.
+3. 我们允许不可变(Immutable)的列表在它的参数类型上是协变的,但是对于可变(Mutable)的列表,其参数类型则是不变的,既不是协变也不是逆变的.
 
 ## 第 12 章
 
-本章将推荐一些 TypeScript 的代码风格。
+1. 使用首字母小写的驼峰格式命名变量和函数.
+2. 使用首字母大写的形式定义类.
+3. 使用 PascalCase 形式为接口命名。
+4. 类型别名以小写字母开头的驼峰格式命名,和类的成员使用相同的格式进行命名.
+5. 命名空间使用 PascalCase 形式进行命名。
+6. 枚举类型使用 PascalCase 形式进行命名。
+7. 如果一个值是 api 的一部分,则建议使用 null,如果是属性值,则建议使用 undefined.
+8. 当需要联合类型和交叉类型时,建议使用 type.
 
 ## 第 13 章
 
-本章将介绍 TypeScript 的编译原理，让读者知其然，并知其所以然。
+### 13.1 编译器
+
+1. TypeScript 编译器源文件位于 src/compiler 目录下（详见参考资料[38]），它分为下面几个关键部分.
+
+- Scanner 扫描器(scanner.ts)
+- Parser 解析器(parser.ts)
+- Binder 绑定器(binder.ts)
+- Checker 检查器(checker.ts)
+- Emitter 发射器(emitter.ts)
+
+2. 处理概览
+
+SourceCode(源代码) ~~ 扫描器 -> token 流
+
+token 流 ~~ 解析器 -> AST(Abstract Syntax Tree, 抽象语法树)
+
+AST ~~ 绑定器 -> Symbol 符号
+
+符号(Symbol)是 TypeScript 语义系统的主要构造块,如上所示,符号是绑定的结构,符号将 AST 中的声明节点与相同尸体的其他声明连接起来.
+
+符号和 AST 是检查器用来验证源代码语义的.
+
+AST + 符号 ~~ 检查器 -> 类型验证
+
+最后,当需要输出 JavaScript 时,如下所示:
+
+AST + 检查器~~发射器 -> JavaScript 代码.
+
+3. 文件: 核心工具
+
+core.ts 是 TypeScript 编译器使用的核心工具集,其中`let objectAllocator: ObjctAllocator`是一个定义为全局单例的变量,它提供以下定义.
+
+- getNodeConstructor
+- getSymbolConstructor
+- getTypeConstructor
+- getSignatureConstructor(签名用于索引,调用和构造)
+
+4. 文件: 关键数据结构
+
+type.ts 包含整个编译器所使用的关键数据结构和接口,以下是一部分.
+
+- SyntaxKind AST: 节点类型通过 SyntaxKind 枚举进行识别;
+
+* TypeChecker: 类型检查器提供的接口;
+* CompilerHost: 用于程序和系统之间的交互;
+* Node AST 节点
+
+5. 文件: 系统
+
+系统文件即 system.ts, TypeScript 编译器与操作系统的所有交互均通过 System 接口进行,而接口及其实现均定义在 syatem.ts 中,你可以将其视为操作环境(Operating Environment).
+
+### 13.2 程序
+
+程序定义在 program.ts 中,编译上下文在 TypeScript 编译器中被视为一个 Program,它包含 SourceFile 和编译选项.
+
+1. CompilerHost 的使用
+
+CompilerHost 是与操作环境进行交互的机制.
+
+      Program使用 -> CompilerHost使用 -> System
+
+用 CompilerHost 做中间层的原因是,这样可以让接口对 Program 的需求进行细粒度的调整,而无需考虑操作环境的需求,Program 无需关心 System 的 fileExists 函数.
+
+2. SourceFile
+
+程序提供了一个 API,用于获取 SourceFile: getSourceFiles(): SourceFile[]. 其得到的每个元素均是一个抽象语法树的根节点.
+
+### 13.3 抽象语法树
+
+1. Node 节点
+
+节点是抽象语法树的基本构造块.
+
+AST 节点文档由两个关键部分构成,一个是节点的 SyntaxKind 枚举,用于标识 AST 中的类型,另一个是其接口,即在实例化 AST 时,节点所提供的 API;
+
+下面是节点接口的一些关键成员:
+
+- TextRange: 标识该节点在源文件中的起止位置;
+- parent?: Node,指当前节点(在 AST 中)的父节点;
+
+2. SourceFile
+
+SourceFile 包含两部分, 即 SyntaxKind.SourceFile 和 interface.SourceFile.(枚举类的 SourceFile 和接口的 SourceFile).每个 SourceFile 都是一个 AST 的根节点,它们包含在 Program 中.
+
+3. AST 技巧: 访问子节点
+
+
+      export function forEachChild<T>(node: Node, cbNode: (node: Node) => T,
+      cbNodeArray?: (nodes: Node[]) => T): T {
+         if(!node) {
+            return;
+         }
+         switch(node.kind) {
+            case SyntaxKind.BinaryExpression:
+               return visitNode(cbNode, (<BinaryExpression>node).left) ||
+                  visitNode(cbNode, (<BinaryExpression>node).operatorToken) ||
+                  visitNode(cbNode, (<BinaryExpression>node).right);
+            case SyntaxKind.IfStatement:
+               return visitNode(cbNode, (<IfStatement>node).left) ||
+                  visitNode(cbNode, (<IfStatement>node).operatorToken) ||
+                  visitNode(cbNode, (<IfStatement>node).right);
+         }
+      }
+
+4. AST 技巧: SyntaxKind 枚举
+
+SyntaxKind 被定义为一个常量枚举.
+
+      export const enum SyntaxKind {
+         Unknown,
+         EndOfFileToken,
+         SingleLineCommentTrivia,
+      }
+
+### 13.4 扫描器
+
+TypeScript 扫描器的源代码位于 scanner.ts 中,在内部,由解析器控制扫描器将源代码转化为抽象语法树(AST),其期望结果如下:
+
+      SourceCode ~~ 扫描器 -> token流 ~~解析器 -> AST
+
+1. 即使 TypeScript 解析器有单例扫描器,你仍然可以使用`createScanner`创建独立的扫描器,然后用 setText/setTextPos 随意扫描文件的不同位置.
+
+### 13.5 解析器
+
+TypeScript 解析器代码均位于 parser.ts 中,在内部,由解析器控制扫描器将源代码转化为 AST,其期望结果如下:
+
+      SourceCode ~~ 扫描器 -> token流 ~~解析器 -> AST
+
+### 13.6 绑定器
+
+大多数 JavaScript 转一起都比 TypeScript 转一起简单,因为它们技术没提供代码分析的方法,典型的 JavaScript 转换器只有以下流程.
+
+      源代码 ~~ 扫描器 -> token ~~ 解析器 -> AST ~~发射器 -> JavaScript
+
+上述流程缺失了 TypeScript 的语义系统,为了协助类型检查(由检查其执行),绑定器将源代码的各部分连接成一个相关的类型系统,供检查器使用,绑定器的主要职责时创建符号(Symbol).
+
+1. 绑定器实际上通过 objectAllocator.getSymbolConstructor 来获取构造器;
+
+
+      // 构造器的代码
+      function Symbol(flags: SymbolFlags, name: string) {
+         this.flags = flags;
+         this.name = name;
+         this.declarations = undefined;
+      }
+
+SymbolFlags 符号标记是个标记美剧,用于识别额外的符号类别,如变量作用域标记: FunctionSopedVariable, BlockScopedVariable.
+
+2. 检查器对绑定器的作用;
+
+
+      // 调用栈
+      program.getTypeChecker =>
+         ts.createTypeChecker(检查器中) ->
+            initializeTypeChecker(检查器中) ->
+               for each SourceFile 'ts.bindSourceFile' (绑定器中)
+               // 接下来
+               for each SourceFile 'ts.mrgeSymbolTable' (检查器中)
+
+SourceFile 是绑定器的工作单元,binder.ts 由 check.ts 驱动.
+
+### 13.7 检查器
+
+检查器位于 checker.ts 中,是编译器中最大的部分.
+
+1. 初始化全局符号表
+
+
+      forEach(host.getSourceFiles(), file => {
+         if(!isExternalModule(file)) {
+            mergeSymbolTable(globals, file.locals)
+         }
+      })
+
+2. 检查器使用本地的 error 函数报告错误.
+
+### 13.8 发射器
+
+TypeScript 编译器提供了两个发射器:
+
+- emitter.ts: TypeScript 编译为 Javascript 的发射器;
+- declarationEmitter.ts: 这个发射器用于为 TypeScript 源文件(.ts)创建声明文件(.d.ts)
+
+1. 大部分的发射器不关心 SourceMap,它们以相同的方式使用这些含有或不含有 SourceMap 的本地函数.
