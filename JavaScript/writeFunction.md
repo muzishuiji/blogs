@@ -308,7 +308,20 @@
     let obj1 = myCreate(obj);
     // obj1本身没有name属性,但是通过原型链向上查找到obj,拿到name属性
     console.log(obj1.name);  // muzishuiji
-    
+## 13-1 手写实现Object.is() 
+
+        // 相比较严格等于 ===， 修正了 +0 等于 -0 的和 NaN不等于NaN的问题
+        Object.defineProperty(Object, 'is', {
+          value: function (x, y) {
+            if(x === y) {
+                return x !== 0 || y !== 0 || 1 / x === 1 / y;
+            } else {
+                return x !== x && y !== y;
+            }
+          }
+         })
+         Object.is(+0, -0);
+         Object.is(NaN, NaN);
 ## 14. 深拷贝
 实现原理: 简单的把一个对象赋值给一个新对象,这样的拷贝属于浅拷贝,只是简单拷贝了对同一块内存的引用,这样修改其中一个对象会对另一个对象造成影响,所以我们需要深拷贝,来复制一个对象的副本,且修改其中一个对象不会对另一个对象造成影响.
 简单实现:
