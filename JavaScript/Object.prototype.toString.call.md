@@ -37,4 +37,4 @@
 
 果不其然,和我们预想的一样,也就是说Object.prototype.toString其实就是返回toString方法执行时候的this这个对象的数据类型,
 
-我们通过调用call方法来绑定Object.prototype.toString执行时候的this对象,从而得到了传入对象的数据类型,焕然大悟~~
+我们通过调用call方法来绑定Object.prototype.toString执行时候的this对象,从而得到了传入对象的数据类型,恍然大悟~~
