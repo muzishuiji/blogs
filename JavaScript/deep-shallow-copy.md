@@ -89,7 +89,7 @@
         }
         map.set(target, cloneTarget)
         for(const key in target) {
-            cloneTarget[key] = target[key]
+            cloneTarget[key] = deepClone(target[key], map)
         }
         return cloneTarget
     }
