@@ -24,7 +24,7 @@
 
 9. [Event Loop]()
 
-10. [Promise 原理]()
+10. [Promise A+规范和Promise的手写实现]()
 
 11. [模块化详解](https://mp.weixin.qq.com/s/MPEhWlS9KiIc9I6Of5GpOQ) (收集了一篇比较详细的)
 
