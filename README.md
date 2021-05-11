@@ -44,13 +44,9 @@
 
 1. [React 生命周期和使用技巧]()
 
-2. [虚拟 DOM]()
+2. [React Redux源码解析]()
 
-3. [PropTypes]()
-
-4. [高阶组件]()
-
-5. [React 实践的开发经验总结]()
+3. [React 实践的开发经验总结]()
 
 ## webpack
 
@@ -62,7 +58,7 @@
 
 ## 网路
 
-1. [HTTP/2 与 HTTP/1.1](https://github.com/muzishuiji/blogs/blob/master/http/http2%E4%B8%8Ehttp1.1.md)
+1. [HTTP/2 与 HTTP/1.1](https://github.com/muzishuiji/blogs/blob/master/http/http2%E4%B8%8Ehttp1.1.md) (已完成)
 
 ## Node
 
