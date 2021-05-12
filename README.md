@@ -10,7 +10,7 @@
 
 2. [垃圾回收和内存泄漏]()
 
-3. [js的静态作用域链与动态闭包链](https://github.com/muzishuiji/blogs/blob/master/JavaScript/scopeChain_closure) (已完成)
+3. [js的静态作用域链与动态闭包链](https://github.com/muzishuiji/blogs/blob/master/JavaScript/scopeChain_closure.md) (已完成)
 
 4. [深拷贝与浅拷贝](https://github.com/muzishuiji/blogs/blob/master/JavaScript/deep-shallow-copy.md) (已完成)
 
