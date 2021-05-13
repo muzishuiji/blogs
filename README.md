@@ -64,6 +64,10 @@
 
 1. [Node 开发实战学习笔记](https://github.com/muzishuiji/blogs/blob/master/node/node-study.md) (已完成)
 
+## 计算机基础
+
+1. [深入学习编译原理](https://github.com/muzishuiji/blogs/blob/master/computer-basic-bianyiyuanli.md)  (持续更新)
+
 ## 数据结构与算法
 
 花三个月的时间把 leetCode 的算法题基本都刷一遍,并且把一些常见题目,巧妙的解法整理成一套刷题笔记.
