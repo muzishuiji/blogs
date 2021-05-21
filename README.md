@@ -66,7 +66,7 @@
 
 ## 计算机基础
 
-1. [深入学习编译原理](https://github.com/muzishuiji/blogs/blob/master/computer-basic-bianyiyuanli.md)  (持续更新)
+1. [深入学习编译原理](https://github.com/muzishuiji/blogs/blob/master/computer-basic/bianyiyuanli.md)  (持续更新)
 
 ## 数据结构与算法
 

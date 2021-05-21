@@ -123,3 +123,11 @@
             // 创建一个对变化的prop的引用,每次用的都是这个引用
             const onChangeCurrent = useCurrentValue(onChange)
         }
+
+13. redux 的 createStore 和 redux-thunk 结合可以实现数据持久化， 但要比对缓存中的数据和当前数据的版本，以免功能更新带来的数据展示错误。
+
+其实是通过给 createStore 的第二个参数传入一个函数，根据情况返回缓存中的state，从而实现了数据持久化的效果。
+
+
+
+

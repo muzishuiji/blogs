@@ -1,0 +1,64 @@
+@mixin borderCreator($name, $direction, $type, $color) {
+    .border-#{$name} {
+        @if $direction != '' {
+            border-#{$direction}: 1px $type $color;
+        } @else {
+            border: 1px $type $color;
+        }
+    }
+}
+// 把 .border-#{$name} 根据设备像素比重写
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
+    .border-#{$name} {
+        @if $direction != '' {
+            border-#{$direction}: 0.5px $type $color;
+        } @else {
+            border: 0.5px $type $color;
+        }
+    }
+}
+@media screen and (-webkit-min-device-pixel-ratio: 3) {
+    .border-#{$name} {
+        @if $direction != '' {
+            border-#{$direction}: 0.33333px $type $color;
+        } @else {
+            border: 0.33333px $type $color;
+        }
+    }
+}
+
+// 使用示例
+.main {
+    @include borderCreator('btn','', 'dashed', '#979797'); // 创建一个名字为border-btn的class
+
+}
+
+
+@mixin border1px($name, $direction, $type, $color) {
+    .border-#{$name} {
+        @if $direction != '' {
+            border-#{$direction}: 1px $type $color;
+        } @else {
+            border: 1px $type $color;
+        }
+    }
+}
+
+@media screen and (-webkit-min-device-pixel-radio: 2) {
+    .border-#{$name} {
+        @if $direction != '' {
+            border-#{$direction}: 0.5px $type $color;
+        } @else {
+            border: 0.5px $type $color;
+        }
+    }
+}
+@media screen and (-webkit-min-device-pixel-radio: 3) {
+    .border-#{$name} {
+        @if $direction != '' {
+            border-#{$direction}: 0.33333px $type $color;
+        } @else {
+            border: 0.33333px $type $color;
+        }
+    }
+}

@@ -20,7 +20,7 @@
     Function.prototype.myCall = function () {
         // 使用解构赋值获取要绑定的this对象和其他参数
         let [context, ...args] = [...arguments];
-        // 要绑定的this独享为空
+        // 要绑定的this对象为空
         if(!context || typeof context !== 'object') {
             args.unshift(context);
             context = typeof window === 'undefined' ? global : window;
@@ -43,7 +43,7 @@
         if(args && !(args instanceof Object)) {
             throw Error("CreateListFromArrayLike called on non-object");
         }
-        if(!context) {
+        if(!context || typeof context !== 'object') {
            context = typeof window === 'undefined' ? global : window; 
         }
         let sym = Symbol();
@@ -60,7 +60,7 @@
 实现原理: bind函数的原理就是返回一个使用apply绑定了this的函数.
 
     Function.prototype.myBind = function (context) {
-        if(!context) {
+        if(!context || typeof context !== 'object') {
             context = typeof window === 'undefined' ? global : window;
         }
         const _this = this
@@ -151,6 +151,7 @@
     flatArray([1,2,3,[1,4,[8,9,10]]]); // [1, 2, 3, 1, 4, 8, 9, 10]
 
 ### 8. sleep
+
 实现原理: 编写sleep函数,实现暂停一定的时间间隔后,执行之后的逻辑;
 
     function mySleep(delay) {
@@ -310,7 +311,7 @@
     console.log(obj1.name);  // muzishuiji
 ## 13-1 手写实现Object.is() 
 
-        // 相比较严格等于 ===， 修正了 +0 等于 -0 的和 NaN不等于NaN的问题
+        // 相比较严格等于 === NaN不等于NaN的问题
         Object.defineProperty(Object, 'is', {
           value: function (x, y) {
             if(x === y) {
@@ -618,29 +619,278 @@ Promise的实现原理几句话很难说清楚,这里分享一个地址, [史上
 
 ### 22. 异步处理并发请求
 
-        var arr = [], i = 0
+        let arr = [], i = 0;
+        for(let i = 0; i < 100; i++) {
+            arr.push(new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    console.log('33')
+                    resolve('33')
+                }, 100);
+            }));
+        }
         function resolveAjax(arr, max, callback) {
-            var fetchArr = []
+            let fetchArr = [];
             function toFetch() {
                 if(i === arr.length) {
-                    return Promise.resolve()
+                    callback();
+                    return Promise.resolve();
                 }
-                let one = arr[i++]
-                one.then(() => fetchArr.splice(fetchArr.indexOf(one), 1))
-                fetchArr.push(one)
-                let p
+                let one = arr[i++];
+                one.then(() => fetchArr.splice(fetchArr.indexOf(one), 1));
+                fetchArr.push(one);
+                let p = Promise.resolve();
                 if(fetchArr.length >= max) {
-                    p = Promise.race(fetchArr)
+                    console.log('满了')
+                    p = Promise.race(fetchArr);
                 }
-                return p.then(() => toFetch())
+                // 执行完一个取下一个
+                return p.then(() => toFetch());
             }
-            toFetch().then(() => Promise.all(fetchArr).then(() => {
-                callback()
-            }))
+            toFetch()
         }
-        for(var i = 0; i < 100; i++) {
-            arr.push(fetch('http://127.0.0.1:6002/?time=' + Math.random()))
-        }
-        resolveAjax(arr, 100, () => {
-            console.log('111');
+        resolveAjax(arr, 10, () => {
+            console.log('success')
         })
+
+### 23. 手写实现字符串模版
+
+        function strModel(str) {
+            let reg = /\$\{([^\}]*)\}/g
+            str = str.replace(reg, function(x,y) {
+                return eval(y)
+            });
+            return str;
+        }
+        let a = '444';
+        let b = strModel("${typeof a === 'string' ? a : 88}sddsffsd")
+        console.log(b);
+
+### 24. 手写实现promise.all
+
+有一个它的兄弟方法， promise.allSettled() h会返回传入的promise数组的所有状态，返回的是一个对象数组，每个对象表示的是对应的promise的结果，和all不同的时，它支持成功和部分失败。
+
+        Promise.myAll = function(args) {
+            if(!Array.isArray(args)) {
+                return new ReferenceError('输入参数必须是数组')
+            }
+            return new Promise((resolve, reject) => {
+                let res = [], len = args.length
+                for(let i = 0; i < len; i++) {
+                Promise.resolve(args[i]).then((value) => {
+                    res.push(value);
+                    if(res.length === len) {
+                        resolve(res)
+                    }
+                })
+                }
+            })
+        }
+
+        let a = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve('aaa')
+            }, 0);
+        })
+        let b = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve('bbb')
+            }, 0);
+        })
+
+        let c = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve('ccc')
+            }, 0);
+        })
+
+        let d = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            reject('ddd');
+        }, 0);
+        })
+
+        Promise.myAll([a,b,c]).then((res) => {
+            console.log(res)
+        }); // ['aaa', 'bbb', 'ccc']
+
+        Promise.myAll([a,b,d]).then((res) => {
+            console.log(res);
+        }); // Uncaught (in promise) ddd
+
+### 25.手写实现promise.race
+
+        Promise.myRace = function(args) {
+            if(!Array.isArray(args)) {
+                return new ReferenceError('输入参数必须是数组')
+            }
+            return new Promise((resolve, reject) => {
+                let len = args.length
+                for(let i = 0; i < len; i++) {
+                Promise.resolve(args[i]).then((value) => {
+                    resolve(value);
+                }, (err)=>reject(err))
+                }
+            })
+        }
+
+        let a = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve('aaa')
+            }, 3000);
+        })
+        let b = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve('bbb')
+            }, 2000);
+        })
+
+        let c = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve('ccc')
+            }, 1000);
+        })
+
+        let d = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject('ddd');
+            }, 0);
+        })
+
+        Promise.myRace([a,b,c]).then((res) => {
+            console.log(res, 'success')
+        });
+        Promise.myRace([a,b,d]).then((res) => {
+        console.log(res, 'error')
+        })
+### 26. 手写实现一个简单的async await（其实就是利用promise做异步处理，然后结合generator生成了一个自执行器，来做异步执行控制）
+
+        function getNum(num) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                resolve(num + 1);
+                }, 1000);
+            })
+        }
+        function asyncFun(func) {
+            let gen = func();
+            function next(data) {
+                let res = gen.next(data);
+                if(res.done) return res.value;
+                res.value.then((_data) => {
+                next(_data);
+                })
+            }
+            next()
+        }
+        let func = function* () {
+            let f1 = yield getNum(1);
+            let f2 = yield getNum(f1);
+            console.log(f2);
+        }
+        asyncFun(func);
+
+
+### 27. 手写版本比较函数
+
+        // 手写实现版本比较函数,返回新的那个版本号
+        function versionCompare(oldVersion, newVersion) {
+            const oldArr = oldVersion.split('.');
+            const newArr= newVersion.split('.');
+            if(oldArr.length > newArr.length) {
+                return 1
+            }
+            if(oldArr.length < newArr.length) {
+                return -1;
+            }
+            let len = oldArr.length;
+            for(let i =0;i<len;i++) {
+                if(oldArr[i] === newArr[i]) {
+                    continue;
+                }
+                return oldArr[i] > newArr[i] ? 1 : -1;
+            }
+            return 0;
+        }
+
+### 28. 手写实现cacheRequest
+
+需要注意的是，这样的情况你还需要判断什么时候缓存失效,还有短时间内有大量请求发送过来的话，还需要一个缓存队列
+
+        function request(url, suc, fail) {
+            if(Math.random() * 10 > 2) {
+                setTimeout(() => {
+                console.log(url + '|' + 'suc');
+                suc('success')
+                }, 2000);
+            } else {
+                setTimeout(() => {
+                console.log(url + '|' + 'fail');
+                fail('fail')
+                }, 3000);
+            }
+        }
+
+        let urlObj = {}
+        function cacheRequest(url, subCb, failCb) {
+            if(urlObj[url]) {
+                if(urlObj[url].status === 'suc') {
+                subCb(urlObj[url].data);
+                } else {
+                failCb(urlObj[url].data);
+                }
+            } else {
+                urlObj[url] ={
+                    data: '',
+                    status: ''
+                };
+                request(url, data => {
+                        urlObj[url].data = data;
+                        urlObj[url].status = 'suc';
+                        subCb(data)
+                    },
+                    err => {
+                        urlObj[url].data = err;
+                        urlObj[url].status = 'fail';
+                        failCb(err)
+                    }
+                )
+            }
+        } 
+        cacheRequest('1.com', data => {
+            console.log(data)
+        }, err => {
+            console.log(err);
+        });
+        cacheRequest('1.com', data => {
+            console.log(data)
+        }, err => {
+            console.log(err);
+        });
+        cacheRequest('1.com', data => {
+            console.log(data)
+        }, err => {
+            console.log(err);
+        });
+        cacheRequest('2.com', data => {
+            console.log(data)
+        }, err => {
+            console.log(err);
+        });
+
+        cacheRequest('2.com', data => {
+            console.log(data)
+        }, err => {
+            console.log(err);
+        })
+### 29. 从n个数中等概率的取m个数
+
+
+        function getNum(arr, m) {
+            let n = arr.length, res = [];
+            for(let i = 0; i < m; i++) {
+                let random = parseInt(Math.random() * (n-i) + i); // 产生区间在[i, n)的随机数
+                res.push(arr[random]);
+            }
+            return res;
+        }
+        getNum([1,2,3,4,5,6,7], 3); // [3, 4, 6]

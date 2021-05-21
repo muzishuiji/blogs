@@ -1,0 +1,20 @@
+// 定义混合指令
+@mixin larget-text {
+    font: {
+        family: Arial;
+        size: 20px;
+        weight: bold; // 前缀的写法
+    }
+    color: #ff0000;
+    // 也可以通过&引用父选择器
+    &:hover {
+        color: #000;
+    }
+}
+
+// 引用混合指令
+.page-title {
+    @include larget-text；
+
+}
+
