@@ -1,15 +1,15 @@
 1. async/await
 
-function\* helloWorldGenerator() {
-yield 'hello';
-yield 'world';
-yield 'ending'
-}
-var hw = helloWorldGenerator();
-hw.next()// { value: 'hello', done: false }
-hw.next()// { value: 'world', done: false }
-hw.next()// { value: 'ending', done: true }
-hw.next()// { value: undefined, done: true }
+        function* helloWorldGenerator() {
+            yield 'hello';
+            yield 'world';
+            yield 'ending'
+        }
+        var hw = helloWorldGenerator();
+        hw.next()// { value: 'hello', done: false }
+        hw.next()// { value: 'world', done: false }
+        hw.next()// { value: 'ending', done: true }
+        hw.next()// { value: undefined, done: true }
 
 ## Generator 函数暂停恢复执行原理
 
@@ -71,13 +71,13 @@ async 函数对 Generator 函数的改进,体现在以下四点:
 
 Generator 返回的是迭代器对象(iterator)
 
-// 执行器,co 模块都被封装在了内部.
-async function fn(args) {
-// ...
-}
-// 等同于
-function fn(args) {
-return spawn(function\* {
+    // 执行器,co 模块都被封装在了内部.
+    async function fn(args) {
+    // ...
+    }
+    // 等同于
+    function fn(args) {
+    return spawn(function\* {
 
       })
     }
