@@ -22,17 +22,19 @@
 
 8. [函数的节流与防抖](https://github.com/muzishuiji/blogs/blob/master/JavaScript/debounce-throttle.md) (已完成)
 
-9. [Event Loop]()
+9. [Event Loop](https://github.com/muzishuiji/blogs/blob/master/JavaScript/event-loop.md) （已完成）
 
 10. [Promise A+规范和Promise的手写实现]()
 
-11. [模块化详解](https://mp.weixin.qq.com/s/MPEhWlS9KiIc9I6Of5GpOQ) (收集了一篇比较详细的)
+11. [async/await原理及简易版实现](https://github.com/muzishuiji/blogs/blob/master/JavaScript/async-await.md) （已完成）
 
-12. [设计模式]()
+12. [模块化详解](https://mp.weixin.qq.com/s/MPEhWlS9KiIc9I6Of5GpOQ) (收集了一篇比较详细的)
 
-13. [JavaScript 手写代码系列](https://github.com/muzishuiji/blogs/blob/master/JavaScript/writeFunction.md) (会持续更新)
+13. [设计模式]()
 
-14. [关于代码设计,我的一些思考](https://github.com/muzishuiji/blogs/blob/master/JavaScript/code-design.md) (会持续更新)
+14. [JavaScript 手写代码系列](https://github.com/muzishuiji/blogs/blob/master/JavaScript/writeFunction.md) (会持续更新)
+
+15. [关于代码设计,我的一些思考](https://github.com/muzishuiji/blogs/blob/master/JavaScript/code-design.md) (会持续更新)
 
 ## Vue
 
@@ -42,15 +44,13 @@
 
 ## React
 
-1. [React 生命周期和使用技巧]()
+1. [React Redux源码解析]()
 
-2. [React Redux源码解析]()
-
-3. [React 实践的开发经验总结]()
+2. [React 实践的开发经验总结]()
 
 ## webpack
 
-1. [webpack 学习笔记](https://github.com/muzishuiji/blogs/blob/master/webpack/webpack-study.md) (已完成)
+1. [webpack 学习笔记](https://github.com/muzishuiji/blogs/blob/master/webpack/webpack-study.md) (持续更新)
 
 ## 浏览器
 
