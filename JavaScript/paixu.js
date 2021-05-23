@@ -48,6 +48,9 @@ const partition = (nums, lo, hi) => {
     return i;
 }
 const quickSort = (nums) => {
+    if(!Array.isArray(nums) || !nums.length || nums.length === 1) {
+        return nums;
+    }
     sort(nums, 0, nums.length - 1);
     return nums;
 }
@@ -55,3 +58,53 @@ const quickSort = (nums) => {
 let arr = [3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48];
 quickSort(arr);
 
+
+const swap = (nums, i, j) => {
+    let temp = nums[i];
+    nums[i] = nums[j];
+    nums[j] = temp;
+}
+const partition = (nums, lo, hi) => {
+    let privot = nums[lo], i = lo;
+    for(let j=lo+1;j<=hi;j++) {
+        while(j<=hi && nums[j]<= privot) {
+            swap(nums,i,j);
+            i++;
+            j++;
+        }
+    }
+    swap(nums, i, lo);
+    return i;
+}
+const sort = (nums, lo, hi) => {
+    if(lo > hi) return;
+    let p = partition(nums, lo, hi);
+    sort(nums, lo, p-1);
+    sort(nums, p+1, hi);
+}
+const quickSort = (nums) => {
+    if(!Array.isArray(nums) || !nums.length || nums.length === 1) {
+        return nums;
+    }
+    sort(nums, 0, nums.length - 1);
+    return nums;
+}
+let arr = [3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48];
+quickSort(arr);
+
+
+
+function bubble(arr) {
+    for(let i = 0; i < arr.length; i++) {
+        for(let j = 0; j < i; j++) {
+            if(arr[i] < arr[j]) {
+                let temp = arr[j];
+                arr[j] = arr[i];
+                arr[i] = temp;
+            }
+        }
+    }
+    return arr;
+}
+let arr = [3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48];
+bubble(arr);

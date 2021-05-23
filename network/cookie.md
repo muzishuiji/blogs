@@ -1,6 +1,5 @@
 1. 设置了 httpOnly 的 js 脚本无法读取
-2. 当 cookie 的 Expires 属性缺省或者 Session 的时候,表示的就是会话性 cookie,值保存在
-3. 客户端内存中,饼子啊用户关闭浏览器时失效.
+2. 当 cookie 的 Expires 属性缺省或者 Session 的时候,表示的就是会话性 cookie,值保存在 客户端内存中,并在用户关闭浏览器时失效.
 4. expires 和 max-age 同时存在时,max-age 优先级更高
 5. path 可以指定请求特定路径下的资源才会携带 cookie,domain 和 path 标识共同定义了
 6. cookie 的作用域,即 cookie 随哪些 url 请求发送

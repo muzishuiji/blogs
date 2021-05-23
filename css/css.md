@@ -51,4 +51,7 @@ return flex_base_size;
 
 5. 理解伸缩算法
 
+6. display
+
+display可以设置内部和外部显示类型，元素的外部显示类型将决定元素在流式布局中的表现（块级或者内联元素），元素的内部显示类型可以控制其子元素的布局（flow layout吗grid， flex）。
 
