@@ -34,6 +34,8 @@
 
 14. [关于代码设计,我的一些思考](https://github.com/muzishuiji/blogs/blob/master/JavaScript/code-design.md) (会持续更新)
 
+15. [关于异常上报我的一些整理]()  
+
 ## Vue
 
 1. [Vue.nextTick()](https://juejin.im/post/5d6f2b5f518825421c080325) (已完成)
