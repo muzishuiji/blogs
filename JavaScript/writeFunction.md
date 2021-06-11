@@ -651,6 +651,37 @@ Promise的实现原理几句话很难说清楚,这里分享一个地址, [史上
         resolveAjax(arr, 10, () => {
             console.log('success')
         })
+        
+        // 一个动态的异步任务调度器，升级版
+        let tasks = []; // 待处理的任务
+        let processing = 0;
+        let N = 3;
+        // 处理器
+        function handler() {
+            if(task.length === 0) {
+                processing--;
+                return;
+            }
+            const next = tasks.shift();
+            excute(next);
+        }
+        // 执行任务
+        function excute(task) {
+            task().then(() => handler());
+        }
+        // 单个任务进入
+        function taskIn(task) {
+            if(processing < N) {
+               processing++;
+               excute(task);
+               return;
+            }
+            task.push(task);
+        }
+        // 批量任务进入
+        function taskPatchIn(reqs) {
+             reqs.forEach(req => taskIn(req));
+        }       
 
 ### 23. 手写实现字符串模版
 
