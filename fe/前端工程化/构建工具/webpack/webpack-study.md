@@ -7,12 +7,64 @@
 2. webpack.config.js 是 webpack 默认的打包配置文件,可以通过--config 参数来指定其他的打包配置文件
 
 3. webpack-cli 使得我们可以直接在命令行里执行 webpack 命令
+4. chunk
+    - chunks, 存放每个文件对应的 id 值,和相关联的文件的 id 值
+    - chunksName, 每个文件对应的名字,和相关的文件的名字.
 
-4. chunks, 存放每个文件对应的 id 值,和相关联的文件的 id 值
+5. mode：打包模式,默认是 production, development 模式打包出来的文件时非压缩的, production 模式打包出来的文件时压缩过的.
+6. Webpack的打包流程可以简化为：
+![alt text](image.png)
+    - 输入：从文件系统读入代码文件；
+    - 模块递归处理：调用loader转译module内容，并将结果转换为AST，从中分析出魔魁啊依赖关系，进一步递归调用模块处理过程，直到所有依赖文件都处理完毕；
+    - 后处理：所有模块递归处理完毕后开始执行后处理，包括模块合并、注入运行时、产物优化等，最终输出chunk集合；
+    - 输出：将chunk写出到外部文件系统；
+7. webpack配置项大体分为两类：
+    - 流程类：作用于打包流程某个或若干个环节，直接影响编译打包效果的配置项；
+    - 工具类：打包主流程之外，提供更多的工程化工具的配置项；
+8. 与打包流程强相关的配置项：
 
-5. chunksName, 每个文件对应的名字,和相关的文件的名字.
+    - 输入输出：
+        - entry：用于定义项目入口文件，Webpack 会从这些入口文件开始按图索骥找出所有项目文件；
+        - context：项目执行上下文路径；
+        - output：配置产物输出路径、名称等；
+    - 模块处理：
+        - resolve：用于配置模块路径解析规则，可用于帮助 Webpack 更精确、高效地找到指定模块
+        - module：用于配置模块加载规则，例如针对什么类型的资源需要使用哪些 Loader 进行处理
+        - externals：用于声明外部资源，Webpack 会直接忽略这部分资源，跳过这些资源的解析、打包操作
+    -后处理：
+        - optimization：用于控制如何优化产物包体积，内置 Dead Code Elimination、 Scope Hoisting、代码混淆、代码压缩等功能
+        - target：用于配置编译产物的目标运行环境，支持 web、node、electron 等值，不同值最终产物会有所差异
+        - mode：编译模式短语，支持 development、production 等值，可以理解为一种声明环境的短语
+9. 工具类配置项：
+- 开发效率类：
+    - watch：用于配置持续监听文件变化，持续构建
+    - devtool：用于配置产物 Sourcemap 生成规则
+    - devServer：用于配置与 HMR 强相关的开发服务器功能
+- 性能优化类：
+    - cache：Webpack 5 之后，该项用于控制如何缓存编译过程信息与编译结果
+    - performance：用于配置当产物大小超过阈值时，如何通知开发者
+- 日志类：
+    - stats：用于精确地控制编译过程的日志内容，在做比较细致的性能调试时非常有用
+    - infrastructureLogging：用于控制日志输出方式，例如可以通过该配置将日志输出到磁盘文件
+10. webpack中处理css文件：
+- css-loader： 将css等价翻译为`module.exports=${css}`的js代码，使得webpack能够同处理js代码一样解析css内容与资源依赖；
+- style-loader：该loader在产物中注入一系列runtime代码，这些代码会将css内容注入到页面的`style`标签，使得样式生效；
+- mini-css-extract-plugin：该插件会将css代码抽离到单独的css文件，并将文件通过link标签方式插入到页面中；
 
-6. mode,打包模式,默认是 production, development 模式打包出来的文件时非压缩的, production 模式打包出来的文件时压缩过的.
+11. PostCSS相当于css的babel，实现了一套讲css源码解析为AST结构，并传入PostCSS插件做处理的流程框架，具体功能由对应插件实现，常用插件有：
+    - autoprefixer：基于 Can I Use 网站上的数据，自动添加浏览器前缀
+    - postcss-preset-env：一款将最新 CSS 语言特性转译为兼容性更佳的低版本代码的插件
+    - postcss-less：兼容 Less 语法的 PostCSS 插件，类似的还有：postcss-sass、poststylus
+    - stylelint：一个现代 CSS 代码风格检查器，能够帮助识别样式代码中的异常或风格问题
+
+### Module Federation
+
+1. 通常译作“模块联邦”，是webpack5新引入的一种远程模块动态加载、运行技术。MF允许我们将原本耽搁巨大应用按照我们理想的方式拆分成体积更小，职责更内聚的小应用形式，理想情况下各个应用能够实现独立部署、独立开发（不同应用甚至允许使用不同技术栈）、团队自洽，从而降低系统与团队协作的复杂度。
+2. Module Federation的特性：
+    - 应用可按需导出若干模块，这些模块最终被单独打成模块包，功能上有点像NPM模块；
+    - 应用可在运行时基于http协议动态加载其他应用暴露的模块，且用法与动态加载普通NPM模块一样简单；
+    - 与其他微前端方案不同，MF的应用之间关系平等，没有主应用/子应用之分，每个应用都能导出/导入任意模块。
+
 
 ### loader
 
@@ -76,8 +128,12 @@
 
 1. 使用 node.js 可以实现类似于 webpack-dev-server 的功能.
 
-简单实现的代码示例:
+    主要功能：
+    - 结合webpack工作流，提供基于https协议的静态资源服务；
+    - 提供资源热更新能力，在保持页面状态的前提下自动更新页面代码，提升开发效率；
 
+    简单实现的代码示例:
+    ```js
     const express = require('express');
     const webpack = require('webpack');
     const webpackDevMiddleware = require('webpack-dev-middleware');
@@ -93,14 +149,14 @@
     app.listen(3001, () => {
         console.log('server is running');
     })
-
+    ```
 这样实现的代码,会自动打包,但是需要我们手动刷新来更新界面内容,且页面上未发生改变的模块的状态也不能被保存下来.每次刷新页面,所有内容回归为初始状态.
 
 2.  webpack-dev-server 打包生成的文件不再 dist 目录下,而是在内存里.
 
 3.  配置文件修改之后的热更新
 
-        new webpack.HotModuleReplacementPlugin()
+``` new webpack.HotModuleReplacementPlugin()```
 
 热更新可以保存我们页面未被修改部分的状态,只改变发生改变的内容.
 
@@ -439,7 +495,7 @@ webpack 中使用`workbox-webpack-plugin`来打包后,会为我们自动生成�
     }
     // 还需要在webpack的入口文件中引入 "babel-polyfill"
 
-### wepack 性能优化
+### webpack 性能优化
 
 1. 跟上技术的迭代(尽可能的使用最新的 webpack,npm,yarn)
 

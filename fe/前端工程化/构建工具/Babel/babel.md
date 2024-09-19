@@ -27,31 +27,29 @@ babel就是一个Javascript Transpiler。
   - 生成（generate）：把转换后的AST打印成目标代码，并生成sourcemap；
   sourcemap记录了源码到目标代码的转换关系，通过它我们可以找到目标代码中每一个节点对应的源码位置，用于调试的时候把编译后的代码映射回源码，或者线上报错的时候把报错位置映射到源码。
 
-
-
-
 2. babel 本身不具有任何转换功能，它把转换的功能都分解到一个个 plugin 里面，当我们不配置任何插件时，经过 babel 的代码输入和输出是相同的。
 3. babel 的插件分为两种
 
-- 语法插件
+  - 语法插件
 
-当我们添加语法插件之后,在解析这一步就使得 babel 能够解析更多的语法.(babel 内部的解析类叫做 babylon).`babel-plugin-syntax-trailing-function-commas`这个插件就是为了解决函数最后一个参数可以加逗号的语法插件.
+  当我们添加语法插件之后,在解析这一步就使得 babel 能够解析更多的语法.(babel 内部的解析类叫做 babylon).`babel-plugin-syntax-trailing-function-commas`这个插件就是为了解决函数最后一个参数可以加逗号的语法插件.
 
-- 转译插件
+  - 转译插件
 
-转译插件一般用于将我们的语法作进一步的转换并输出,这是 babel 最本质的需求. 比如完成箭头函数的转换的插件`babel-plugin-transform-es2015-arrow-functions`.
+  转译插件一般用于将我们的语法作进一步的转换并输出,这是 babel 最本质的需求. 比如完成箭头函数的转换的插件`babel-plugin-transform-es2015-arrow-functions`.
 
-同一类语法可能同时存在语法插件版本和转译插件版本,如果我们使用了转译插件,就不用再使用语法插件了.
+  同一类语法可能同时存在语法插件版本和转译插件版本,如果我们使用了转译插件,就不用再使用语法插件了.
 
 4. Preset 一套语法规范套餐合集.
+preset就是插件的集合，但是它可以动态确定包含的插件，比如preset-env就是根据targets来确定插件。
+
 5. Babel 的执行顺序
 
 - Plugin 会运行在 Preset 之前
 - Plugin 会从前到后顺序执行
 - Preset 的顺序则刚好相反
 
-5. 一个 Preset 的配置实例
-
+6. 一个 Preset 的配置实例
 
     "presets": [
       // 带有自定义配置项的,需要转换成数组
@@ -67,11 +65,11 @@ babel就是一个Javascript Transpiler。
       "stage-2"
     ]
 
-6. 如果不写任何配置项,env 等价于 latest,也等价于 es2015+es2016+es2017 三个相加.
-7. babel-cli 让我们可以使用 babel 命令来编译文件.
-8. babel-node 是 babel-cli 的一部分,不需要单独安装.bable-node = babel-polyfill+ babel-register.
-9. babel-require 会对 require 命令引入的文件进行转码.
-10. babel-polyfill
+7. 如果不写任何配置项,env 等价于 latest,也等价于 es2015+es2016+es2017 三个相加.
+8. babel-cli 让我们可以使用 babel 命令来编译文件.
+9. babel-node 是 babel-cli 的一部分,不需要单独安装.bable-node = babel-polyfill+ babel-register.
+10. babel-require 会对 require 命令引入的文件进行转码.
+11. babel-polyfill
 
 babel 默认只转换 js 语法,而不转换新的 API,比如 iterator, generator,set,map,proxy,reflect,symbol,promise 等全局对象,babel-polyfill 内部集成了 core-js 和 regenerator.
 
@@ -81,9 +79,9 @@ babel 默认只转换 js 语法,而不转换新的 API,比如 iterator, generato
 
 - babel-polyfill 会污染全局变量,给很多类的原型上都做了修改,如果我们开发的是一个类库供给其它开发者使用,这种情况会变得非常不可控.
 
-11. babel-runtime 这里主要是存放一些兼容方法的合集.
+12. babel-runtime 这里主要是存放一些兼容方法的合集.
 
-12. babel-plugin-transform-runtime 这里是为了不再重复的转译相同的代码,把重复的定义变成了重复的引用.
+13. babel-plugin-transform-runtime 这里是为了不再重复的转译相同的代码,把重复的定义变成了重复的引用.
 
 
     // babel添加一个方法,把async转换为generator
@@ -101,8 +99,59 @@ babel 默认只转换 js 语法,而不转换新的 API,比如 iterator, generato
       yield (0, something)(arg1, arg2)
     })
 
-13. babel-loader 一个用于和构建工具相结合,对 js 进行转译处理的 loader.
-14. babel-upgrade 用于 babel 配置升级的转换(主要是使用的是旧版本的 label,又暂时不想改配置项,就可以使用这个插件,仍旧沿用旧的配置项,这个插件可以帮助我们把旧的配置项对应的映射成新的配置项.)
+14. babel-loader 一个用于和构建工具相结合,对 js 进行转译处理的 loader.
+15. babel-upgrade 用于 babel 配置升级的转换(主要是使用的是旧版本的 label,又暂时不想改配置项,就可以使用这个插件,仍旧沿用旧的配置项,这个插件可以帮助我们把旧的配置项对应的映射成新的配置项.)
+
+16. sourcemap对应字段的含义如下：
+  - version：source map的版本，目前为3。
+
+  - file：转换后的文件名。
+
+  - sourceRoot：转换前的文件所在的目录。如果与转换前的文件在同一目录，该项为空。
+
+  - sources：转换前的文件。该项是一个数组，因为可能是多个源文件合并成一个目标文件。
+
+  - names：转换前的所有变量名和属性名，把所有变量名提取出来，下面的 mapping 直接使用下标引用，可以减少体积。
+
+  - mappings：转换前代码和转换后代码的映射关系的集合，用分号代表一行，每行的 mapping 用逗号分隔。
+  ```mappings:"AAAAA,BBBBB;;;;CCCCC,DDDDD"```
+  mapping有五位：
+  ```markdown
+  1. 第一位目标代码中的列数；
+  2. 第二位是源码所在的文件名；
+  3. 第三位是源码对应的行数；
+  4. 第四位是源码对应的列数；
+  5. 第五位是源码对应的names，不一定有
+  ```
+  每一位是通过VLQ编码的，一个字符就能表示行列数。
+
+17. sourcemap的源码和目标代码的行列数怎么来的？
+babel在parse阶段就在ast节点中保存了loc属性，存源码中的行列号，在后面transform的过程中，并不会修改它，所以转换完成以后节点中仍然保留有源码中的行列号信息，在generate打印成目标代码的时候会计算出新的行列号，这样两者关联就可以生成sourcemap。
+具体生成sourcemap的过程使用mozilla维护的[source-map](https://link.juejin.cn/?target=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2Fsource-map)包，其他工具做sourcemap的解析和生成也是基于这个包。
+
+18. 如何在控制台打印颜色？
+
+@babel/code-frames 可以在控制台高亮错误信息。
+控制台打印的是ascii码，并不是所有的编码都对应可见字符，ascii码有一部分字符是对应控制字符的，比如27是esc，对应键盘的esc键，按下它可以完成一些控制功能，我们可以通过修改打印内容的ascii来控制打印内容的颜色、字体样式等。
+
+19. 插件做的事情就是通过api拿到types、template等，通过state.opts拿到参数，然后通过path来修改AST。可以通过state放一些遍历过程中共享的数据，通过file放一些整个插件能访问到的一些数据，还可以通过this来传递本对象共享的数据。
+
+20. plugin和preset的插件处理顺序
+  - 先应用plugin，再应用preset；
+  - plugin从前到后，preset从后到前；
+
+21. babel plugin的单元测试
+  - 测试转换后的节点的具体的值是否匹配，验证转换的正确性；
+  - 每次测试生成代码的快照，和之前的做对比；
+  - 执行下转换后的代码，比较结果是否符合预期；
+
+22. babel runtime
+
+babel runtime里面放运行时加载的模块，会被打包工具打包到产物中，包含三部分：regenerator、corejs、helper。
+- corejs：新api的polyfill， corejs 3才支持实例方法（如Array.prototype.fill）的polyfill；
+- regenerator：facebook实现的async的runtime库，babel使用regenerator-runtime来支持实现async await的支持；
+- helper是babel做语法转换用到的函数，比如_typeof、_extends等
+
 
 ## 常见的AST节点
 
@@ -285,9 +334,14 @@ babel的AST最外层节点是File，它是program、comments、tokens等属性�
 ### babel的api有哪些
 根据babel的编译流程：parse、transform、generate，会有以下api。
 
-- parse阶段有@babel/parser，功能是把源码转成AST；
-- transform阶段有@babel/traverse，可以遍历AST，并调用visitor函数修改AST，修改AST自然涉及到AST的判断、创建、修改等，这就需要@babel/types了，当需要批量创建AST的时候可以使用@babel/template来简化AST创建逻辑。
-- generate阶段会把AST打印为目标代码字符串，同时生成sourcemap，需要@babel/generator包
-- 中途遇到错误想打印代码未知的时候，使用@babel/code-frame包
-- babel整体功能通过@babel/core提供，基于上面的包完成babel整体的编译流程，并应用plugin和preset。
+  - parse阶段有@babel/parser，功能是把源码转成AST；
+  - transform阶段有@babel/traverse，可以遍历AST，并调用visitor函数修改AST，修改AST自然涉及到AST的判断、创建、修改等，这就需要@babel/types了，当需要批量创建AST的时候可以使用@babel/template来简化AST创建逻辑。
+  - generate阶段会把AST打印为目标代码字符串，同时生成sourcemap，需要@babel/generator包
+  - @babel/traverse通过visitor函数对遍历到的ast进行处理，分为enter（进入节点时调用）和exit（离开节点时调用）两个阶段，具体操作ast使用的ptah的api，可以通过state在遍历过程中传递一些数据。
+  - 中途遇到错误想打印代码未知的时候，使用@babel/code-frame包
+  - babel整体功能通过@babel/core提供，@babel/cored的功能就是完成babel整体的编译流程，从源码到目标代码，生成sourcemap。实现plugin和preset的调用。
+  - 可以安装@types/babel_xxx的包来增加ts的提示，比如@types/babel_parser、@types/babel_traverse等。
 
+### Babel的visitor模式
+
+visitor模式是23种设计模式中的一种。visitor模式的思想是：当被操作的对象结构比较稳定，而操作对象的逻辑经常变化的时候，通过分离逻辑和对象结构，使得它们能独立扩展。

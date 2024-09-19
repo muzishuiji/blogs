@@ -55,3 +55,10 @@ return flex_base_size;
 
 display可以设置内部和外部显示类型，元素的外部显示类型将决定元素在流式布局中的表现（块级或者内联元素），元素的内部显示类型可以控制其子元素的布局（flow layout吗grid， flex）。
 
+7. tailwind css
+tailwind就是基于postcss的AST实现的css代码生成工具，并且做了通过extractor提取js、html中class的功能。
+
+tailwind的优点：
+- 不用浪费精力发明类名：不需要添加愚蠢的类名，比如`sidebar-inner-wrapper`仅仅为了能够设置样式，也不再为真正一个flex容器的东西的完美抽象名称而苦恼；
+- 你的css停止增长：使用传统方法啊，每次添加新功能时，你的css文件都会变大。使用原子class，一切都可以重用，因此您几乎不需要编写新的css；
+- 做出改变感觉更安全：css是全局的，你永远不知道在进行更改时会破坏什么。HTML中的类是本地的，因此你可以更改他们而不用担心其他东西会破坏；
