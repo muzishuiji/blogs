@@ -22,7 +22,7 @@ git commit -m 'balabala'
 `git rebase A`: 就是把HEAD指向的commit，跟在分支A的commit记录之后。
 
 
-10.  git reset和git reset
+10. git reset和git reset
 
 * git revert 是用一次新的commit来回滚之前的commit，git reset是直接删除指定的commit。
 * 这两个操作，效果差不多，但是在日后继续merge以前的老版本时有区别。因为git revert是用一次逆向的commit中和之前的提交，因此日后合并老的branch时，导致这部分改变不再出现，但是git reset是直接把某些 commit 从branch上删除，因为和老的branch再次merge时，这些被回滚的commit应该还是会被引入。
