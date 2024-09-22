@@ -205,7 +205,7 @@ label: console.log();
 with(a) {}
 ```
 它们对应的ast节点如下图：
-![alt text](image.png)
+![alt text](./images/image.png)
 
 语句是代码执行的最小单位，可以说，代码是由语句（Statement）构成的。
 
@@ -226,7 +226,7 @@ export * from 'e'
 ```
 
 上述声明对应的AST节点如下：
-![alt text](image-1.png)
+![alt text](./images/image-1.png)
 
 ### Expression
 
@@ -246,14 +246,14 @@ super;
 a::b;
 ```
 它们对应的AST如图：
-![alt text](image-2.png)
+![alt text](./images/image-2.png)
 
 identifier和super怎么也是表达式呢？因为identifier，super有返回值，符合表达式的特点，所以也是expression。
 
 能够单独执行的表达式也是语句，有的表达式不能单独执行，需要和其他类型的节点组合在一起构成语句。
 
 赋值语句a=1的AST：
-![alt text](image-3.png)
+![alt text](./images/image-3.png)
 
 ### class
 class代码：
@@ -265,7 +265,7 @@ class Guang extends Person {
 }
 ```
 对应的AST：
-![alt text](image-4.png)
+![alt text](./images/image-4.png)
 
 class是es next的语法，babel中有专门的AST来表示它的内容。
 
@@ -284,7 +284,7 @@ import a from 'a'; // ImportDefaultSpecifier
 import * as b from 'b'; // ImportNamespaceSpecifier
 ```
 这3语法都有对应的ImportDeclaration，但specifiers属性不同，分别对应ImportSpecifier、ImportDefaultSpecifier，ImportNamespaceSpecifier。
-![alt text](image-5.png)
+![alt text](./images/image-5.png)
 
 ### export
 
@@ -298,12 +298,12 @@ export * from 'd'
 ```
 这3种语法都有对应的ExportDeclaration，分别对应ExportNamedDeclaration、ExportDefaultDeclaration、ExportAllDeclaration的AST。
 
-![alt text](image-6.png)
+![alt text](./images/image-6.png)
 
 ### Program & Directive
 
 program是代表整个程序的节点，它有body属性代表程序体，存放statement数组，就是具体执行的语句的集合。还有directives属性，存放Directive节点，比如'use strict'这种指令通常会用Directive节点表示。
-![alt text](image-7.png)
+![alt text](./images/7.png)
 
 program是包裹具体执行语句的节点，而Directive则代码中的指令部分。
 
@@ -312,7 +312,7 @@ program是包裹具体执行语句的节点，而Directive则代码中的指令�
 babel的AST最外层节点是File，它是program、comments、tokens等属性，分别存在Program程序体、注释、token等，是最外层节点。
 
 注释分为注释和行内注释，对应CommentBlock和CommentLine节点。
-![alt text](image-10.png)
+![alt text](./images/image-10.png)
 
 ### AST可视化查看工具
 可以在https://astexplorer.net/去查看源码parse成ast之后的结果。
@@ -328,7 +328,7 @@ babel的AST最外层节点是File，它是program、comments、tokens等属性�
 - leadingComments、innerComments、trailingComments：表示开始的注释、中间的注释、结尾的注释，每个AST节点中都可能存在注释，想拿到某个AST的注释可通过这三个属性。
 - extra：rawValue, raw等属性记录一些额外的信息，用于处理一些特殊情况。比如StringLiteral的value只是值的修改，而修改extra.raw则可以单双引号一起修改。
 
-![alt text](image-11.png)
+![alt text](./images/image-11.png)
 
 
 ### babel的api有哪些

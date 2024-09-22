@@ -123,7 +123,7 @@ react团队对dom patch的算法做了优化,将复杂度由O(n^3)降低到O(n).
 18. React调试
 
 用户数据是保存在useDataDir里的，一个useDataDir对应一个浏览器实例，各种chrome插件、浏览记录、cookies等，所有用户数据都保存在useDataDir里。一个useDataDir只能跑一个实例，我们调试的时候，如果没有指定useDataDir，默认是临时创建一个新的useDataDir。这是会没有安装的chrome插件。如果希望调试的时候有已安装的插件，可以把useDataDir设置为false，这样就使用默认的useDataDir来跑：
-![alt text](image.png)
+![alt text](./imgs/image.png)
 
 19. React的数据不可变
     - 普通的class组件，setState会重新渲染；
