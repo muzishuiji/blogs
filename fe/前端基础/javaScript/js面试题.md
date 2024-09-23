@@ -290,3 +290,45 @@ console.log(pp1.__proto__ === Person.prototype) // true
 for...of 循环相较于forEach性能会损：
 - 额外的抽象层：for...of循环需要通过迭代器协议来访问元素，这会引入额外的抽象层，可能会导致一些性能开销；
 - 内部实现：某些js引擎可能会对for...of的优化不如传统的for循环或forEach方法；
+
+18. 一些支持跨域的标签
+
+- iframe
+- script
+- img
+- link
+- audio
+- video
+
+19. 使用CORS实现跨域
+
+CORS（Cross-Origin Resource Sharing，跨域资源共享）是一种基于HTTP头的机制，允许服务器声明哪些源站通过浏览器有权限访问哪些资源。CORS是现代Web开发中推荐的方式，因为它提供了更安全和灵活的跨域请求解决方案。
+
+服务端代码示例（Node.js示例）
+在服务端，需要设置适当的CORS头，允许跨域请求。
+```js
+const express = require('express');
+const app = express();
+
+// 设置cors头
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*'); // 允许所有域名访问
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); // 允许的HTTP方法
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');  // 允许的请求头
+    next();
+});
+
+// 处理实际请求
+app.get('/api/data', (req, res) => {
+    const data = {
+        message: 'Hello from the server!',
+        timestamp: new Date().toISOString()
+    }
+    res.json(data);
+});
+
+app.listen(3000, () => {
+    console.log('Server is running on http://localhost:3000');
+});
+```
+

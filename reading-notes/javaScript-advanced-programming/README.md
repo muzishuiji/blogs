@@ -325,19 +325,19 @@ throw new CustomError("my message");
 2. 通过event.dataTransfer.files来读取被拖拽文件的相关信息.这是一个存放拖拽文件信息的数组.
 
 3. 一段通过XMLHttpRequest实现的文件上传代码: 
-`
-var files = event.dataTransfer.files;
-var data = new FormData();
-data.append("files0", files[0]);
-var xhr = new XMLHttpRequest();
-xhr.open("post", "FileAPIExample06Upload.php", true);  // 第三个参数表示是否发送异步请求,默认为true,发送异步请求
-xhr.onreadystatechange = function() {
-    if(xhr.readyState == 4) {
-        alert(xhr.responseText);
-    }
-}
-xhr.send(data);
-`
+```js
+  var files = event.dataTransfer.files;
+  var data = new FormData();
+  data.append("files0", files[0]);
+  var xhr = new XMLHttpRequest();
+  xhr.open("post", "FileAPIExample06Upload.php", true);  // 第三个参数表示是否发送异步请求,默认为true,发送异步请求
+  xhr.onreadystatechange = function() {
+      if(xhr.readyState == 4) {
+          alert(xhr.responseText);
+      }
+  }
+  xhr.send(data);
+```
 4. 在实际的开发中,我们可以将比较耗时的操作交给WebWorker来做,这样页面仍然可以保持正常的运行,使用close()|方法和terminate()方法可以使WebWorker停止工作.但是WebWOrker不能操作dom,不处理和页面的交互操作.
 5. requestAnimationFrame():实体个着眼于优化JavaScript的动画api,能够在动画运行期间发出信号.通过这种机制,浏览器能够自动优化屏幕重绘操作.
 6. pageVisibility API让开发人员知道用户什么时候正在看着页面,什么时候页面是隐藏的.

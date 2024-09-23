@@ -79,6 +79,7 @@ function uploadFile() {
     .then(() => {
         // 上传未上传的块
         for(let i = 0; i < chunks; i++) {
+            // 已经包含，则无需上传
             if(!uploadedChunks.includes(i)) {
                 const start = i * chunkSize;
                 const end = Math.min(start + chunkSize, file.size)
