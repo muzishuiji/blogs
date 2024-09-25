@@ -26,7 +26,7 @@
 
 8. vue的nextTick
 
-vue的nextTick 的执行时机可能是当前事件循环的微任务阶段，也可能是下一个事件循环（tick，取出微任务执行）。这主要取决于nextTick 函数使用的是 Promise/Mutation ，色体体面面嗲特，messageChannel 还是settimeout。
+vue的nextTick 的执行时机可能是当前事件循环的微任务阶段，也可能是下一个事件循环（tick，取出微任务执行）。这主要取决于nextTick 函数使用的是 Promise/Mutation ，色体体面面嗲特，messageChannel 还是setTimeout。
 
 9. vue中的getters有什么用？
 

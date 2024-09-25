@@ -52,7 +52,7 @@
 
 ## webpack
 
-1. [webpack 学习笔记](./fe/前端工程化/构建工具/webpack/webpack-study.md) 
+1. [webpack 学习笔记](./fe/前端工程化/构建工具/webpack/webpack.md) 
 2. [聊聊前端工程化里的SourceMap](./fe/前端工程化/构建工具/webpack/聊聊前端工程化里的sourcemap.md) 
 
 ## 浏览器

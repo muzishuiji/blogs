@@ -28,13 +28,13 @@ JS引擎 包括parser， 解释器，gc，JIT编译器几部分
 
 * parser： 负责把JavaScript代码转成ast
 
-* interperter： 负责把ast转成字节码，并解释执行
+* interpreter： 负责把ast转成字节码，并解释执行
 
 * JIT compiler： 对执行时的热点函数进行编译，把字节码转成机器码，之后可以直接执行机器码
 
 * gc（garbage collector）：垃圾回收器，清理堆内存中不再使用的对象
 
-dom树和cssom树合并成到一起，计算布局layout，生成render tree之后把渲染树的内存复制到显卡就可以由显卡来完成渲染。每一次渲染流程叫做一帧，浏览器有一个帧率（比如一秒60帧）来刷新。
+dom树和CSSOM树合并成到一起，计算布局layout，生成render tree之后把渲染树的内存复制到显卡就可以由显卡来完成渲染。每一次渲染流程叫做一帧，浏览器有一个帧率（比如一秒60帧）来刷新。
 
 通常，主线程用来控制ui和渲染，其他线程用来执行一些任务（不能多个线程同时修改ui，顺序没法控制）
 
@@ -66,7 +66,7 @@ requestAnimationFrame，可以理解为渲染前的一个生命周期，requestA
 
 **requestIdleCallback**
 
-requestIldeCallback会在每次check结束发现距离下一帧还有时间，就执行，如果时间不够，就下一帧再说。为了防止一直等待下去，提供了timeout参数来制定最长的等待时间，如果一直没时间处理这个逻辑，那就算拖延了帧渲染也要执行。这个api目前还有兼容性问题，react自己实现了类似requestIldeCallback的fiber机制，在执行之前判断距离下一帧执行还有多久，来判断是否执行逻辑。
+requestIdleCallback会在每次check结束发现距离下一帧还有时间，就执行，如果时间不够，就下一帧再说。为了防止一直等待下去，提供了timeout参数来制定最长的等待时间，如果一直没时间处理这个逻辑，那就算拖延了帧渲染也要执行。这个api目前还有兼容性问题，react自己实现了类似requestIdleCallback的fiber机制，在执行之前判断距离下一帧执行还有多久，来判断是否执行逻辑。
 
 计算机的本质就是解释器，cpu用电路解释机器码，解释器用机器码解释更上层的脚本代码，例如字节码。
 
