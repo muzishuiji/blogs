@@ -89,3 +89,58 @@ function quickSortOptimize(nums, left, right) {
         }
     }
 }
+
+
+
+function partition(nums, left, right) { 
+    let pivot = nums[right];
+    let i = left;
+    for(let j = left; j <= right; j++)  {
+        if(nums[j] < pivot) {
+            [nums[i], nums[j]] = [nums[j], nums[i]];
+            i++; 
+        }
+    } 
+    [nums[i], nums[right]] = [nums[right], nums[i]];
+    return i;
+}
+function quickSort(nums) {
+    const innerQuickSort = (nums, left, right) => {
+        if(left >= right)  return;
+        let pivot = partition(nums, left, right);
+        innerQuickSort(nums, left, pivot - 1);
+        innerQuickSort(nums, pivot + 1, right);
+    }
+    innerQuickSort(nums, 0, nums.length - 1);
+    return nums;
+}
+
+const array1 = [64, 34, 25, 12, 22, 11, 90];
+console.log(quickSort(array));
+
+function quickSort(nums) {
+    function partition(nums, left, right) {
+        let pivot = nums[right];
+        let i = left;
+        for(let j = left; j < right; j++) {
+            if(nums[j] < pivot) {
+                [nums[i], nums[j]] = [nums[j], nums[i]];
+                i++;
+            }
+        }
+        [nums[i], nums[right]] = [nums[right], nums[i]];
+        return i;
+    }
+    function innerQuickSort(nums, left, right)  {
+        if(left < right) {
+            let pivot = partition(nums, left, right);
+            innerQuickSort(nums, left, pivot - 1);
+            innerQuickSort(nums, pivot + 1, right);
+        }
+    }
+    innerQuickSort(nums, 0, nums.length - 1);
+    return nums;
+}
+
+const array2 = [64, 34, 25, 12, 22, 11, 90];
+console.log(quickSort(array2));

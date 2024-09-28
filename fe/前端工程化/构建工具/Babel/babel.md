@@ -18,9 +18,9 @@ babel就是一个Javascript Transpiler。
 
 ## Babel的编译流程
 
-1. babel 的处理过程总共分为三个阶段， 解析，，生成。
+1. babel 的处理过程总共分为三个阶段， 解析，转换，生成。
   - 解析（parse）：通过parser将源码转成抽象语法树（AST），这个过程会对源代码进行词法解析和语法解析；
-  ![parse ast](<whiteboard_exported_image (4).png>)
+  ![parse ast](<./images/whiteboard_exported_image (4).png>)
   - 转换（transform）：遍历AST，通过各种transform插件对AST进行增删改；
   遍历的过程会调用注册的相应的visitor函数，visitor函数可以对AST节点进行增删改，返回新的AST（可以指定是否继续遍历新生成的AST）。这样遍历完一遍AST之后就完成了对代码的修改。
 
@@ -50,7 +50,7 @@ preset就是插件的集合，但是它可以动态确定包含的插件，比�
 - Preset 的顺序则刚好相反
 
 6. 一个 Preset 的配置实例
-
+```json
     "presets": [
       // 带有自定义配置项的,需要转换成数组
       [
@@ -64,7 +64,7 @@ preset就是插件的集合，但是它可以动态确定包含的插件，比�
       ],
       "stage-2"
     ]
-
+```
 7. 如果不写任何配置项,env 等价于 latest,也等价于 es2015+es2016+es2017 三个相加.
 8. babel-cli 让我们可以使用 babel 命令来编译文件.
 9. babel-node 是 babel-cli 的一部分,不需要单独安装.bable-node = babel-polyfill+ babel-register.
@@ -75,7 +75,7 @@ babel 默认只转换 js 语法,而不转换新的 API,比如 iterator, generato
 
 缺点:
 
-- 使用<pre>babel-polyfill</pre>会导致打出来的包非常大,因为 babel-polyfill 是一个整体,把所有的方法都加到原型链上比如我们只是用了 Array.from,但它把 Object.defineProperty 也给加上了,这个问题可以通过单独使用 core-js 的某个类库来解决.
+- 使用`babel-polyfill`会导致打出来的包非常大,因为 babel-polyfill 是一个整体,把所有的方法都加到原型链上比如我们只是用了 Array.from,但它把 Object.defineProperty 也给加上了,这个问题可以通过单独使用 core-js 的某个类库来解决.
 
 - babel-polyfill 会污染全局变量,给很多类的原型上都做了修改,如果我们开发的是一个类库供给其它开发者使用,这种情况会变得非常不可控.
 
@@ -83,7 +83,7 @@ babel 默认只转换 js 语法,而不转换新的 API,比如 iterator, generato
 
 13. babel-plugin-transform-runtime 这里是为了不再重复的转译相同的代码,把重复的定义变成了重复的引用.
 
-
+```js
     // babel添加一个方法,把async转换为generator
     function _asyncToGenerator(fn) { return function(){.....}}  // 很长一段
     // 具体使用处
@@ -98,7 +98,7 @@ babel 默认只转换 js 语法,而不转换新的 API,比如 iterator, generato
     var _ref = _asyncToGenerator3(function* (arg1,arg2) {
       yield (0, something)(arg1, arg2)
     })
-
+```
 14. babel-loader 一个用于和构建工具相结合,对 js 进行转译处理的 loader.
 15. babel-upgrade 用于 babel 配置升级的转换(主要是使用的是旧版本的 label,又暂时不想改配置项,就可以使用这个插件,仍旧沿用旧的配置项,这个插件可以帮助我们把旧的配置项对应的映射成新的配置项.)
 
@@ -303,7 +303,7 @@ export * from 'd'
 ### Program & Directive
 
 program是代表整个程序的节点，它有body属性代表程序体，存放statement数组，就是具体执行的语句的集合。还有directives属性，存放Directive节点，比如'use strict'这种指令通常会用Directive节点表示。
-![alt text](./images/7.png)
+![alt text](./images/image-7.png)
 
 program是包裹具体执行语句的节点，而Directive则代码中的指令部分。
 

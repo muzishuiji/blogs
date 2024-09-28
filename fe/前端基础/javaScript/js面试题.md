@@ -213,8 +213,10 @@ console.log(pp1.__proto__ === Person.prototype) // true
 
 12. js继承
 
+[原型链与继承](./原型链与继承.md)
 
 13. V8如何执行一段js代码
+
     1. 预解析：检查语法错误但不生成AST；
     2. 生成AST：经过词法/语法分析，生成抽象语法树；
     3. 生成字节码：基线（Ignition）编译器将AST转换为字节码；
@@ -333,3 +335,148 @@ app.listen(3000, () => {
 });
 ```
 
+20. Event对象常见应用
+
+  1. event.preventDefault()
+  取消事件的默认动作；
+  2. event.stopPropagation()
+  阻止事件冒泡；
+  3. event.stopImmediatePropagation()
+  阻止剩下的事件处理程序执行。如果一个元素绑定了三个事件，在其中一个事件上调用了这个方法，那其他的两个事件将不会被执行。
+
+21. 原型、构造函数、实例、原型链
+
+![alt text](<imgs/whiteboard_exported_image (6).png>)
+
+22. instanceof的原理
+
+instanceof用于判断一个引用类型是否属于某个构造函数，只要在实例对象的原型链上的构造函数，instanceof都会返回true。
+
+```js
+obj3 instanceof M // true
+obj instanceof Object // true
+```
+23. 如何理解[].shift.call(arguments)
+
+shift内部实现是使用this代表对象。那么[].shift.call()传入arguments对象的时候，通过call函数改变原来shift方法的this指向，使其指向arguments，并对arguments进行复制操作，而后返回一个新数组。至此便完成了arguments类数组转数组的目的。让类数组可以调用数组的方法。
+
+24. 任务队列
+
+  - 所有同步任务都在祝线程执行，形成一个执行栈（execution context stack）；
+  - 主线程之外，还存在一个“任务队列”，只要异步任务有了运行结果，就在”任务队列“中放置一个事件。
+  - 一旦”执行栈“中所有同步任务执行完毕，系统就会读取”任务队列“，看看里面有哪些事件。将任务队列中的任务一一push进执行栈，开始执行。
+
+25. requestAnimationFrame的执行机制
+
+requestAnimationFrame是浏览器提供的一个API，用于在浏览器重绘之前执行动画相关的代码，它允许开发者以一种有效且与浏览器渲染周期同步的方式来更新动画。
+requestAnimationFrame的主要目的是在浏览器准备重绘下一帧之前执行指定的回调函数。这使得动画能够在最佳的时间点执行，从而提高性能和流畅度。
+
+26. js中的显式绑定和隐式绑定
+
+  - 显式绑定：通过call、apply、bind等方法显式指定this的值；
+  - 隐式绑定：this的值由函数的调用上下文决定，通常在对象方法调用时发生；
+
+27. 箭头函数的this
+
+箭头函数的this是固定的，从定义它的上下文中继承，且后续不会发生改变，也不支持通过显式绑定改变。
+
+28. 可以通过JSON.parse(JSON.stringify(obejct))来实现深拷贝，有几个需要注意的地方：
+
+  - 会忽略undefined；
+  - 无法处理函数和特殊对象（Error对象、Date对象、RegExp对象、Error对象、Symbol等）。
+  - 不能处理循环引用：如果对象中存在循环引用，会抛出错误；
+  - 性能问题：在处理大型对象时可能存在性能问题，尤其是在对象嵌套层次较深的情况下；
+  - 原型链丢失：深拷贝后的对象将丢失原型链上的属性和方法；
+
+29. Proxy 和 Object.defineProperty
+
+Proxy 和 Object.defineProperty 都是js中用于实现对象属性拦截和代理的工具，但功能上存在一些区别：
+
+ 1. 拦截能力
+
+  Proxy：
+
+    - Proxy有更强大的拦截能力，可以拦截更多的操作，包括属性读取、属性赋值、属性删除、函数调用、构造函数调用、属性枚举、属性存在性检查、属性描述符获取、属性描述符设置、对象冻结、对象是否可扩展、对象是否冻结、对象原型设置等。
+    - 动态代理：Proxy可以代理整个对象，而不仅仅是对象的某个属性，这意味着你可以在对象创建时动态的拦截所有所有属性的操作，而不是在对象创建后逐个定义属性的拦截器。
+
+  Object.defineProperty
+
+    - 有限的拦截能力：只能拦截属性的读取和赋值操作；
+    - 静态定义： Object.defineProperty需要在对象创建后逐个定义属性的拦截器；
+
+  2. 性能
+
+  Proxy：
+    - 惰性加载：Proxy的拦截器是惰性加载的，只有在实际操作发生时才会调用，因此在某些情况下，Proxy的性能可能优于Object.defineProperty。
+
+  Object.defineProperty
+  
+    - 需要在对象创建时逐个定义拦截器，可能会影响性能。
+
+  3. 错误处理
+
+  Proxy
+
+    - 细粒度的错误处理：Proxy提供了更细粒度的错误处理能力，你可以拦截器中捕获和处理错误；
+    
+  Object.defineProperty 
+
+    -  Object.defineProperty在定义属性时如果发生个错误，可能会导致整个对象的定义失败；
+
+  4. 支持的对象类型
+    - Proxy可以带来数组和函数，而Object.defineProperty 只能代理对象的属性。
+  5. 语法简洁性
+    - Proxy的语法更简洁，拦截多个操作时，只需要定义一个handler对象，并在其中定义需要拦截的操作，而不需要为每个属性单独定义拦截器。
+    - Object.defineProperty：需要为每个属性单独定义拦截器，语法相对繁琐；
+
+**使用示例**
+
+```js
+// Proxy
+const target = {
+    a: 1,
+    b: 2
+};
+const handler = {
+    get(target, prop, receiver) {
+        console.log(`Getting ${prop}`);
+        return Reflect.get(target, prop, receiver);
+    },
+    set(target, prop, value, receiver) {
+        console.log(`Setting ${prop} to ${value}`);
+        return Reflect.set(target, prop, value, receiver);
+    },
+}
+const proxy1 = new Proxy(target, handler);
+proxy.a; // 输出: Getting a
+proxy.b = 3; // 输出: Setting b to 3
+
+// Object.defineProperty
+const target = {
+    a: 1,
+    b: 2
+}
+Object.keys(target).forEach(key => {
+    const val = target[key];
+    Object.defineProperties(target, key, {
+        get() {
+            console.log(`Getting ${key}`);
+            return val;
+        },
+        set(newValue) {
+            console.log(`Setting ${key} to ${newValue}`);
+            target[key] = newValue;
+        }
+    })
+});
+target.a; // 输出: Getting a
+target.b = 3; // 输出: Setting b to 3
+```
+
+30. Promise A+规范的核心逻辑
+
+  1. Promise本质是一个状态机，且状态只能分为以下几种：Pending（等待态），Fulfilled（执行态），Rejected（拒绝态），状态的变更是单向的，只能从Pending->Fulfilled或Pending->Rejected，状态变更不可逆。
+
+  2. then方法接收两个可选参数，分别对应状态改变触发的回调。then方法返回一个promise。then方法可以被同一个promise调用多次。
+
+  

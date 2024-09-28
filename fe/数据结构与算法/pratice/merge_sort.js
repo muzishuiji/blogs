@@ -39,3 +39,40 @@ function mergeSort(nums, left, right) {
     // 合并阶段
     merge(nums, left, mid, right);
 }
+
+
+// 整体的思路就是不停往下拆解子数组，使得子数组是有序的，然后合并子数组
+function merge(nums) {
+    function mergeSort(arr1, arr2) {
+        let res =[];
+        let i = 0, j = 0;
+        while(i < arr1.length && j < arr2.length) {
+            if(arr1[i] < arr2[j]) {
+                res.push(arr1[i]);
+                i++;
+            } else {
+                res.push(arr2[j]);
+                j++;
+            }
+        }
+        while(i < arr1.length) {
+            res.push(arr1[i]);
+            i++;
+        }
+        while(j < arr2.length) {
+            res.push(arr2[j]);
+            j++;
+        }
+        return res;
+    }
+    let len = nums.length;
+    if(len <= 1) {
+        return nums;
+    }
+    let mid = Math.floor(len / 2);
+    let left = nums.slice(0, mid);
+    let right = nums.slice(mid);
+    return mergeSort(merge(left), merge(right));
+}
+const array2 = [64, 34, 25, 12, 22, 11, 90];
+console.log(merge(array2));

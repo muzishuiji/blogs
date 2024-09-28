@@ -183,3 +183,7 @@ var p1 = new Promise((resolve, reject) => {
  // 可以将不想被tree shaking的内容配置在sideEffects里，以免被误删除
 
  // 
+
+
+ // 写一遍快排
+ 

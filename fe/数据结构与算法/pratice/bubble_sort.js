@@ -36,3 +36,22 @@ function bubbleSortWithFlag(nums) {
     }
     return nums;
 }
+
+function bubbleSortWithFlag1(arr)  {
+    let len = arr.length;
+    for(let i = 0; i < len; i++) {
+        let flag = true;
+        for(let j = 0; j < len - i - 1; j++) {
+            if(arr[j] > arr[j+1]) {
+                flag = false;
+                [arr[j], arr[j+1]] = [arr[j+1], arr[j]];
+            }
+        }
+        // 如果某次循环没有交换过于元素，则说明排序已完成
+        if(flag) {
+            break;
+        }
+    }
+    return arr;
+}
+

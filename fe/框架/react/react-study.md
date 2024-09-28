@@ -1,8 +1,8 @@
 ## React出现的历史背景及介绍
 
 1. react的出现是为了解决哪些问题?
-        * 传统的UI操作关注太多细节
-        * 应用程序分散在各处,难以追踪和维护
+   * 传统的UI操作关注太多细节
+   * 应用程序分散在各处,难以追踪和维护
 
 2. react始终整体刷新页面,无需关注细节
 3. 把你从繁琐的ui操作中解放出来,你无需关心ui的更新,只需要关注状态的管理和更新.
@@ -32,16 +32,16 @@
         * 非受控组件,表单状态由自身维护
 
                 <input 
-                type="text"
-                ref={node => this.input = node}
+                        type="text"
+                        ref={node => this.input = node}
                 />
 
 7. 创建组件的时候需要遵循的原则
 
-        * 单一职责原则
-        确定一个组件只做一件事,如果一个组件变得复杂,则应该考虑拆分成小组件.
-        * DRY原则
-        能计算得到的状态就不要单独存储,组件尽量无状态,所需数据通过props获取.
+* 单一职责原则
+确定一个组件只做一件事,如果一个组件变得复杂,则应该考虑拆分成小组件.
+* DRY原则
+能计算得到的状态就不要单独存储,组件尽量无状态,所需数据通过props获取.
 
 8. JSX
 
@@ -67,79 +67,81 @@ jsx优点:
 
         可以使用DOM,运行副作用,安排更新
 
-9. constructor
+10. constructor
 
         * 用于初始化内部状态
         * 唯一可以直接修改state的地方
 
-10. getDerivedStateFromProps
+11. getDerivedStateFromProps
 
         * 当state需要从props初始化时使用(我的理解state依赖props的值更新)
         * 尽量不要使用,维护两者状态一致性会增加复杂度
         * 每次render都会调用
         * 典型场景,表单组件获取默认值
 
-11. componentDidMount
+12. componentDidMount
 
         * ui渲染完成后调用
         * 只执行一次
         * 典型场景: 获取外部资源,订阅事件
 
-12. componentWillUnmount
+13. componentWillUnmount
 
 * 组件移除时被调用
 * 典型场景: 资源释放,定时器清除
 
-13. getSnapshotBeforeUpdate
+14. getSnapshotBeforeUpdate
 
         * 在页面render之前会调用
         * 典型场景: 获取render之前的dom状态,做一些副作用操作
 
-14. componentDidUpdate
+15. componentDidUpdate
 
         * 每次UI更新时被调用
         * 典型场景: 页面需要根据props变化重新获取数据
 
-15. shouldComponentUpdate
+16. shouldComponentUpdate
 
         * 决定Virtual DOM是否需要重绘
         * 一般可以由pureComponent自动实现
         * 典型场景: 性能优化
 
-16. Virtual DOM原理
+17. Virtual DOM原理
 
-react团队对dom patch的算法做了优化,将复杂度由O(n^3)降低到O(n).react的virtual dom采用广度优先的深层比较,当节点跨层移动的时候其实react是分辨不出来的,它只是粗暴的把原有的节点删除,然后在移动后的地方创建新的节点,这样其实性能上是有一定的损耗的.
+react的virtual dom采用广度优先的深层比较,当节点跨层移动的时候其实react是分辨不出来的,它只是粗暴的把原有的节点删除,然后在移动后的地方创建新的节点,这样其实性能上是有一定的损耗的.
 
 虚拟DOM的两个假设:
+
 * 组件的DOM结构是相对稳定的,假定没有节点的跨层级移动;
 * 类型相同的兄弟节点可以被唯一标识.
 
 为节点制定key属性,可以使得react能够高性能的更新你的应用.
 
-17. 高阶组件
+18. 高阶组件
 
 高阶组件的概念就是给当前组件扩展一些别的应用逻辑
 
-18. React调试
+19. React调试
 
 用户数据是保存在useDataDir里的，一个useDataDir对应一个浏览器实例，各种chrome插件、浏览记录、cookies等，所有用户数据都保存在useDataDir里。一个useDataDir只能跑一个实例，我们调试的时候，如果没有指定useDataDir，默认是临时创建一个新的useDataDir。这是会没有安装的chrome插件。如果希望调试的时候有已安装的插件，可以把useDataDir设置为false，这样就使用默认的useDataDir来跑：
 ![alt text](./imgs/image.png)
 
-19. React的数据不可变
+20. React的数据不可变
     - 普通的class组件，setState会重新渲染；
     - 继承的PureComponent的class组件，setState时会比props和state引用是否改变，还会对state的每个key的值做比较，变了才会重新渲染；
     - function组件在用useState的setXxx时，会比较state的引用是否变化，变了就会重新渲染；
 
-20. React的渲染流程
+21. React的渲染流程
 
 整体分为两大阶段：
-        - render阶段：把React Element树（也可以叫vdom）转成fiber链表的reconcile过程，由Scheduler负责调度，通过时间分片来把计算分到多个任务里去。
+        - render阶段：把React Element树（也可以叫vdom）转成fiber链表的reconcile过程，reconcile过程并不只是创建新的fiber节点，当更新的时候，还会和之前的fiber节点做diff，判断是新增、修改、还是删除。由Scheduler负责调度，通过时间分片来把计算任务分到多个任务里去。
         - commit阶段：reconcile结束就有了完整的fiber链表，再次遍历这个fiber链表，执行其中的effect、增删改dom等。
         commit也分成了三个小阶段：
             - before mutation：操作dom之前，effect函数会在before mutation前异步调度执行；
             - mutation： 操作dom；
             - layout： 操作dom之后，useLayoutEffect会在layout阶段同步执行。在mutation阶段更新了dom，在layout阶段就可以拿到ref了。
-21. React的并发模式
+
+22. React的并发模式
 React的并发模式简单来说就是基于优先级的可打断的渲染流程。fiber结构的设计，一方面可以极大的降低查询节点的时间复杂度，把整个vdom树变成线性的链表结构，使得查询的时间复杂度为O(1)。另一方面链表的数据结构设计存储正在处理的fiber节点，使得耗时的渲染任务可以被打断、恢复。
 
         - 双缓冲
@@ -148,6 +150,34 @@ React的并发模式简单来说就是基于优先级的可打断的渲染流程
         - 递归变迭代
         传统的React渲染过程是递归的，即在更新阶段，react会递归地遍历整个组件树，这种方式在处理大型组件树时，可能会导致栈溢出或性能问题。
         fiber架构将递归遍历改为迭代遍历，每个fiber节点都包含了指向父节点、子节点和兄弟节点的指针。React可以通过这些指针在fiber树上进行迭代遍历，从而避免了递归带来的栈溢出和性能问题。
+
+23. React的Hook为什么不能写在判断和循环里？
+
+React Hooks不能写在条件语句、循环或其他嵌套函数中。这是因为React依赖于Hooks的调用顺序来正确的管理组件状态和副作用。如果Hooks的调用顺序在不同的渲染周期发生变化，React将无法正确跟踪很管理组件状态，从而导致难以调试的错误。
+
+24. React中使用Hooks的好处
+  1. 状态管理更简洁
+  Class Component的状态管理主要通过类组件的`this.state`和`this.setState`来实现。Hooks引入了`useState`，使得函数组件可以拥有状态，并且状态管理的代码更加简洁和直观。
+  2. 副作用管理方便
+  Hooks提供了`useEffect`，使得在函数组件中处理副作用（如数据获取、订阅、手动DOM操作等）变得更加方便。`useEffect`允许你在组件渲染后执行副作用操作，并且可以控制副作用的执行时机。
+  3. 逻辑复用更灵活
+  Hooks允许你讲组件逻辑提取到自定义Hooks中，从而实现逻辑的复用。自定义Hooks可以封装复杂的状态逻辑或副作用逻辑，并在多个组件中共享。
+  4. 组件结构更清晰
+  Hooks使得函数组件的结构更加清晰和简洁。函数组件没有类组件中的生命周期方法，所有逻辑集中在函数体内，使得代码更易于理解和维护。
+  5. 更好的性能优化
+  Hooks提供了`useMemo`和`useCallback`，使得在函数组件中进行性能优化更加容易。`useMemo`可以缓存计算结果，`useCallback`可以缓存函数引用，从而避免不必要的渲染。
+  6. 更好的TypeScript支持
+  Hooks与TypeScript结合更加自然，因为函数组件的类型推断更加直观。你可以直接使用TypeScript的类型注解来定义Hooks的参数和返回值。
+
+24. JSX的解析流程
+
+  1. 编译JSX：Babel解析JSX转换成render function，类似调用React.createElement。
+  2. 成React.createElement调用，生成虚拟DOM；
+  3. 遍历虚拟DOM树，将其转换为fiber结构（这个过程叫reconcile）；
+  reconcile过程并不只是创建fiber节点，当更新的时候，还会和之前fiber节点做diff，判断是新增、修改还是删除，然后打上对应的标记。
+  4. 根据增删改的标记，更新真实DOM中发生变化的部分；
+  5. 调用组件的生命周期方法，执行副作用操作；
+
 
 ## redux
 
