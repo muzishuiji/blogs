@@ -380,7 +380,7 @@ requestAnimationFrame的主要目的是在浏览器准备重绘下一帧之前�
 
 箭头函数的this是固定的，从定义它的上下文中继承，且后续不会发生改变，也不支持通过显式绑定改变。
 
-28. 可以通过JSON.parse(JSON.stringify(obejct))来实现深拷贝，有几个需要注意的地方：
+28. 可以通过JSON.parse(JSON.stringify(object))来实现深拷贝，有几个需要注意的地方：
 
   - 会忽略undefined；
   - 无法处理函数和特殊对象（Error对象、Date对象、RegExp对象、Error对象、Symbol等）。
@@ -456,6 +456,7 @@ const target = {
     a: 1,
     b: 2
 }
+// 需要遍历对象，为每个属性定义拦截器
 Object.keys(target).forEach(key => {
     const val = target[key];
     Object.defineProperties(target, key, {
@@ -473,10 +474,33 @@ target.a; // 输出: Getting a
 target.b = 3; // 输出: Setting b to 3
 ```
 
+**Reflect**
+
+Reflect提供了一组静态方法，这些方法与Proxy的拦截器方法一一对应，用于执行对象的基本操作。结合使用Proxy和Reflect，可以实现对对象操作的细粒度控制和自定义。
+
 30. Promise A+规范的核心逻辑
 
   1. Promise本质是一个状态机，且状态只能分为以下几种：Pending（等待态），Fulfilled（执行态），Rejected（拒绝态），状态的变更是单向的，只能从Pending->Fulfilled或Pending->Rejected，状态变更不可逆。
 
   2. then方法接收两个可选参数，分别对应状态改变触发的回调。then方法返回一个promise。then方法可以被同一个promise调用多次。
+
+31. 观察者模式和发布-订阅模式的区别
+
+  - 在观察者模式中，观察值是知道被观察者的，被观察者记录了所有的观察者。然而，在发布订阅模式中，发布者和订阅者不知道对方的存在。它们只有通过消息代理进行通信。
+  - 在发布订阅模式中，组件是松散耦合的，正好和观察者模式相反；
+  - 观察者模式大多数时候是同步的，当事件触发，被观察者就会去调用观察者的方法。而发布订阅模式大多数时候是异步的（使用消息队列）。
+  - 观察者模式需要在单个应用程序地址空间中实现，而发布-订阅更像是交叉应用模式。
+
+32. Object.prototype.toString.call
+
+原理：读取对象的`Symbol.toStringTag`一个内置`symbol`，它通常作为对象的属性键使用，对应的属性值应该为字符串类型，这个字符还用来表示该对象的自定义类型标签，通常只有内置的Object.prototype.toString方法回去读取这个表亲啊并把它包含在自己的返回值里。
+
+```js
+const obj = {};
+// 定义属性
+Object.defineProperty(obj, Symbol.toStringTag, { value: "Module" });
+// 查看自定义类型
+console.log(Object.prototype.toString.call(obj)); // '[object Module]'
+```
 
   

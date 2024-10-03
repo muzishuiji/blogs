@@ -76,6 +76,7 @@
 一些行之有效的构建性能优化手段：并行编译、缓存、缩小资源搜索范围等。设置`profile=true`，运行编译命令，并添加--json参数，如：`npx webpack --json=stats.json`,可在生成的stats.json下查看每个模块打包的性能数据，可以从这些数据中分析出模块之间的依赖关系、体积占比、编译构建耗时等。结合社区里的分析工具，可以从可视化图表里更直观的找到性能卡点。
 
 13. webpack的并行构建
+
 并行构建的npm包：
 - HappyPack：多进程方式运行资源加载(Loader)逻辑；
 - Thread-loader：Webpack 官方出品，同样以多进程方式运行资源加载逻辑；
@@ -100,6 +101,35 @@
   2. 通过tapable提供的回调机制，以参数方式传递上下文信息；
   3. 在上下文参数对象中附带了很多存在Side Effect的交互接口，插件可以通过这些接口改变；
 
+16. Webpack的构建流程
+  - 初始化阶段：负责设置构建环境，初始化若干工厂类，注入内置插件等；
+  - 构建阶段：读入并分析Entry模块，找到依赖模块，之后递归处理这些依赖、依赖的依赖，知道所有模块都处理完毕，构建出依赖图谱，这个过程解决资源“输入”问题；
+  - 生成阶段：根据Entry配置将模块封装进不同chunk对象，经过一系列优化后，再将模块代码编译成产物形态，按chunk合并生成产物文件，这个过程解决资源“输出”问题。
+
+17. Dependency Graph
+
+webpack在构建过程中会持续收集模块之间的引用、被引用关系，并记录到Dependency Graph中，后续的Chunk封装、Code Split，Tree-Shaking等，但凡需要分析模块关系的功能都强依赖于Dependency Graph。
+
+Dependency Graph是webpack底层最关键的模块地图数据，因此在webpack5之后，Dependency Graph结构别接偶抽离为以ModuleGraph为中心的若干独立类型，架构设计更合理，模块搜索、分析效率也得到不同程度的优化，进而使得Webpack5构建速度也有明显提升。
+
+18. Chunk、ChunkGroup、ChunkGraph
+
+  - Chunk：Module用于读入模块内容，记录模块间依赖关系；而Chunk则根据模块依赖关系合并多个Module，输出成资产文件；
+  - ChunkGroup：一个ChunkGroup包含一个或多个Chunk对象；ChunkGroup与Chunk之间父子依赖关系；
+  - ChunkGraph：Webpck会将chunk之间、ChunkGroup之间的依赖关系存储到compilation.chunkGraph对象中，
+
+  「构建」阶段根据模块的引用关系构建ModuleGraph,「封装」阶段则负责根据ModuleGraph构建一系列Chunk对象，并将Chunk之间的依赖关系（异步引用、Runtime）组织为ChunkGraph--Chunk依赖关系图对象。与ModuleGraph类似，ChunkGraph结构的引入也能接偶Chunk之间的依赖关系和管理逻辑，整体架构更合理、更容易扩展。
+
+  Webpack5内置三种分包规则；Entry Chunk、Async Chunk、与Runtime Chunk，这些都是最原始的分包逻辑，其它插件（splitChunksPlugin）都是在此基础，借助buildChunkGraph后触发的各种钩子进一步拆分i、合并、优化chunk结构，实现扩展分包效果。
+
+19. 更详细的Webpack构建流程
+Webpack构建可以简单划分成init、make、seal三个阶段：
+  - init阶段负责模块初始化webpack内部若干插件与状态，逻辑比较简答；
+  - make阶段解决资源读入问题，这个阶段会从entry--入口模块开始、递归读入、解析所有模块内容，并根据模块之间的依赖关系构建ModuleGraph-模块依赖关系图；
+  - seal阶段：
+    - 一方面，根据ModuleGraph构建ChunkGraph；
+    - 另一方面，开始遍历ChunkGraph，转译每一个模块代码；
+    - 最后，将所有模块与模块运行时依赖合并为最终输出的bundle-资产文件；
 
 
 ### Module Federation
@@ -109,6 +139,7 @@
     - 应用可按需导出若干模块，这些模块最终被单独打成模块包，功能上有点像NPM模块；
     - 应用可在运行时基于http协议动态加载其他应用暴露的模块，且用法与动态加载普通NPM模块一样简单；
     - 与其他微前端方案不同，MF的应用之间关系平等，没有主应用/子应用之分，每个应用都能导出/导入任意模块。
+
 ### PWA应用
 
 PWA：Progressive Web Apps（渐进式Web应用），可以简单理解为一系列将网页如同独立APP般安装到本地的技术集合，借此，我们即可以保留普通网页轻量级、可链接（SEO友好）、低门槛（只要有浏览器就能访问）等优秀特点，又同时具备独立APP离线运行、可安装等优势。
@@ -185,7 +216,7 @@ PWA：Progressive Web Apps（渐进式Web应用），可以简单理解为一系
 热更新可以保存我们页面未被修改部分的状态,只改变发生改变的内容.
 
 手动触发热更新的代码示例:
-
+```js
     import counter from './counter';
     import number from './number';
     counter();
@@ -196,7 +227,7 @@ PWA：Progressive Web Apps（渐进式Web应用），可以简单理解为一系
             number();
         })
     }
-
+```
 4. @babel/plugin-transform-runtime
 
 一个能够复用 babel 的注入的工具函数来减少代码体积的插件,
@@ -207,15 +238,15 @@ PWA：Progressive Web Apps（渐进式Web应用），可以简单理解为一系
 changeOrigin: true; // 解决 origin 的请求限制
 
 secure: false; // 解除 https 协议下的安全限制
-
+```js
       // 设置请求头的相关配置
       header: {
          host: '',
          cookie: ''
       }
-
+```
 6.  webpackDevServer 解决单页面应用路由的问题.
-
+```js
         historyApiFallback: true;   // 可以帮助我们实现路由映射
         // 把history上对任何路径的请求都转化到对根路径的index.html的请求
         // 在index.html再配置对应的路由地址展示对应的内容
@@ -229,6 +260,14 @@ secure: false; // 解除 https 协议下的安全限制
                 }
             ]
         }
+```
+7. 热更新原理
+  - 文件变化监听：webpack使用watch模式来监听文件系统的变化；
+  - 编译与打包：当文件发生变化时，webpack会重新编译并打包发生变化的模块；
+  - 发送更新信息：webpack dev server通过WebSocket将更新信息发送给浏览器；
+  - 接收更新信息：浏览器中的客户端脚本接收到更新信息；
+  - 客户端脚本根据更信息更新对应的模块，而不会刷新整个页面；
+
 
 ### tree-shaking
 
@@ -240,6 +279,10 @@ tree-shaking 的主要作用就是只打包用到的代码逻辑
 一般如果页面中是用来 css 文件,使用 tree-shaking 的时候可能也会在打包的时候被丢掉,我们会在 package.json 里这样配置:
 
     sideEffects: ['*.css'];  // 意思对.css为后缀的文件不要使用tree-shaking
+
+2. tree-shaking是一种只对ESM有效的Dead Code Elimination技术，它能够自动删除无效（没有被使用、且没有副作用）的模块导出变量，优化产物体积。不过，受限于js语言灵活性带来的高度动态特性，tree-shaking并不能完美删除所有无效的模块导出，需要我们在业务代码中遵循若干时间规则，帮助tree-shaking更好的运行。
+
+在异步模块中使用tree-shaking需要加一些特殊语法备注：`/* webpackExports: xxx */`
 
 ### development 和 production 模式的区分打包
 
@@ -780,6 +823,10 @@ loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
   - 如果开发loader时需要对外提供配置选项，可使用schema-utils校验配置参数是否合法；
   - 假若loader需要生层额外的资源文件，使用loader-utils拼接产物路径；
   - 执行时，webpack会按照use定义的顺序从前到后执行pitch loader，从后到前执行normal loader，可以将一些预处理逻辑放在pitch中。
+
+5. pitch函数调度逻辑
+
+
 
 ### plugin
 

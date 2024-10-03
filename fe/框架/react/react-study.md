@@ -172,7 +172,7 @@ React Hooks不能写在条件语句、循环或其他嵌套函数中。这是因
 24. JSX的解析流程
 
   1. 编译JSX：Babel解析JSX转换成render function，类似调用React.createElement。
-  2. 成React.createElement调用，生成虚拟DOM；
+  2. React.createElement调用，生成虚拟DOM；
   3. 遍历虚拟DOM树，将其转换为fiber结构（这个过程叫reconcile）；
   reconcile过程并不只是创建fiber节点，当更新的时候，还会和之前fiber节点做diff，判断是新增、修改还是删除，然后打上对应的标记。
   4. 根据增删改的标记，更新真实DOM中发生变化的部分；

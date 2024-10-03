@@ -66,4 +66,4 @@ sticky上x-index不生效的原因我猜测跟这个元素设计的目的有关�
 使用`keep-alive`可缓存路由，它有include和exclude两个属性，分别表示包含和排除某些路由，值可以是字符串、数组或者正则表达式。独有的生命周期方法：activited、deactivited；
 
 
-
+15. 父组件和子组件的生命周期钩子的执行顺序

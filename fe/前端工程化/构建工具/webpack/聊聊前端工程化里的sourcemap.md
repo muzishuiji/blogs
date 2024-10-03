@@ -103,7 +103,7 @@ sass input.scss output.css --sourcemap
 
 Less配置示例：
 ```bash
-lessc input.less output.css --source-map
+less input.less output.css --source-map
 ```
 - `--sourcemap`: 生成Source Map文件；
 
