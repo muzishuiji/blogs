@@ -153,9 +153,10 @@ React的并发模式简单来说就是基于优先级的可打断的渲染流程
 
 23. React的Hook为什么不能写在判断和循环里？
 
-React Hooks不能写在条件语句、循环或其他嵌套函数中。这是因为React依赖于Hooks的调用顺序来正确的管理组件状态和副作用。如果Hooks的调用顺序在不同的渲染周期发生变化，React将无法正确跟踪很管理组件状态，从而导致难以调试的错误。
+React Hooks不能写在条件语句、循环或其他嵌套函数中。这是因为React依赖于Hooks的调用顺序来正确的管理组件状态和副作用。如果Hooks的调用顺序在不同的渲染周期发生变化，React将无法正确跟踪和管理组件状态，从而导致难以调试的错误。
 
 24. React中使用Hooks的好处
+
   1. 状态管理更简洁
   Class Component的状态管理主要通过类组件的`this.state`和`this.setState`来实现。Hooks引入了`useState`，使得函数组件可以拥有状态，并且状态管理的代码更加简洁和直观。
   2. 副作用管理方便
@@ -177,6 +178,99 @@ React Hooks不能写在条件语句、循环或其他嵌套函数中。这是因
   reconcile过程并不只是创建fiber节点，当更新的时候，还会和之前fiber节点做diff，判断是新增、修改还是删除，然后打上对应的标记。
   4. 根据增删改的标记，更新真实DOM中发生变化的部分；
   5. 调用组件的生命周期方法，执行副作用操作；
+
+25. React Router
+
+  1. history.scrollRestoration可以设置保留滚动位置
+  它的值有auto、manual，默认是auto，也就是会自动定位到上次滚动位置，设置为manual就不会了。
+  2. 当你在history中导航时，popstate就会触发，比如history.forward，history.back，history.go。但是history.pushState、history.replaceState并不会触发popState。
+  添加、修改history不会触发popstate，只有history之间导航才会触发。
+  3. react的路由跳转是封装了pushState和replaceState的，当pushState或者replaceState触发的时候，会触发matchRoutes，match完会pushState修改history，然后更新state，触发了setState，组件树会重新渲染。
+
+渲染时会用到Outlet渲染子路由，用到useXxx来取一些匹配信息，这些都是通过context传递的。
+
+26. React Context
+
+context的实现：
+
+首先是调用createContext方法，这个方法返回一个对象，有3个属性：
+
+  - _currentValue：保存context的值的地方，私有属性；
+  - Provider：ContextProvider类型的jsx；
+  - Consumer：ContextConsumer类型的jsx；
+
+具体实现逻辑：
+
+  - provider的处理就是修改了 context._currentValue的值，也可以自己修改；
+  - useContext和consumer的原理类似，都是读取context._currentValue，然后传入组件渲染；
+
+Consumer如何保证消费最近的一个Provider提供的value：Provider会在其子树中创建一个上下文环境，而Consumer会查找最近的上下文环境来获取数据，类似于js中变量作用域的概念。
+
+context导致的重渲染如何解决？
+
+  - 拆分context，每一类状态放在一个context里，这会导致context嵌套过多，维护成本增加。
+  - 用zustand等状态管理库，通过selector逻辑只订阅组件依赖的状态的变更；
+  - 用memo包裹子组件，它会对比新旧props，没变化就不会重新渲染；
+
+### React Ref
+
+1. createRef 创建的是一个seal对象，不能增删属性，其实创建普通的对象，也能实现dom实例的绑定。
+
+```js
+function createRef() {
+    var refObject = {
+        current: null
+    }
+    {
+        Object.seal(refObject)
+    }
+    return refObject;
+}
+```
+2. useRef
+
+```js
+function mountRef(initialValue) {
+    let hook = mountWorkInProgressHook();
+    var ref = {
+        current: initialValue
+    }
+    {
+        Object.seal(ref)
+    }
+    hook.memoizedState = ref;
+    return ref;
+}
+function updateRef(initialValue) {
+    var hook = updateWorkInProgressHook();
+    return hook.memoizedState;
+}
+```
+
+3. forwardRef
+
+forwardRef函数创建了专门的React Element类型
+
+```js
+function forwardRef(render) {
+    // ...
+    var elementType = {
+        $$typeof: REACT_FORWARD_REF_TYPE,
+        render: render
+    }
+    // ...
+    return elementType;
+}
+```
+然后beginWork处理这类型的节点会做专门的处理，也就是将它的的ref的值传递给函数组件，所以渲染函数组件的时候留了第二个参数来传递ref，从而完成了ref从父组件到子组件的传递。
+
+4. render阶段处理到原生标签也就是HostComponent类型的时候，如果有ref属性会在fiber.flags里加一个标记。
+
+5. commit阶段会在layout操作完dom后遍历fiber链表更新HostComponent的ref，也就是将fiber.stateNode赋值给ref.current。
+
+6. forwarRef创建了单独的react element类型，在beginWork处理到它的时候做了特殊处理，就是把ref作为第二个参数传递给了函数组件。
+
+7. useImperativeHandle的底层实现就是useEffect，只不过执行的函数和i虚构i啊的对象是指定传入的，这样在layout阶段调用hook的effect函数的时候就可以更新ref了。
 
 
 ## redux

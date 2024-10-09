@@ -28,7 +28,7 @@
 
 ### 乞丐版实现
 
-    JOSN.parse(JSON.stringify(obj))
+    JSON.parse(JSON.stringify(obj))
 
 ### 初版实现
 

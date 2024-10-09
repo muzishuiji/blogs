@@ -61,16 +61,16 @@ const flatArray = (arr) => {
 flatArray([1,2,3,[1,4,[8,9,10]]]); // [1, 2, 3, 1, 4, 8, 9, 10]
 
 // 7. instanceOf
-function myInstanceof(left, right) {
-    if(!left || !right) {
-        return false;
+function myInstanceof(target, origin) {
+    let proto = target.__proto__;
+    while(proto) {
+        if(origin.prototype === proto) {
+            return true;
+        } else {
+            proto = proto.__proto__;
+        }
     }
-    const prototype = right.prototype;
-    while(left) {
-        left = left.__proto__;
-        if(left === prototype) return true;
-    }
-    return  false;
+    return false;
 }
 
 // 8. 函数柯里化
@@ -88,7 +88,7 @@ sum(2,3)(1,4)
 // 写法一
 var a = {
     value: [3,2,1],
-    valudOf: function () {
+    valueOf: function () {
         return this.value.pop();
     }
 }
@@ -444,3 +444,20 @@ function getNum(arr, m) {
     return res;
 }
 getNum([1,2,3,4,5,6,7], 3); // [3, 4, 6]
+
+// 24. 洗牌算法
+// 从最后元素开始，数组中随机选择一个位置交换，直到最后一个位置终止
+function disorder(arr) {
+    if(!arr || arr.length < 2) {
+        return arr;
+    }
+    let len = arr.length;
+    let count = len - 1;
+    while(count >= 0) {
+        let random = Math.floor(len * Math.random());
+        [arr[random], arr[count]] = [arr[count], arr[random]];
+        count--;
+    }
+    return arr;
+}
+disorder([3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48]);

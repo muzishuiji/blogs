@@ -225,7 +225,7 @@ console.log(pp1.__proto__ === Person.prototype) // true
 14. 小程序和H5有什么区别？
 
     - 小程序
-    渲染方式不同，萧承煦一般是通过native原生渲染的，但是小程序同时也支持web渲染，如果使用web渲染的方式，我们需要初始化一个webview组件，然后在webview中加载H5页面。
+    渲染方式不同，小程序一般是通过native原生渲染的，但是小程序同时也支持web渲染，如果使用web渲染的方式，我们需要初始化一个webview组件，然后在webview中加载H5页面。
     native方式通常情况下性能要优于web方式。
     - 小程序特有的双线程设计。H5下我们所有资源通常都会打到一个bundle.js文件里（不考虑分包加载），而小程序编译后的结果会有两个bundle，index.js封装的是小程序项目的view层，以及index.worker.js封装的是项目的业务逻辑，在运行时，会有两条线程来分别处理两个bundle，一个是主渲染线程，它负责加载并渲染index.js里的内容，另外一个是Service Worker线程，它负责执行index.worker.js里封装的业务逻辑，这里面有很多对底层api的调用。
 
@@ -383,7 +383,7 @@ requestAnimationFrame的主要目的是在浏览器准备重绘下一帧之前�
 28. 可以通过JSON.parse(JSON.stringify(object))来实现深拷贝，有几个需要注意的地方：
 
   - 会忽略undefined；
-  - 无法处理函数和特殊对象（Error对象、Date对象、RegExp对象、Error对象、Symbol等）。
+  - 无法处理函数和特殊对象（Map对象，Set对象，Error对象、Date对象、RegExp对象、Symbol等）。
   - 不能处理循环引用：如果对象中存在循环引用，会抛出错误；
   - 性能问题：在处理大型对象时可能存在性能问题，尤其是在对象嵌套层次较深的情况下；
   - 原型链丢失：深拷贝后的对象将丢失原型链上的属性和方法；
@@ -502,5 +502,3 @@ Object.defineProperty(obj, Symbol.toStringTag, { value: "Module" });
 // 查看自定义类型
 console.log(Object.prototype.toString.call(obj)); // '[object Module]'
 ```
-
-  

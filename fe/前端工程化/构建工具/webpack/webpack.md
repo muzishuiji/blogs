@@ -14,6 +14,7 @@
 5. mode：打包模式,默认是 production, development 模式打包出来的文件时非压缩的, production 模式打包出来的文件时压缩过的.
 6. Webpack的打包流程可以简化为：
 ![alt text](./images/image.png)
+
     - 输入：从文件系统读入代码文件；
     - 模块递归处理：调用loader转译module内容，并将结果转换为AST，从中分析出模块间依赖关系，进一步递归调用模块处理过程，直到所有依赖文件都处理完毕；
     - 后处理：所有模块递归处理完毕后开始执行后处理，包括模块合并、注入运行时、产物优化等，最终输出chunk集合；
@@ -52,7 +53,7 @@
 - style-loader：该loader在产物中注入一系列runtime代码，这些代码会将css内容注入到页面的`style`标签，使得样式生效；
 - mini-css-extract-plugin：该插件会将css代码抽离到单独的css文件，并将文件通过link标签方式插入到页面中；
 
-11. PostCSS相当于css的babel，实现了一套讲css源码解析为AST结构，并传入PostCSS插件做处理的流程框架，具体功能由对应插件实现，常用插件有：
+11. PostCSS相当于css的babel，实现了一套将css源码解析为AST结构，并传入PostCSS插件做处理的流程框架，具体功能由对应插件实现，常用插件有：
     - autoprefixer：基于 Can I Use 网站上的数据，自动添加浏览器前缀
     - postcss-preset-env：一款将最新 CSS 语言特性转译为兼容性更佳的低版本代码的插件
     - postcss-less：兼容 Less 语法的 PostCSS 插件，类似的还有：postcss-sass、poststylus
@@ -70,7 +71,7 @@
     - 完成模块编译：上一步递归处理所有能触达的模块后，得到了每个模块被翻译后的内容以及他们之间的依赖关系图；
   3. 封装阶段：
     - 合并（seal）：根据入口和模块间的依赖关系，封装成一个个包含多个模块的chunk；
-    - 优化（optimization）：对上述chunk施加一系列优化操作，包括：tree-shaking、terser、scope-hoisting、压缩、code split等。
+    - 优化（optimization）：对上述chunk施加一系列优化操作，包括：tree-shaking、terser、scope-hoisting、code split等。
     - 写入文件系统（emitAssets）确定好输出内容后，根据配置确定输出的路径和文件名，把文件内容写入到文件系统中。
 
 一些行之有效的构建性能优化手段：并行编译、缓存、缩小资源搜索范围等。设置`profile=true`，运行编译命令，并添加--json参数，如：`npx webpack --json=stats.json`,可在生成的stats.json下查看每个模块打包的性能数据，可以从这些数据中分析出模块之间的依赖关系、体积占比、编译构建耗时等。结合社区里的分析工具，可以从可视化图表里更直观的找到性能卡点。
@@ -78,10 +79,27 @@
 13. webpack的并行构建
 
 并行构建的npm包：
-- HappyPack：多进程方式运行资源加载(Loader)逻辑；
-- Thread-loader：Webpack 官方出品，同样以多进程方式运行资源加载逻辑；
+- HappyPack：多进程方式运行资源加载(Loader)逻辑，适用于webpack4之前的项目；
+- Thread-loader：Webpack 官方出品，建议webpack4之后使用，同样以多进程方式运行资源加载逻辑；
 - Parallel-Webpack：多进程方式运行多个 Webpack 构建实例；
 - TerserWebpackPlugin：支持多进程方式执行代码压缩、uglify 功能。
+
+配置示例：
+
+```js
+const TerserPlugin = require('terser-webpack-plugin');
+
+module.exports = {
+    optimization: {
+        minimize: true,
+        minimizer: [
+            new TerserPlugin({
+                parallel: 2, // number / boolean
+            })
+        ]
+    }
+}
+```
 
 这些并行构建方案的核心设计很类似，针对某种计算任务创建子进程，之后将运行所需参数通过IPC传递到子进程并启动计算操作，计算完毕后子进程再将结果通过IPC传递回主进程，寄宿在主进程的组件实例，再将结果提交给webpack；
 
@@ -110,19 +128,22 @@
 
 webpack在构建过程中会持续收集模块之间的引用、被引用关系，并记录到Dependency Graph中，后续的Chunk封装、Code Split，Tree-Shaking等，但凡需要分析模块关系的功能都强依赖于Dependency Graph。
 
-Dependency Graph是webpack底层最关键的模块地图数据，因此在webpack5之后，Dependency Graph结构别接偶抽离为以ModuleGraph为中心的若干独立类型，架构设计更合理，模块搜索、分析效率也得到不同程度的优化，进而使得Webpack5构建速度也有明显提升。
+Dependency Graph是webpack底层最关键的模块地图数据，因此在webpack5之后，Dependency Graph结构被解偶抽离为以ModuleGraph为中心的若干独立类型，架构设计更合理，模块搜索、分析效率也得到不同程度的优化，进而使得Webpack5构建速度也有明显提升。
 
 18. Chunk、ChunkGroup、ChunkGraph
 
   - Chunk：Module用于读入模块内容，记录模块间依赖关系；而Chunk则根据模块依赖关系合并多个Module，输出成资产文件；
   - ChunkGroup：一个ChunkGroup包含一个或多个Chunk对象；ChunkGroup与Chunk之间父子依赖关系；
-  - ChunkGraph：Webpck会将chunk之间、ChunkGroup之间的依赖关系存储到compilation.chunkGraph对象中，
+  - ChunkGraph：Webpack会将chunk之间、ChunkGroup之间的依赖关系存储到compilation.chunkGraph对象中，
 
-  「构建」阶段根据模块的引用关系构建ModuleGraph,「封装」阶段则负责根据ModuleGraph构建一系列Chunk对象，并将Chunk之间的依赖关系（异步引用、Runtime）组织为ChunkGraph--Chunk依赖关系图对象。与ModuleGraph类似，ChunkGraph结构的引入也能接偶Chunk之间的依赖关系和管理逻辑，整体架构更合理、更容易扩展。
+  「构建」阶段根据模块的引用关系构建ModuleGraph,「封装」阶段则负责根据ModuleGraph构建一系列Chunk对象，并将Chunk之间的依赖关系（异步引用、Runtime）组织为ChunkGraph--Chunk依赖关系图对象。与ModuleGraph类似，ChunkGraph结构的引入也能解偶Chunk之间的依赖关系和管理逻辑，整体架构更合理、更容易扩展。
 
-  Webpack5内置三种分包规则；Entry Chunk、Async Chunk、与Runtime Chunk，这些都是最原始的分包逻辑，其它插件（splitChunksPlugin）都是在此基础，借助buildChunkGraph后触发的各种钩子进一步拆分i、合并、优化chunk结构，实现扩展分包效果。
+  Webpack5内置三种分包规则；Entry Chunk、Async Chunk、与Runtime Chunk，这些都是最原始的分包逻辑，其它插件（splitChunksPlugin）都是在此基础，借助buildChunkGraph后触发的各种钩子进一步拆分、合并、优化chunk结构，实现扩展分包效果。
 
 19. 更详细的Webpack构建流程
+
+[Webpack构建流程](./images//webpack.png)
+
 Webpack构建可以简单划分成init、make、seal三个阶段：
   - init阶段负责模块初始化webpack内部若干插件与状态，逻辑比较简答；
   - make阶段解决资源读入问题，这个阶段会从entry--入口模块开始、递归读入、解析所有模块内容，并根据模块之间的依赖关系构建ModuleGraph-模块依赖关系图；
@@ -263,9 +284,10 @@ secure: false; // 解除 https 协议下的安全限制
 ```
 7. 热更新原理
   - 文件变化监听：webpack使用watch模式来监听文件系统的变化；
-  - 编译与打包：当文件发生变化时，webpack会重新编译并打包发生变化的模块；
+  - 编译与打包：当文件发生变化时，webpack会重新编译并打包发生变化的模块，webpack会生成一个包含更新模块信息的json文件（简称`update
+  `文件），以及一个包含更新模块代码的js文件（称为`hot-update.js`文件）；
   - 发送更新信息：webpack dev server通过WebSocket将更新信息发送给浏览器；
-  - 接收更新信息：浏览器中的客户端脚本接收到更新信息；
+  - 接收更新信息：浏览器接收到更新文件信息后，会通过HMR Runtime应用这些信息，HMR Runtime是webpack在打包时注入到每个模块中的代码，它负责处理模块的热更新逻辑；
   - 客户端脚本根据更信息更新对应的模块，而不会刷新整个页面；
 
 
@@ -413,6 +435,7 @@ webpackLoad: 会在核心业务代码的加载过程中加载
     - 配置对象数组：每个数组项都是一个完整的配置对象，每个对象都会触发一次单独构建，通常用于需要为同一份代码构建多种产物的场景，如Library；
     - 函数：webpack启动时会执行该函数获取配置，我们可以在函数中环境参数（如NODE_ENV）动态调整配置对象。
 7. Scope Hoisting（作用域提升）
+
 Scope Hoisting是一种优化技术，旨在减少打包后的代码体积并提高运行时性能。它的主要作用是将多个模块合并到一个函数中，从而减少函数声明的数量和作用域嵌套的层级。
 工作原理
 - 模块合并：webpack会将多个模块合并到一个函数中，而不是为每个模块生成一个独立的函数。这样可以减少函数声明的数量，从而减少打包后的包体积。
@@ -472,7 +495,7 @@ runtimeChunk 里面存放的是各个 js 文件之间的关联关系,这样每�
 3. 垫片的一个使用场景:imports-loader
 
 imports-loader 可以对文件的 this 的指向做一个变更,让它指向 window.配置示例如下:
-
+```js
     rules: [
         {
             test: /\.js$/,
@@ -487,7 +510,7 @@ imports-loader 可以对文件的 this 的指向做一个变更,让它指向 win
             ]
         }
     ]
-
+```
 ### PWA 的打包配置
 
 PWA 是 progressive web app 的英文缩写,翻译过来就是渐进式增强 WEB 应用,是谷歌在 2016 年移除的概念,目的就是在移动端利用提供的标准化框架,在网页应用中实现和原生应用相近的用户体验的渐进式网页应用.
@@ -561,27 +584,7 @@ webpack 中使用`workbox-webpack-plugin`来打包后,会为我们自动生成�
 
 还可以使用 git 的钩子命令,在提交代码的时候对代码做 eslint 校验.
 
-### .babelrc
 
-在.babelrc 中配置 userBuildIns 为 usage 后,babel 会在使用用到 es6 以上的新特性的时候,自动为我们添加 babel-polyfill 的引用.
-
-'usage'这个属性值还在实验阶段
-
-可以通过给 userBuildIns 设置为 true 来根据浏览器兼容列表自动引入所需的 polyfill
-
-    {
-        "presets": [
-            ["env", {
-                "modules": false,
-                "targets": {
-                    "browsers": ["ie >= 9"]
-                },
-                "userBuildIns": true,
-                "debug": true
-            }]
-        ]
-    }
-    // 还需要在webpack的入口文件中引入 "babel-polyfill"
 
 ### webpack 性能优化
 
@@ -660,7 +663,7 @@ sourceMap 越完整,打包出来的代码的体积就会越大,打包速度就�
 比如一些代码压缩插件在开发环境是不需要的.
 
 ### 多页面打包配置
-
+```js
     const webpack= require('webpack');
     const path = require('path');
     const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -757,14 +760,14 @@ sourceMap 越完整,打包出来的代码的体积就会越大,打包速度就�
     }
     config.plugins = makePlugins(config);
     module.exports = config;
-
+```
 ### loader 
 1. loader 的作用: 帮助我们去处理模块,当我们需要对代码的逻辑做一层包装的时候就可以编写一个对应的 loader.比如: 我们需要实现界面展示的国际化, 需要对函数添加异常捕获等.
 loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
 
 2. 编写一个 loader 的大致流程:
     - 1.创建 loader 对应的文件夹,以及 js,编写对应的处理逻辑,代码示例:
-
+        ```js
             const LoaderUtils = require('loader-utils');
             // loaders的导出函数最好不要使用箭头函数,因为使用箭头函数你会找不到想要的this.
             module.exports = function(source) {
@@ -772,9 +775,9 @@ loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
                 const result = source.replace('dongdong', options.name);
                 return this.callback(null, result);
             }
-
+        ```
     - 2.在 webpack 中做以下配置
-
+    ```js
         // 这里我们把编写的loaders放在loaders目录中
         // loaders的查找顺序,先从node_modules里查找,然后从loaders中查找
         resolveLoader: {
@@ -800,8 +803,9 @@ loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
                 ]
             }
         ]
-
+    ```
 3. 常用loader介绍：
+
     1. file-loader 用于打包图片类文件.它为我们做了以下工作:
 
     - 移动图片到打包目录下,并可以做一些重命名,压缩之类的操作
@@ -818,14 +822,20 @@ loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
     7. responsive-loader：生成响应式图片的loader，为不同设备提供不同的分辨率、不同尺寸的图片。
 
 4. loader开发方法论
+
   - loader主要负责将资源转译为webpack能够理解、处理的标准js形式，所以通常需要loader内通过return/this.callback方式返回转译结果；
-  - loader context提供了许多实用接口，我们可以借助这些接口读取上下文信息，或改变webpack运行状态或运行结果（相当于产生side effect，如通过emtFile接口）；
+  - loader context提供了许多实用接口，我们可以借助这些接口读取上下文信息，或改变webpack运行状态或运行结果（相当于产生side effect，如通过emitFile接口）；
   - 如果开发loader时需要对外提供配置选项，可使用schema-utils校验配置参数是否合法；
   - 假若loader需要生层额外的资源文件，使用loader-utils拼接产物路径；
   - 执行时，webpack会按照use定义的顺序从前到后执行pitch loader，从后到前执行normal loader，可以将一些预处理逻辑放在pitch中。
 
 5. pitch函数调度逻辑
 
+pitch翻译成中文是抛、球场、力度、事物最高点等，它背后折射的是一整套Loader被执行的生命周期概念。
+
+loader的链条执行过程分为三个阶段：pitch、解析资源、执行，设计上与DOM的事件模型非常相似，pitch对应到捕获阶段，执行对应到冒泡阶段；而两个阶段之间webpack会执行资源内容的读取、解析操作，对应的DOM事件模型的目标阶段。
+
+pitch阶段按配置顺序从左到右执行loader.pitch函数（如果有的话），开发者可以在pitch返回任意值中断后续的链路的执行。
 
 
 ### plugin
@@ -838,6 +848,7 @@ loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
 
     - 1.在项目下创建 plugins 文件夹,创建 copyright-webpack-plugin.js 文件,示例代码如下:
 
+        ```js
             class CopyrightWebpackPlugin {
                 constructor(options) {
                 }
@@ -851,7 +862,6 @@ loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
                     })
                     // emit是一个异步的钩子函数
                     compiler.hooks.emit.tapAsync('CopyrightWebpackPlugin', (compilation, cb) => {
-                        debugger;
                         compilation.assets['copyright.txt'] = {
                             source:function() {
                                 return 'copyright by muzishuiji'
@@ -865,19 +875,63 @@ loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
                 }
             }
             module.exports = CopyrightWebpackPlugin;
-
+        ```
     - 2.在 webpack 中进行以下配置
 
+    ```js
         // 引入对应的插件
         const CopyrightWebpackPlugin = require('./plugins/copyright-webpack-plugin.js');
         // 实例化plugin
         plugins: [
             new CopyrightWebpackPlugin()
         ]
+    ```
 3. 常用plugin介绍
     1. `html-webpack-plugin` 会在打包结束后,自动生成一个 html 文件,并把打包生成的 js 都自动引入到这个 html 文件中.
     2. `webpack-spritesmith`: 实现雪碧图效果；
     3. 
+4. Webpack plugin hooks
+
+借助webpack数量庞大的hook，我们几乎能改写webpack所有特性，这使得plugin功能强大，但也伴随着巨大的开发复杂度。
+
+webpack hook有两个重点，一是hook的触发时机；二是触发时传递的上下文参数。
+
+  - compiler.hooks.compilation:
+    - 时机：Webpack刚启动完，创建出compilation对象后触发；
+    - 参数：当前编译的compilation对象；
+  - compiler.hooks.make:
+    - 时机：正式开始构建时触发；
+    - 参数：当前编译的compilation对象；
+  - compilation.hooks.optimizeChunks:
+    - 时机：seal函数中，chunk集合构建完毕后触发；
+    - 参数：chunks集合与chunkGroup集合；
+  - compiler.hooks.done:
+    - 时机：编译完成后触发；
+    - 参数：stats对象，包含编译过程中的各类统计信息；
+    
+hook类型汇总：
+
+|名称|简介|统计|
+|---|---|---|
+|SyncHook|同步钩子|Webpack 共出现 71 次，如 Compiler.hooks.compilation|
+|SyncBailHook|同步熔断钩子|Webpack 共出现 66 次，如 Compiler.hooks.shouldEmit|
+|SyncWaterfallHook|同步瀑布流钩子|Webpack 共出现 37 次，如 Compilation.hooks.assetPath|
+|SyncLooHook|同步循环钩子|webpack中未使用|
+|AsyncParallelHook|异步并行钩子|Webpack 仅出现 1 次：Compiler.hooks.make|
+|AsyncParallelBailHook|异步并行熔断钩子|webpack中未使用|
+|AsyncSeriesHook|异步串行钩子|Webpack 共出现 16 次，如 Compiler.hooks.done
+|
+|AsyncSeriesHook|异步串行熔断钩子|Webpack 中未使用|
+|AsyncSeriesLoopHook|异步串行循环钩子|Webpack 中未使用|
+|AsyncSeriesWaterfallHook|异步串行瀑布流钩子|Webpack 共出现 5 次，如 NormalModuleFactory.hooks.beforeResolve|。
+
+hook动态编译
+
+不同hook的所谓的同步、异步、bail、waterfall、loop等回调规则都是tapable根据hook类型、参数、回调队列等参数，调用new Function语句动态拼接出一段控制执行流程的javascript代码实现控制的。tapable的大多数特性都是基于Hook+hookCodeFactory实现的。借助这种能力我们就不需要为每一种情况单独创建hook，只需要在使用时动态创建，获取对应实例即可，能有效降低开发与维护成本。
+
+### Tapable
+
+Tapable 是一个用于实现插件系统的库，它允许你在特定的生命周期钩子（hooks）上注册插件逻辑。Tapable是webpack的核心库之一，webpack通过它来实现强大的插件系统。
 
 ### bundler 源码编写
 
@@ -1033,6 +1087,91 @@ loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
 
 ### 通过 CreateReactApp 深入学习 webpack 配置
 
+### webpack的持久化缓存
+
+持久化缓存是webpack5的新特性，能够将首次构建的过程与结果持久化保存到本地文件系统，在下次执行构建时跳孤傲解析、链接、编译等一系列非常消耗性能的操作，直接复用上次的Module/ModuleGraph/Chunk对象数据，迅速构建出最终产物。
+
+简单配置示例：
+
+```js
+module.exports = {
+    // ...
+    cache: {
+        type: 'filesystem'
+    }
+    // ...
+}
+```
+cache还提供了若干用于配置缓存效果、缓存周期的配置项。
+
+**cache loader**
+
+webpack4及之前版本的原生还没有相关实现，只能借助一些第三方插件实现类似效果。
+
+```js
+module.exports = {
+    module: {
+        rules: [
+            {
+                // cache-loader放在loader数组首位
+                test: /\.js$/,
+                use: ['cache-loader', 'babel-loader', 'eslint-loader]
+            }
+        ]
+    }
+}
+```
+
+**hard-source-webpack-plugin**
+
+hard-source-webpack-plugin也是一种实现缓存功能的第三方组件，与cache-loader不同的是，它并不仅仅缓存了loader的运行结果，还保存了webpack构建过程中许多中间数据，包括：模块、模块关系、模块resolve结果、chunks、Assets等，效果几乎与webpack5自带的cache对齐。
+
+使用示例：
+
+```js
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+module.exports = {
+    // ...
+    plugins: [
+        new HardSourceWebpackPlugin(),
+    ]
+}
+```
+
+**loader、plugin自带的缓存能力**
+
+- babel-loader
+```js
+  module.exports = {
+    // ...
+    module: {
+        rules: [{
+            test: /\.m?js$/,
+            loader: 'babel-loader',
+            options: {
+                cacheDirectory: true
+            }
+        }]
+    }
+  }
+```
+默认情况下，缓存内容会被保存到 node_modules/.cache/babel-loader目录，你也可以通过cacheDirectory = 'dir' 属性设置缓存路径.
+
+- eslint-loader；
+- eslint-webpack-plugin（替代eslint-loader）；
+- stylelint-webpack-plugin
+
+plugin开启缓存：
+```js
+// webpack.config.js
+module.exports = {
+    plugins: [
+        new ESLintPlugin({ cache: true }),
+        new StylelintPlugin({ files: '**/*.css', cache: true })
+    ]
+}
+```
+
 ### 记一些琐碎的优化点
 
 1. HardSourceWebpackPlugin, 可以为模块提供中间缓存.
@@ -1078,6 +1217,8 @@ loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
 
 1. lazyCompilation
 
+lazyCompilation是webpack 5.17.0之后引入的实验特性，用于实现entry或异步模块的按需编译。
+
 ```js
 // webpack.config.js
 module.exports = {
@@ -1119,9 +1260,9 @@ module.exports = {
 ```
 3. 使用noParse跳过文件编译
 
-noParse和externals的效果类似，使用noParse时需要注意：
+noParse和externals的效果类似，支持配置跳过三方模块的文件编译，使用noParse时需要注意：
 - 由于跳过了前置的AST分析操作，构建过程无法发现文件中可能存在的语法错误，需要到运行时（或terser做压缩）才能发现问题，所以必须确保noParse的文件内容正确性；
-- 由于跳过了依赖分析的过程，所以文件中，建议不要包含 import/export/require/define 等模块导入导出语句 —— 换句话说，noParse文件不能存在对其他文件的依赖，除非运行环境支持这种模块话方案；
+- 由于跳过了依赖分析的过程，所以文件中，建议不要包含 import/export/require/define 等模块导入导出语句 —— 换句话说，noParse文件不能存在对其他文件的依赖，除非运行环境支持这种模块化方案；
 - 由于跳过了内容分析过程，webpack无法标记该文件的导出值，无法实现tree-shaking；
 
 ```js
@@ -1235,6 +1376,7 @@ Chunk 分包结果的好坏直接影响了最终应用性能，Webpack 默认会
 - node_modules 中的资源通常变动较少，抽历程独立的包，业务代码的改动不会导致这部分资源缓存失效，避免无意义的资源加载。
 
 SplitChunksPlugin插件的主要能力有：
+
 - SplitChunksPlugin插件支持根据module路径、module被引用次数，chunk大小，chunk请求数等决定是否需要对chunk做进一步拆解，这些决策可以通过optimization.splitChunks相应配置项调整定制，基于这些能力我们可以实现：
 
   - 单独打包某些特定路径的内容，例如 node_modules 打包为 vendors；
@@ -1248,6 +1390,7 @@ SplitChunksPlugin插件的主要能力有：
   - 加载Initial Chunk所需请求书不得超过30；
 
 splitChunks 主要有两种类型的配置：
+
 - minChunks/minSize/maxInitialRequest等分包条件，满足这些条件的模块都会被执行分包。
 - cacheGroup：用于为特定资源声明分包条件，例如可以为node_modules包设定更为宽松的分包条件；
 
@@ -1295,6 +1438,17 @@ SplitChunksPlugin 分包的主体流程如下：
     - 如果 Chunk 体积大于 minSize 则判断是否超过 maxSize、maxAsyncSize、maxInitialSize 声明的上限阈值，如果超过则尝试将该 Chunk 继续分割成更小的部分
 
 这些条件的优先级顺序为：maxInitialRequest/maxAsyncRequests < maxSize < minSize。而命中enforceSizeThreshold阈值的chunk会直接跳过这些条件判断，强制进行分包。
+
+惯用的最佳分包策略：
+
+  - 针对node_modules资源：
+    - 可以对node_modules资源打包成单独的文件（通过cacheGroups实现），防止业务代码变更影响npm宝缓存，同时通过maxSize设定阈值，防止vendor包体积过大；
+    - 如果生产环境部署http2/3，可以考虑每一个npm包都打包成单独文件；
+  - 针对业务代码：
+    - 设置common分组，通过minChunks配置将使用率较高的资源合并为common资源；
+    - 首屏用不上的代码，尽量以异步方式引入；
+    - 设置optimization.runtimeChunk为true，将运行时代码拆分为独立资源；
+
 
 6. 缓存组cacheGroups简介
 
@@ -1411,6 +1565,7 @@ Webpack 提供了三种开启 Scope Hoisting 的方法：
 最终都会调用ModuleConcatenationPlugin完成模块分析与合并，与tree shaking类似， Scope Hoisting底层基于ES Module方案的静态特性，推断模块之间的依赖关系，并进一步判断模块与模块能否合并。因此不能处理以下场景
 
 - 非ESM模块
+
 遇到 AMD、CMD 一类模块时，由于导入导出内容的动态性，Webpack 无法确保模块合并后不会产生意料之外的副作用，因此会关闭 Scope Hoisting 功能。这一问题在导入 NPM 包尤其常见，许多框架都会自行打包后再上传到 NPM，并且默认导出的是兼容性更佳的 CommonJS 包，因而无法使用 Scope Hoisting 功能，此时可通过 mainFileds 属性尝试引入框架的 ESM 版本：
 ```js
 module.exports = {
@@ -1422,6 +1577,7 @@ module.exports = {
 
 ```
 - 模块被多个chunk引用
+
 如果一个模块被多个 Chunk 同时引用，为避免重复打包，Scope Hoisting 同样会失效，此时会将该模块单独打包。
 
 13. 监控产物包体积
