@@ -8,13 +8,12 @@
 3. 把你从繁琐的ui操作中解放出来,你无需关心ui的更新,只需要关注状态的管理和更新.
 
 4. React很简单
-        * 一个新概念,就是组件,让你用组件的方式去开发项目
+        * 组件化开发：让你用组件的方式去开发项目
         * 4个必须API
         * 单向数据流
-        传统的MVC不便于扩展和维护,flux架构不是一个完整的实现,而是一种数据模式.
+        传统的MVC不便于扩展和维护,flux架构不是一个完整的实现,更像一种状态管理模式.
         * 完善的错误提示
 
-以组件的方式实现ui的构建
 5. 创建一个组件需要考虑的因素
         * 创建静态ui
         * 考虑组件的状态组成
@@ -22,19 +21,24 @@
 
 6. 受控组件与非受控组件
 
-        * 受控组件,表单元素状态由使用者维护
+        * 受控组件，表单元素状态由使用者维护
 
-                <input type="text"
-                value={this.state.value}
-                onChange={evt => 
-                        this.setState({ value: evt.target.value})}
-                />
+        ```js
+        <input type="text"
+            value={this.state.value}
+            onChange={evt => 
+                this.setState({ value: evt.target.value});
+            }
+        />
+        ```
         * 非受控组件,表单状态由自身维护
 
-                <input 
-                        type="text"
-                        ref={node => this.input = node}
-                />
+        ```js
+        <input 
+                type="text"
+                ref={node => this.input = node}
+        />
+        ```
 
 7. 创建组件的时候需要遵循的原则
 
@@ -87,8 +91,8 @@ jsx优点:
 
 13. componentWillUnmount
 
-* 组件移除时被调用
-* 典型场景: 资源释放,定时器清除
+        * 组件移除时被调用
+        * 典型场景: 资源释放,定时器清除
 
 14. getSnapshotBeforeUpdate
 
@@ -117,6 +121,17 @@ react的virtual dom采用广度优先的深层比较,当节点跨层移动的时
 
 为节点制定key属性,可以使得react能够高性能的更新你的应用.
 
+**优点**
+
+  - 保证性能下限：虚拟DOM可以经过diff找出最小差异，然后批量进行patch，这种操作虽然比不上手动优化，但是比起粗暴的DOM操作性能要好很多，因此虚拟DOM可以保证性能下限；
+  - 无需手动操作DOM：React会处理虚拟DOM的diff和patch，开发者无需手动操作DOM，只需专注于状态管理，极大提升开发效率；
+  - 跨平台：虚拟DOM本质上是js对象，而DOM与平台强相关，相比之下虚拟DOM可以进行更方便的跨平台操作，例如服务端渲染、移动端开发等；
+
+**缺点**
+
+  - 无法进行机制优化：在一些性能要求极高的应用中虚拟DOM无法进行针对性的极致优化；
+
+
 18. 高阶组件
 
 高阶组件的概念就是给当前组件扩展一些别的应用逻辑
@@ -142,6 +157,7 @@ react的virtual dom采用广度优先的深层比较,当节点跨层移动的时
             - layout： 操作dom之后，useLayoutEffect会在layout阶段同步执行。在mutation阶段更新了dom，在layout阶段就可以拿到ref了。
 
 22. React的并发模式
+
 React的并发模式简单来说就是基于优先级的可打断的渲染流程。fiber结构的设计，一方面可以极大的降低查询节点的时间复杂度，把整个vdom树变成线性的链表结构，使得查询的时间复杂度为O(1)。另一方面链表的数据结构设计存储正在处理的fiber节点，使得耗时的渲染任务可以被打断、恢复。
 
         - 双缓冲
@@ -170,9 +186,9 @@ React Hooks不能写在条件语句、循环或其他嵌套函数中。这是因
   6. 更好的TypeScript支持
   Hooks与TypeScript结合更加自然，因为函数组件的类型推断更加直观。你可以直接使用TypeScript的类型注解来定义Hooks的参数和返回值。
 
-24. JSX的解析流程
+25. JSX的解析流程
 
-  1. 编译JSX：Babel解析JSX转换成render function，类似调用React.createElement。
+  1. 编译JSX：Babel解析JSX转换成render function，本质上调用React.createElement。
   2. React.createElement调用，生成虚拟DOM；
   3. 遍历虚拟DOM树，将其转换为fiber结构（这个过程叫reconcile）；
   reconcile过程并不只是创建fiber节点，当更新的时候，还会和之前fiber节点做diff，判断是新增、修改还是删除，然后打上对应的标记。
@@ -187,7 +203,21 @@ React Hooks不能写在条件语句、循环或其他嵌套函数中。这是因
   添加、修改history不会触发popstate，只有history之间导航才会触发。
   3. react的路由跳转是封装了pushState和replaceState的，当pushState或者replaceState触发的时候，会触发matchRoutes，match完会pushState修改history，然后更新state，触发了setState，组件树会重新渲染。
 
-渲染时会用到Outlet渲染子路由，用到useXxx来取一些匹配信息，这些都是通过context传递的。
+  渲染时会用到Outlet渲染子路由，用到useXxx来取一些匹配信息，这些都是通过context传递的。
+
+  4. 为什么需要路由?
+    * 单页应用需要进行页面切换
+    * 通过url可以定位到页面
+    * 更有语义的组织资源的显示与隐藏
+    memoryRouter内存路由,一般服务端渲染的时候会用到.
+
+  5. 基于路由组织资源的优点:
+    * 1.实现业务逻辑的松耦合
+    * 2.易于扩展,重构和维护
+    * 3.路由层面实现lazy load,统一的地方做懒加载的处理
+    navLink带有选中状态的link.prompt,页面要切换时的确认操作.
+    redirect,登陆校验时会用到,route路由匹配显示对应组件
+    exact是否精确匹配,route默认会显示所有匹配的组件,采用switch只显示第一个匹配的组件.页面状态可以通过url参数控制.
 
 26. React Context
 
@@ -204,13 +234,78 @@ context的实现：
   - provider的处理就是修改了 context._currentValue的值，也可以自己修改；
   - useContext和consumer的原理类似，都是读取context._currentValue，然后传入组件渲染；
 
-Consumer如何保证消费最近的一个Provider提供的value：Provider会在其子树中创建一个上下文环境，而Consumer会查找最近的上下文环境来获取数据，类似于js中变量作用域的概念。
+Consumer如何保证消费最近的一个Provider提供的value：当一个Consumer组件需要消费数据时，React会在组件树中向上查找最近的Provider组件。React会记录每个Provider的value，并在查找过程中使用这些记录来确定最近的Provider。
 
 context导致的重渲染如何解决？
 
   - 拆分context，每一类状态放在一个context里，这会导致context嵌套过多，维护成本增加。
   - 用zustand等状态管理库，通过selector逻辑只订阅组件依赖的状态的变更；
   - 用memo包裹子组件，它会对比新旧props，没变化就不会重新渲染；
+
+27. useEffect的effect函数在操作dom之后异步执行。
+
+异步执行就是用setTimeout，Promise等api包裹执行的逻辑；
+
+这些逻辑会以单独的宏任务或微任务的形式存在，然后进入Event Loop调度执行。
+
+异步执行的effect逻辑有两种可能，在下次渲染之前执行完这个effect或者分片时间不够了，在渲染之后执行了。这样就导致页面出现闪动，第二次渲染值更新了，如果不想闪动一下，就用useLayoutEffect。
+
+useLayoutEffect和useEffect的区别是useLayoutEffect的执行是同步的，浏览器会等effect逻辑执行完再渲染。
+而如果这段同步执行的逻辑耗时太久，会导致页面卡顿，所以开发者需要根据实际情况考虑选择使用useEffect还是useLayoutEffect。
+
+28. useRef可以视为React的一个组件内的全局变量，它的值的修改不会触发重渲染。useRef一般用来存一些不用于渲染的内容。
+
+29. 在React里，只要涉及到state的修改，就必须返回新的对象，不管是useState还是useReducer。
+这也是react的特性之一：数据不可变性。
+如果要修改复杂的深层嵌套的对象，可以用immer来优化。
+
+30. forwardRef + useImperativeHandle
+
+forwardRef + useImperativeHandle组合使用使得子组件可以自定义暴露给父组件的内容，是父组件访问和修改子组件状态的一种方式。
+
+31. 可以使用memo包裹组件来避免非必要的重渲染。
+
+如果子组件用了memo，给它传递的对象，函数类的props就需要用useMemo、useCallback包裹，否则，每次props都会变，memo就没用了。
+
+反之，如果props使用useMemo，useCallback，但是子组件没有被memo包裹，那也没意义，因为不管props变没变父组件重渲染都会导致子组件重渲染，只是做了无用功。
+
+32. React的生命周期
+
+  - useEffect不添加依赖类似于componentWillMount，不添加依赖的返回值类似于componentWillUnmount；
+  - useEffect添加prop为依赖，类似于getDerivedStateFromProps；
+  - useEffect添加state为依赖，类似于componentDidUpdate；
+
+33. React引入Fiber架构的原因和必要性
+
+React引入Fiber架构的主要原因是为了解决处理大型应用时，虚拟DOM的更新和渲染过程出现的性能瓶颈和用户体验问题。虽然之前的虚拟DOM树也可以正常的进行迭代和比较，但在某些情况下，它可能无法满足React对高性能和流畅用户体验的需求。以下是引入Fiber架构的主要原因：
+
+  1. 调度：
+    - 问题：在旧版本的架构中，React的渲染过程是同步的，这意味着React开始渲染一个组件树时，它会一直执行到渲染完成，期间不会中断。这在处理大型组件树时会导致长时间的阻塞，影响用户体验，尤其是在低端设备上。
+    - 解决方案：fiber结构引入了任务调度的概念，允许React将渲染工作分解为多个小任务，并在浏览器的主线成空闲时执行这些任务。这使得React可以在渲染过程中暂停、恢复和中断任务，从而避免长时间的阻塞，提高应用的响应性。
+  2. 优先级
+    - 问题：在旧版本的架构中，所有任务的优先级都是相同的，React无法区分哪些任务更重要，哪些任务可以稍后处理。这可能导致一些高优先级的任务（如用户交互）被低优先级的任务（如渲染）阻塞。
+    - 解决方案：Fiber架构引入了优先级机制，允许react根据任务的优先级来调度任务。如果进来的任务的优先级比当前在执行的任务的优先级高，则React暂停当前任务，优先处理用户交互事件，然后再处理数据更新。
+
+  3. 并发
+
+    - 问题：在旧版本的架构中，React的渲染过程是单线程的，无法并发处理多个任务，这限制了React处理复杂应用时的性能。
+    - 解决方案：Fiber架构引入了并发模式，允许React看起来在同一时间处理多个任务，提高应用的性能和响应性。
+
+  4. 增量渲染
+
+    - 问题：在旧版本的架构中，React的渲染性能是全局的，即每次更新都会重新渲染整个组件树。这在处理大型组件树时会导致性能问题。
+    - Fiber架构引入了增量渲染的概念，允许React将渲染工作分解为多个小的单元（Fiber），并在多个帧中逐步完成渲染。这使得React可以在不阻塞主线程的情况下，更新组件树，提高渲染性能。
+
+  5. 错误边界
+
+    - 问题：在旧版本的架构中，如果一个组件在渲染过程中抛出错误，整个应用可能会被崩溃；
+    - 解决方案：Fiber架构引入了错误边界的概念，允许开发者定义错误边界组件，当子组件抛出错误时，错误边界组件可以捕获错误并显示备用UI，从而提高应用的健壮性；
+
+  6. 更好的调和
+    
+    - 问题：在旧版本的架构中，React的reconciler是基于递归的，这会导致在处理大型组件树时，调用栈过深，影响性能，且容易发生栈溢出；
+    - 解决方案：Fiber架构将reconciler过程从递归改为基于链表的迭代，这使得React可以在不消耗过多调用栈空间的情况下，处理大型组件树。此外，Fiber架构还允许React在调和过程中暂停和恢复，从而更好地控制渲染过程。
+
 
 ### React Ref
 
@@ -268,9 +363,9 @@ function forwardRef(render) {
 
 5. commit阶段会在layout操作完dom后遍历fiber链表更新HostComponent的ref，也就是将fiber.stateNode赋值给ref.current。
 
-6. forwarRef创建了单独的react element类型，在beginWork处理到它的时候做了特殊处理，就是把ref作为第二个参数传递给了函数组件。
+6. forwardRef创建了单独的react element类型，在beginWork处理到它的时候做了特殊处理，就是把ref作为第二个参数传递给了函数组件。
 
-7. useImperativeHandle的底层实现就是useEffect，只不过执行的函数和i虚构i啊的对象是指定传入的，这样在layout阶段调用hook的effect函数的时候就可以更新ref了。
+7. useImperativeHandle的底层实现就是useEffect，只不过执行的函数和需要的对象是指定传入的，这样在layout阶段调用hook的effect函数的时候就可以更新ref了。
 
 
 ## redux
@@ -292,6 +387,7 @@ state + action = new state, 不可变特性,每次状态更新会产生一个新
 `const store = createStore(reducer)`
 
 store有三个方法:
+
 * 1.getState(); // 获取当前的状态
 * 2.dispatch(action); // 触发action,更新state
 * 3.subscribe(listener); // 监听store的变化,调用回调函数
@@ -309,61 +405,82 @@ Redux中间件主要做两个事情:
 * 发出action,将异步的执行结果传入,触发action.
 Redux 中间件通过在dispatcher中截获action做特殊处理.
 
-5. 异步action不是特护的action,而是多个同步的action的组合使用
+5. 异步action不是特殊的action,而是多个同步的action的组合使用
 
 6. 单个action和reducer放在同一个文件
 7. Redux的运行基础,不可变数据,为何需要不可变数据?
-* 性能优化
-* 易于调试和追踪
-* 易于推测,可预测性
+
+  * 性能优化
+  * 易于调试和追踪
+  * 易于推测,可预测性
 有一个轻量级的不可变数据的实现方案immer
 
-8. React Router
-为什么需要路由?
-* 单页应用需要进行页面切换
-* 通过url可以定位到页面
-* 更有语义的组织资源的显示与隐藏
-memoryRuter内存路由,一般服务端渲染的时候会用到.
+## React 的事件机制
 
-9. 基于路由组织资源的有点:
+React的事件机制是其核心特性之一，它提供了一种统一的方式来处理DOM事件，使得开发者可以在React组件中以声明式的方式来处理事件。React的事件机制并不是直接使用原生DOM事件，而是通过合成事件（SyntheticEvent）来实现的。
 
-* 1.实现业务逻辑的松耦合
-* 2.易于扩展,重构和维护
-* 3.路由层面实现lazy load,统一的地方做懒加载的处理
+1. 合成事件（SyntheticEvent）
 
-navLink带有选中状态的link.prompt,页面要切换时的确认操作.
-redirect,登陆校验时会用到,route路由匹配显示对应组件
-exact是否精确匹配,route默认会显示所有匹配的组件,采用switch只显示第一个匹配的组件.页面状态可以通过url参数控制.
+React的事件系统基于合成事件（SyntheticEvent），这是一种跨浏览器的事件包装器。合成事件与原生DOM事件类似，但它提供了跨浏览器的兼容性和一致性。React通过合成事件来屏蔽不同浏览器之间的差异，使得开发者可以编写跨浏览器的代码。
 
-10. useEffect的effect函数在操作dom之后异步执行。
-异步执行就是用setTimeout，Promise等api包裹执行的逻辑；
+2. 事件委托（Event Delegation）
 
-这些逻辑会以单独的宏任务或微任务的形式存在，然后进入Event Loop调度执行。
+React的事件系统采用了事件委托（Event Delegation）的机制。事件委托是一种优化技术，它将事件处理程序附加到DOM树的顶层元素（通常是document或reactDom.render的根元素），而不是每个子元素上。当事件触发时，React会在顶层元素上捕获事件并分发给对应的组件。
 
-异步执行的effect逻辑有两种可能，在下次渲染之前执行完这个effect或者分片时间不够了，在渲染之后执行了。这样就导致页面出现闪动，第二次渲染值更新了，如果不想闪动一下，就用useLayoutEffect。
+事件委托的优势：
+  - 性能优化：减少事件处理程序的数量，用特别是在处理大量子元素时；
+  - 动态元素：对于动态添加或删除的元素，事件委托可以自动处理，无需手动绑定或解绑事件；
 
-useLayoutEffect和useEffect的区别是useLayoutEffect的执行是同步的，浏览器会等effect逻辑执行完再渲染。
-而如果这段同步执行的逻辑耗时太久，会导致页面卡顿，所以开发者需要根据实际情况考虑选择使用useEffect还是useLayoutEffect。
+3. 事件池（Event Pool）
 
-11. useRef可以视为React的一个组件内的全局变量，它的值的修改不会触发重渲染。
+React会创建一个合成事件对象，并将其传递给事件处理函数。同时使用事件池来重用合成事件对象，以提高性能。事件处理程序执行完毕后，合成事件对象会被重置并放回事件池中。
 
-useRef一般用来存一些不用于渲染的内容。
+4. 注意事项
 
-12. 在React里，只要涉及到state的修改，就必须返回新的对象，不管是useState还是useReducer。
+异步事件处理：由于合成事件对象会被重用，因此在异步操作中访问事件对象时，可能会遇到事件对象已被重置的情况。如果需要在异步操作中访问事件对象，可以通过event.persist() 方法来保留事件对象。
 
-这也是react的特性之一：数据不可变性。
-如果要修改复杂的深层嵌套的对象，可以用immer来优化。
+```js
+function handleClick(event) {
+  event.persist();
+  setTimeout(() => {
+    console.log(event.target); // 输出当前点击的元素
+  }, 0);
+}
+```
 
-13. forwardRef + useImperativeHandle
+## React和Vue的区别
 
-forwardRef + useImperativeHandle组合使用使得子组件可以自定义暴露给付组件的内容。
+React和Vue是两个非常流行的前端框架库，他们都用于构建用户界面，但在设计理念、使用方式和生态系统方面有一些显著的区别。
 
-14. Context + Provider
+1. 核心思想
 
-跨组件之间的传递数据可以用Context，通常使用Context + Provider的模式实现全局的配置数据：主题等的状态管理。
+  - React：React是一个用于构建用户界面的js库，它遵循组件化的思想，将ui拆分为独立、可重用的组件。React使用JSX语法，允许你在js代码中编写类似HTML的结构；
+  - Vue：VUe是一个渐进式js框架，它也遵循组件化的思想，但更注重灵活性和易用性。Vue使用模版语法（类似HTML）和单文件组件（SFC），将模版、逻辑和样式封装在一个文件中。
 
-15. 可以使用memo包裹组件来避免非必要的重渲染。
-如果子组件用了memo，那给它传递的对象，函数类的props就需要用useMemo、useCallback包裹，豆则，每次props都会变，memo就没用了。
-反之，如果props使用useMemo，useCallback，但是子组件没有被memo包裹，那也没意义，因为不管props变没变都会重新渲染，只是做了无用功。
+2. 模版与JSX
+
+  - React：使用JSX来描述组件的结构，JSX是一种在js中编写类似于HTML代码的语法扩展。JSX最终会被编译成js代码。
+  - Vue：使用模版语法，模版式纯HTML的扩展，跟之前的ejs有些相像，更容易上手。Vue的模版语法支持指令（v-if、v-for）和插值，使得数据绑定和条件渲染更加直观；
+
+3. 数据绑定
+
+  - React：使用单向数据流，数据从父组件流向子组件。React中的状态（state）是不可变的，每次修改都要返回新的state；
+  - Vue：使用双向数据绑定，数据可以在试图和模型之间自动同步。VU饿的状态是响应式的，当数据变化时，视图会自动更新。
+
+4. 性能
+
+  - React：使用虚拟DOM来优化性能，React的diff算法能够最小化DOM操作，提高渲染效率。但是更细粒度的避免重渲染需要开发者管理好状态依赖，以及给组件增加memo等逻辑来实现；
+  - Vue：vue也使用虚拟DOM，但vue的响应式系统能够更细粒度的追踪依赖关系，减少不必要的重渲染；
+
+
+## Ref的实现原理
+
+render阶段处理到原生标签也就是HostComponent类型的时候，如果有ref属性会在fiber.flags里加一个标记。
+
+commit阶段会在layout操作完dom后遍历fiber链表更新HostComponent的ref，也就是把fiber.stateNode赋值给ref.current。
+
+react并不关心ref是哪里创建的，用createRef、useRef创建的，或者forwardRef传过来的都行，甚至普通对象也可以。createRef、useRef只是把普通对象 Object.seal了一下。
+
+useImperativeHandle的底层实现就是useEffect，只不过执行的函数是它指定的，bind了传入的ref和create函数，这样layoutr阶段调用hook的effect函数就可以更新ref。
 
 
