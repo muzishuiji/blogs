@@ -1,4 +1,45 @@
 // 排序算法大汇总，一网打尽排序问题
+// 冒泡排序
+// 原理：每次把前i个元素较小的那个冒泡上去
+const bubbleSort = (arr) => {
+    for(let i = 0; i < arr.length; i++) {
+        for(let j = 0; j < i; j++) {
+            if(arr[i] < arr[j]){ 
+                [arr[i], arr[j]] = [arr[j], arr[i]]
+            }
+        }
+    }
+    return arr;
+}
+let arr = [3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48];
+bubbleSort(arr);
+
+// 快速排序
+// 原理：确定一个哨兵，每次把小于它的元素放左边，大于它的元素放右边；
+function quickSort(arr) {
+    let partition = (arr, left, right) => {
+        let target = arr[right];
+        let i = left;
+        for(let j = left; j < right; j++) {
+            if(arr[j] < target) {
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+                i++;
+            }
+        }
+        [arr[i], arr[right]] = [arr[right], arr[i]];
+        return i;
+    }
+    let innerQuickSort = (arr, left, right) => {
+        if(left >= right) return;
+        let pivot = partition(arr, left, right);
+        innerQuickSort(arr, 0, pivot - 1);
+        innerQuickSort(arr, pivot + 1, right);
+    }
+    innerQuickSort(arr, 0, arr.length - 1);
+    return arr;
+}
+let arr = [3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48];
+quickSort(arr);
 
 // 归并排序
 const mergeSort = arr => {

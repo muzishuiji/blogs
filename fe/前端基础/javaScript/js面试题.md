@@ -35,27 +35,12 @@ obj = {}; // 不报错，但是赋值失败
 
 call使用一个指定的this值和单独给出的一个或多个参数来调用一个函数。
 ```js
-Function.prototype.myCall = function(thisArg, ...args) {
-    // this指向调用call的对象，即我们要改变的this指向的函数
-    thisArg.fn = this;
-    // 执行函数并return其执行结果
-    return thisArg.fn(...args)
-}
-```
-进一步优化：
-```js
-Function.prototype.myCall = function(thisArg, ...args) {
-    // 声明一个独有的Symbol属性，防止fn覆盖已有属性
-    const fn = Symbol('fn');
-    // 若没有传入this，默认绑定window对象
-    thisArg = thisArg || window;
-    // this指向调用call的对象，即我们要改变的this指向的函数
-    // 将函数赋值给thisArg的属性
-    thisArg[fn] = this;
-    // 执行函数并return其执行结果
-    const res = thisArg[fn](...args)
-    delete thisArg[fn]
-    return res;
+Function.prototype.myCall = function(context = window, ...args) {
+    const fn = Symbol();
+    context[fn] = this;
+    let result = context[fn](...args);
+    delete context[fn];
+    return result;
 }
 // 
 function foo() {
@@ -71,27 +56,12 @@ foo.myCall(obj)
 5. 手写apply
 apply方法调用一个具有给定this值的函数，以及作为一个数组（或类似数组对象）提供的参数。
 ```js
-Function.prototype.myApply = function(thisArg, args) {
-    // this指向调用call的对象，即我们要改变的this指向的函数
-    thisArg.fn = this;
-    // 执行函数并return其执行结果
-    return thisArg.fn(...args)
-}
-```
-进一步优化：
-```js
-Function.prototype.myApply = function(thisArg, args) {
-    // 声明一个独有的Symbol属性，防止fn覆盖已有属性
-    const fn = Symbol('fn');
-    // 若没有传入this，默认绑定window对象
-    thisArg = thisArg || window;
-    // this指向调用call的对象，即我们要改变的this指向的函数
-    // 将函数赋值给thisArg的属性
-    thisArg[fn] = this;
-    // 执行函数并return其执行结果
-    const res = thisArg[fn](...args)
-    delete thisArg[fn]
-    return res;
+Function.prototype.myApply = function(context = window, args) {
+    let fn = Symbol();
+    context[fn] = this;
+    let result = context[fn](...args);
+    delete context[fn];
+    return result;
 }
 function foo() {
     console.log(this.name)
@@ -105,15 +75,16 @@ foo.myApply(obj, [])
 6. 手写bind
 bind方法创建一个新的函数，在bind()方法被调用时，这个新函数的this被指定为bind()的第一个参数，而其余参数作为新函数的刹那火速，提供调用时使用。
 ```js
-Function.prototype.myBind = function (thisArg, ...args) {
-    let self = this;
-    var _fun = function () {
-        // new调用该函数
-        return self.apply(this instanceof self ? this : thisArg, args.concat(Array.prototype.slice.call(arguments)) )
+Function.prototype.myBind = function (context, ...args1) {
+    // 如果返回的函数被以构造函数调用，就沿用旧逻辑，否则使用apply修改this
+    let _this = this;
+    return function F(...args2) {
+        if(this instanceof F) {
+            return new _this(...args1, ....args2);
+        } else {
+            return _this.apply(context, args1.concat(args2))
+        }
     }
-    // 继承原型上的属性和方法
-    _fun.prototype = this.prototype;
-    return _fun;
 }
 let obj = {
     name: "muzishuiji"
@@ -130,13 +101,14 @@ aa(); // 输出 muzishuiji a b c
 ```js
 function myDebounce(fn, wait) {
     let timer = null;
-    return function() {
-        let context = this;
-        let args = arguments;
-        if(timer) clearTimeout(timer);
-        timer = setTimeout(function () {
-            fn.apply(context, args);
-        }, wait)
+    return function (...args) {
+        if(timer) {
+            clearTimeout(timer);
+            timer = null;
+        }
+        setTimeout(() => {
+            fn.apply(this, args);
+        }, wait);
     }
 }
 ```
@@ -144,19 +116,18 @@ function myDebounce(fn, wait) {
 ```js
 function myThrottle(fn, wait) {
     let timer = null;
-    return function() {
+    return function(...args) {
         let context = this;
-        let args = arguments;
         if(!timer) {
             timer = setTimeout(function () {
                 clearTimeout(timer)
+                timer = null;
                 fn.apply(context, args);
-            }, wait)
+            }, wait);
         }
-
     }
 }
-```
+``` 
 
 9. 数组扁平化
 
@@ -286,7 +257,7 @@ console.log(pp1.__proto__ === Person.prototype) // true
 16. 一段js代码是如何执行的；
     在执行一段代码时，js会创建一个执行栈，然后js引擎会创建一个全局上下文，并push到执行栈中，这个过程js引擎会为这段代码中的所有变量分配内存并赋一个初始值（undefined），在创建完成后，js引擎会进入执行阶段，这个过程js引擎会逐行的执行，即为之前分配好的内存的变量逐个赋值。
     如果代码中存在function的声明和调用，那么js引擎会创建一个函数执行上下文，并push到执行栈中，其创建和执行过程跟全局执行上下文一样。但有特殊情况，即当函数中存在对其它函数的调用时，js引擎会在父函数的执行过程中，将子函数的全局上下文push到执行栈。
-    还有一种特殊情况时，在子函数执行的过程中，父函数已经return了，这种情况下，js引擎会将父函数的上下文从执行栈中移除，与此同时，js引擎会为还在执行的子函数上下文创建一个闭包，这个闭包里保存了父函数内生命的变量及其赋值，子函数仍然能够狗在其上下文中访问并使用父函数中的变量/常量。当子函数执行完毕，js引擎才会将子函数的上下文及闭包一并从执行栈中移除。
+    还有一种特殊情况时，在子函数执行的过程中，父函数已经return了，这种情况下，js引擎会将父函数的上下文从执行栈中移除，与此同时，js引擎会为还在执行的子函数上下文创建一个闭包放在[[scopes]]中，这个闭包里保存了父函数内声明的变量及其赋值，子函数仍然能够在其上下文中访问并使用父函数中的变量/常量。当子函数执行完毕，js引擎才会将子函数的上下文及闭包一并从执行栈中移除。
     js引擎单线程的，那么它是如何处理高并发的呢？即当代码中存在异步调用时js是如何执行的。比如setTimeout或fetch请求都是non-blocking的，当异步调用代码触发时，js引擎会将需要执行的代码移出调用栈，直到等待到返回结果，js引擎会立即将与之对应的回调函数push进任务队列中等待被调用，当调用（执行）栈中已经没有需要被执行的代码时，js引擎会立刻将任务队列中的回调函数逐个push进调用栈并执行。这个过程我们称之为事件循环。
 
 17. for...of 循环
@@ -307,8 +278,7 @@ for...of 循环相较于forEach性能会损：
 
 CORS（Cross-Origin Resource Sharing，跨域资源共享）是一种基于HTTP头的机制，允许服务器声明哪些源站通过浏览器有权限访问哪些资源。CORS是现代Web开发中推荐的方式，因为它提供了更安全和灵活的跨域请求解决方案。
 
-服务端代码示例（Node.js示例）
-在服务端，需要设置适当的CORS头，允许跨域请求。
+服务端代码示例（Node.js示例），在服务端，需要设置适当的CORS头，允许跨域请求。
 ```js
 const express = require('express');
 const app = express();
@@ -337,20 +307,20 @@ app.listen(3000, () => {
 
 20. Event对象常见应用
 
-  1. event.preventDefault()
-  取消事件的默认动作；
-  2. event.stopPropagation()
-  阻止事件冒泡；
-  3. event.stopImmediatePropagation()
+  1. event.preventDefault()：取消事件的默认动作；
+  2. event.stopPropagation()：阻止事件冒泡；
+  3. event.stopImmediatePropagation()：
   阻止剩下的事件处理程序执行。如果一个元素绑定了三个事件，在其中一个事件上调用了这个方法，那其他的两个事件将不会被执行。
 
 21. 原型、构造函数、实例、原型链
 
-![alt text](<imgs/whiteboard_exported_image (6).png>)
+![alt text](<imgs/whiteboard_exported_image.png>)
 
 22. instanceof的原理
 
 instanceof用于判断一个引用类型是否属于某个构造函数，只要在实例对象的原型链上的构造函数，instanceof都会返回true。
+
+判断操作符右边对象的原型是否在操作符左边对象的原型链上。
 
 ```js
 obj3 instanceof M // true
@@ -362,13 +332,16 @@ shift内部实现是使用this代表对象。那么[].shift.call()传入argument
 
 24. 任务队列
 
-  - 所有同步任务都在祝线程执行，形成一个执行栈（execution context stack）；
-  - 主线程之外，还存在一个“任务队列”，只要异步任务有了运行结果，就在”任务队列“中放置一个事件。
-  - 一旦”执行栈“中所有同步任务执行完毕，系统就会读取”任务队列“，看看里面有哪些事件。将任务队列中的任务一一push进执行栈，开始执行。
+  - 所有同步任务都在主线程执行，形成一个执行栈（execution context stack）；
+  - 主线程之外，还存在一个“任务队列”，只要异步任务有了运行结果，就在”任务队列“中放置一个事件；
+  - 一旦“执行栈”中所有同步任务执行完毕，系统就会读取”任务队列“，看看里面有哪些事件。将任务队列中的任务一一push进执行栈，开始执行。
+
+  任务队列分为宏任务队列和微任务队列，每次同步任务执行完毕后，会先将微任务队列一一执行，然后从宏任务队列中取出一个宏任务执行，接着去执行同步任务，重复上述步骤；
 
 25. requestAnimationFrame的执行机制
 
 requestAnimationFrame是浏览器提供的一个API，用于在浏览器重绘之前执行动画相关的代码，它允许开发者以一种有效且与浏览器渲染周期同步的方式来更新动画。
+
 requestAnimationFrame的主要目的是在浏览器准备重绘下一帧之前执行指定的回调函数。这使得动画能够在最佳的时间点执行，从而提高性能和流畅度。
 
 26. js中的显式绑定和隐式绑定
@@ -378,7 +351,7 @@ requestAnimationFrame的主要目的是在浏览器准备重绘下一帧之前�
 
 27. 箭头函数的this
 
-箭头函数的this是固定的，从定义它的上下文中继承，且后续不会发生改变，也不支持通过显式绑定改变。
+箭头函数的this是固定的（定义的时候就确定了），从定义它的上下文中继承，且后续不会发生改变，也不支持通过显式绑定改变。
 
 28. 可以通过JSON.parse(JSON.stringify(object))来实现深拷贝，有几个需要注意的地方：
 
@@ -421,7 +394,7 @@ Proxy 和 Object.defineProperty 都是js中用于实现对象属性拦截和代�
     
   Object.defineProperty 
 
-    -  Object.defineProperty在定义属性时如果发生个错误，可能会导致整个对象的定义失败；
+    -  Object.defineProperty在定义属性时如果发生错误，可能会导致整个对象的定义失败；
 
   4. 支持的对象类型
     - Proxy可以带来数组和函数，而Object.defineProperty 只能代理对象的属性。
@@ -502,3 +475,76 @@ Object.defineProperty(obj, Symbol.toStringTag, { value: "Module" });
 // 查看自定义类型
 console.log(Object.prototype.toString.call(obj)); // '[object Module]'
 ```
+
+32. with 和 eval
+
+**with**
+
+  with语句用于扩展一个语句的作用域链。
+  ```js
+  with(expression) {
+    statement;
+  }
+  ```
+  JavaScript 查找某个未使用命名空间的变量时，会通过作用域链来查找，作用域链是跟执行代码的 context 或者包含这个变量的函数有关。'with'语句将某个对象添加到作用域链的顶部，如果在 statement 中有某个未使用命名空间的变量，跟作用域链中的某个属性同名，则这个变量将指向这个属性值。如果沒有同名的属性，则将拋出ReferenceError异常。
+
+  **注意事项**
+
+  - 性能问题：with语句会降低代码的性能，因为它会改变作用域链，导致js引擎无法进行有效的优化；
+  - 可读性差：with语句会使代码难以阅读和理解，因为它隐藏了变量的来源；
+  - 潜在的命名冲突：with语句可能会导致命名冲突，特别是在嵌套的作用域中；
+  
+**eval**
+
+  eval函数用于执行一个字符串形式的js代码。
+
+  **注意事项**
+
+  - 安全风险：eval执行的代码可以访问当前作用域中的变量和函数，这可能导致安全问题，特别是在执行不受信任的代码时；
+  - 性能问题：eval会降低代码的执行性能，因为它会动态解析和执行代码，而不是在编译时进行优化；
+  - 可读性差：eval函数会使代码难以阅读和理解，因为它隐藏了代码的实际执行逻辑；
+  - 调试困难：eval执行的代码难以调试，因为它是在运行时动态生成的；
+
+33. Web Component
+
+Web Component的优势：
+  1. 封装性：Web Component允许开发者将组件的HTML、CSS和js封装在一起，自带隔离性，可避免与外部样式和脚本冲突。
+  2. 可重用性：自定义元素可以在不同的项目中重复使用，而不需要依赖特定的框架和库；
+  3. 跨框架兼容性：Web Component可以在不同的框架中使用，因为它是基于Web标准的；
+  4. 性能：由于Web Component是基于web技术的，因此它们的性能比基于框架的组件更好；
+
+Web Component的局限性：
+  1. 浏览器兼容性：虽然现代浏览器web components的支持已经很好，但在一些旧版本的浏览器中可能需要polyfill；
+  2. 复杂性：开发和维护Web Component比使用框架更复杂，尤其在处理复杂交互和状态管理时；
+  3. 生态系统：Web Component的生态系统相对较小，没有像React或Vue那样丰富的第三方库和工具；
+
+Web Component是一组强大的Web平台API，允许开发者创建可重用的自定义元素，并将它们封装起来，以便在不同的项目中使用。
+
+34. 大文件上传
+
+  - 前端
+
+    1. 读取本地的文件，读成一个文件对象；
+    2. 使用slice对文件对象进行切割，并得到blob类型的文件对象；
+    核心就是利用Blob.prototype.slice这个方法，它和数组的slice方法相似，但不是，文件的slice方法可以返回原文件的某个切片，将大文件对象切割成小的blob对象，由于后端无法识别blob对象，所以需要转为前后端都能识别的formData对象，再用post请求发送给后端。
+
+    3. 将blob类型的文件对象转成formData表单类型的对象；
+    4. 发送请求，将formData对象切片一个一个发送给后端；
+
+  - 后端
+
+    1. 接受前端传递的切片并解析切片得到数据；
+    2. 保存切片到某个文件夹；
+    3. 当接受到前端的合并请求后，开始合并切片或者接收到所有chunk后开始合并切片；
+    4. 创建可写流，将所有的切片读成流类型并汇入到可写流中得到完整的文件资源；
+
+35. 冯诺依曼原理
+
+> 冯诺依曼原理是现代计算机设计的基础理论，由著名数学家和计算机科学家约翰冯诺依曼提出。这一原理主要包括两个核心概念：存储程序和程序控制。
+
+  1. 存储程序：这一概念指出计算机的程序和数据都应以同等地位存储在计算机的内存中。这意味着程序指令和处理的数据都被视为二进制信息，并且可以按地址访问。在计算机运行之前，程序会被加载到内存中，等待执行。
+  2. 程序控制：计算机根据存储在内存中的程序指令序列自动执行任务，无需人工干预。计算机从第一条指令开始，控制器负责输出指令、解码并执行，然后根据指令的要求顺序执行后续指令，知道程序结束或者遇到停止指令。指令不仅指定了数据的运算方式，也指定了下一条要执行的指令地址，从而实现了流程控制。
+
+
+
+  
