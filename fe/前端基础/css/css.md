@@ -4,7 +4,7 @@
 
 1. 关于flex布局的内容移除撑大容器的问题。
 
-min-width的默认值，在css2标准的布局模型中是0。但是咋flex布局中，min-width的默认值最小content大小（min-content size， 我的理解是容器的宽度）。正是这个定义，导致了上文中Grid System被内容撑大。当没有明确设置width或者min-width的值时，flex-basis会不起作用，元素大小最后会收到min-wdith的限制。解决方案：
+min-width的默认值，在css2标准的布局模型中是0。但是咋flex布局中，min-width的默认值最小content大小（min-content size， 我的理解是容器的宽度）。正是这个定义，导致了上文中Grid System被内容撑大。当没有明确设置width或者min-width的值时，flex-basis会不起作用，元素大小最后会收到min-width的限制。解决方案：
 
 * overflow-x: hidden | scroll | auto;
 * min-width: 0px; 比较小的值都可以

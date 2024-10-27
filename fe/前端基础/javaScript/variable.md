@@ -1,7 +1,6 @@
 ## 1 前言
 
-如果面试问你JavaScript的数据类型有哪些?你可以信誓旦旦的说出Null, Undefined, Boolean, String, Number,Symbol以及Object七种数据类型,问到它们的区别是什么,你也能说出一二,但是你知道JavaScript的包装类型吗?拆箱和装箱又是?Symbol数据类型有哪些特性?你在什么时候用到了Symbol数据类型?隐式类型转换规则有哪些?判断JavaScript数据类型的方法有哪些?优缺点是?enmmmm...
-黑人问号脸?
+如果面试问你JavaScript的数据类型有哪些?你可以信誓旦旦的说出Null, Undefined, Boolean, String, Number,Symbol以及Object七种数据类型,问到它们的区别是什么,你也能说出一二,但是你知道JavaScript的包装类型吗?拆箱和装箱又是?Symbol数据类型有哪些特性?你在什么时候用到了Symbol数据类型?隐式类型转换规则有哪些?判断JavaScript数据类型的方法有哪些?优缺点是? emmmmm... 黑人问号脸?
 
 这篇文章会对上述问题作出解答,并会扩展一些那些我们需要知道但却没有关注到的知识,让我们开始学习之旅吧~
 
@@ -50,15 +49,11 @@ Array, Function, Date, RegExp都是特殊的对象
         var age = 22;
         var job = 'teacher';
 
-存储结构如下图:
-
 * 引用类型
 
         var obj1 = {name:'muzishuiji'};
         var obj2 = {name:'wangming'};
         var person3 = {name:'xuliu'};
-
-存储结构如下图:   
 
 
 **3. 原始类型的比较是值的比较,引用类型类型的比较是变量值所在地址的比较:**
@@ -240,7 +235,7 @@ Symbol创建的变量独一无二的特性有效避免了属性污染.
 
     // 红宝书上传入的是字符串"some text",我觉得其实就是传入的s1的值创建了一个临时的包装类型的变量.
     var tempS1 = new String(s1);
-    var s2 = tempS1.sunString();
+    var s2 = tempS1.substring();
     tempS1 = null;
 
 上面三个步骤也分别适用于Boolean和Number类型对应的布尔值和数值.
@@ -262,7 +257,7 @@ Symbol创建的变量独一无二的特性有效避免了属性污染.
 
 装箱的操作也就是上面2.4.1介绍的基本操作类型在调用相关方法时后台为我们执行的操作.
 
-从引用类型到基本类型的转换，也就是拆箱的过程中，会遵循ECMAScript规范规定的toPrimitive原则，一般会调用引用类型的valueOf和toString方法，你也可以直接重写toPeimitive方法。一般会根据想要转换的目标数据类型, string or number,来执行相应的转换操作.
+从引用类型到基本类型的转换，也就是拆箱的过程中，会遵循ECMAScript规范规定的toPrimitive原则，一般会调用引用类型的valueOf和toString方法，你也可以直接重写toPrimitive方法。一般会根据想要转换的目标数据类型, string or number,来执行相应的转换操作.
     
     // 自定义valueOf和toString, 返回对应值
     const obj = {
@@ -288,7 +283,6 @@ Symbol创建的变量独一无二的特性有效避免了属性污染.
     console.log(obj2 + '11'); // Uncaught TypeError: Cannot convert object to primitive value
 
 和手动创建包装类型一样,我们也可以通过手动调用包装类型或者引用类型的valueOf或toString,实现拆箱操作:
-
 
     var num =new Number("123");
     console.log(num.valueOf(), typeof num.valueOf()); // 123 "number"

@@ -20,7 +20,7 @@
     
 运行截图如下:
 
-![](https://github.com/muzishuiji/blogs/blob/master/JavaScript/imgs/new-2.png)
+![](/imgs/new-2.png)
 
 使用new 操作符调用Person, 返回值是一个对象,这个对象继承Person构造函数里定义的所有属性和方法.
 
@@ -57,7 +57,7 @@
 
 运行结果的截图:
 
-![](https://github.com/muzishuiji/blogs/blob/master/JavaScript/imgs/new-1.png)
+![](./imgs/new-1.png)
 
 
 好啦,确实是这样的结果,支持为止我们就完美的实现了自己的New函数,为自己鼓掌~~~
