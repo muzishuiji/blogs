@@ -26,7 +26,7 @@
 
 8. [Event Loop](./fe/前端基础/javaScript/event-loop.md) 
 
-9. [Promise A+规范和Promise的手写实现]()
+9. [Promise A+规范和Promise的手写实现](/fe/前端基础//javaScript/PromiseA+规范.md)
 
 10. [async/await原理及简易版实现](./fe/前端基础/javaScript/async-await.md) 
 
@@ -35,6 +35,8 @@
 12. [JavaScript 手写代码系列](./fe/前端基础/javaScript/writeFunction.md) 
 
 13. [位操作技巧](./fe/前端基础/javaScript/位操作技巧.md)
+
+14. [Ajax拦截器原理解析](./fe/前端基础/javaScript/实现Ajax拦截器.md)
 
 
 
@@ -64,9 +66,8 @@
 ## 计算机网路
 
 1. [HTTP/2 与 HTTP/1.1](./fe//计算机基础/计算机网络/http2与http1.1.md) 
-2. [常见 Web 安全攻防总结](https://zoumiaojiang.com/article/common-web-security/)
-3. [HTTP](./fe//计算机基础/计算机网络/http.md)
-4. [计算机网络](./fe//计算机基础/计算机网络/计算机网络.md)
+2. [HTTP](./fe//计算机基础/计算机网络/http.md)
+3. [计算机网络](./fe//计算机基础/计算机网络/计算机网络.md)
 
 ## Node
 
