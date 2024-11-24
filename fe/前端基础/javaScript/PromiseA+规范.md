@@ -98,7 +98,7 @@ then方法可以背同一个promise调用多次
 
 **返回**
 
-then放啊必须返回一个promise对象
+then方法必须返回一个promise对象
 
 `promise2 = promise1.then(onFulfilled, onRejected);`
 * 如果 onFulfilled  或者 onRejected 返回一个值x，则运行下面的promise解决过程： `[[Resolve]](promise2, x)`
@@ -180,7 +180,7 @@ class MyPromise {
             let rejectedFn = (reason) => {
                 try {
                     let x = onRejectedCb(reason);
-                    x instanceof myPromise ? x.then(resolve, reject) : reject(x);
+                    x instanceof MyPromise ? x.then(resolve, reject) : reject(x);
                 } catch(err) {
                     reject(err);
                 }

@@ -62,7 +62,7 @@ class MyPromise {
             } 
             let rejectedFn = (reason) => {
                 try {
-                    let x = onRejectedCb(reason);
+                    let x = onRejectedCb(rea(son);
                     x instanceof myPromise ? x.then(resolve, reject) : reject(x);
                 } catch(err) {
                     reject(err);
@@ -89,11 +89,11 @@ class MyPromise {
 
 MyPromise.prototype.resolve = function (value) {
     if(value instanceof MyPromise) return value;
-    return new Promise((resolve) => resolve(value));
+    return new MyPromise((resolve) => resolve(value));
 }
 // 返回一个带拒绝原因的promise对象
 MyPromise.prototype.reject = function (reason) {
-    return new Promise((resolve,  reject) => reject(reason));
+    return new MyPromise((resolve,  reject) => reject(reason));
 }
 
 MyPromise.prototype.all = function (promises) {

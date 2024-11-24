@@ -539,10 +539,11 @@ maxAsyncRequests 对异步模块进行代码分割的最大模块数
 
 可以利用 webpack(magic comments)魔法注释的功能在网络空闲的时候为我们加载需要的异步模块,这样既可以减少首屏加载的代码的体积,又省去了用到该异步代码逻辑的时候等待对应资源加载的过程.
 
-webpackPrefetch: 会在核心代码加载完毕,网络空闲的状态加载异步资源,但是 webpackPrefetch 在某些浏览器中会存在兼容性问题.
+webpack Prefetch: 会在核心代码加载完毕,网络空闲的状态加载异步资源,但是 webpack Prefetch 在某些浏览器中会存在兼容性问题.
 webpackLoad: 会在核心业务代码的加载过程中加载
 
 4. prefetching
+
 
 5. 优化项目的思考因素
 

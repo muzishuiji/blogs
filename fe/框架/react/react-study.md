@@ -9,9 +9,7 @@
 
 4. React很简单
         * 组件化开发：让你用组件的方式去开发项目
-        * 4个必须API
         * 单向数据流
-        传统的MVC不便于扩展和维护,flux架构不是一个完整的实现,更像一种状态管理模式.
         * 完善的错误提示
 
 5. 创建一个组件需要考虑的因素
@@ -61,7 +59,7 @@ jsx优点:
 
         * render阶段
 
-        纯净且没有副作用,可能会被react暂停,中止或重新启动
+        纯净且没有副作用,可能会被react暂停,终止或重新启动
 
         * pre-commit阶段
 
@@ -178,7 +176,7 @@ React Hooks不能写在条件语句、循环或其他嵌套函数中。这是因
   2. 副作用管理方便
   Hooks提供了`useEffect`，使得在函数组件中处理副作用（如数据获取、订阅、手动DOM操作等）变得更加方便。`useEffect`允许你在组件渲染后执行副作用操作，并且可以控制副作用的执行时机。
   3. 逻辑复用更灵活
-  Hooks允许你讲组件逻辑提取到自定义Hooks中，从而实现逻辑的复用。自定义Hooks可以封装复杂的状态逻辑或副作用逻辑，并在多个组件中共享。
+  Hooks允许你将组件逻辑提取到自定义Hooks中，从而实现逻辑的复用。自定义Hooks可以封装复杂的状态逻辑或副作用逻辑，并在多个组件中共享。
   4. 组件结构更清晰
   Hooks使得函数组件的结构更加清晰和简洁。函数组件没有类组件中的生命周期方法，所有逻辑集中在函数体内，使得代码更易于理解和维护。
   5. 更好的性能优化
@@ -234,13 +232,13 @@ context的实现：
   - provider的处理就是修改了 context._currentValue的值，也可以自己修改；
   - useContext和consumer的原理类似，都是读取context._currentValue，然后传入组件渲染；
 
-Consumer如何保证消费最近的一个Provider提供的value：当一个Consumer组件需要消费数据时，React会在组件树中向上查找最近的Provider组件。React会记录每个Provider的value，并在查找过程中使用这些记录来确定最近的Provider。
+Consumer如何保证消费最近的一个Provider提供的value：当一个Consumer组件需要消费数据时，React会在组件树中向上查找最近的Provider组件。React会记录每个Provider的value，并在查找过程中使用这些记录来确定最近的Provider组件，消费对应Provider组件的value。
 
 context导致的重渲染如何解决？
 
   - 拆分context，每一类状态放在一个context里，这会导致context嵌套过多，维护成本增加。
   - 用zustand等状态管理库，通过selector逻辑只订阅组件依赖的状态的变更；
-  - 用memo包裹子组件，它会对比新旧props，没变化就不会重新渲染；
+  - 用memo包裹子组件，它会对比新旧props（浅比较），没变化就不会重新渲染；
 
 27. useEffect的effect函数在操作dom之后异步执行。
 

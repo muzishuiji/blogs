@@ -47,7 +47,11 @@ const server = http.creatServer((req, res) => {
             timestamp: new Date().toISOString()
         };
         res.setHeader('Content-Type', 'application/javascript');
-        res.end(`${callback}(${JSON.stringify(data)})`)
+        res.end(`${callback}(${JSON.stringify(data)})`);
+
+        // 服务端的逻辑其实就是将返回的data，包裹进callback后返回
+        // 可简单理解为返回一个函数调用
+        // res.end(`${callback}(${JSON.stringify(data)})`)
     } else {
         res.statusCode = 404;
         res.end('Not Found');
@@ -58,5 +62,34 @@ server.listen(3000, () => {
 });
 
 
+
 // Last-Modified/If-Modified-Since
 // Etag/If-None-Match
+
+
+// 客户端代码封装一个jsonp
+(function (window, document) {
+    let jsonp = (url, data, callback) => {
+        // 1. 将传入的data数据转换为url字符串的形式
+        let dataString = url.includes('?') ? '?' : '&';
+        for(var key in data) {
+            dataString += `${key}=${data[key]}&`; 
+        }
+        // 2. 处理url中的回调函数
+        // cbFuncName回调函数的名字，生成一个唯一名称
+        const cbFuncName = `my_json_cb_` + Math.random().toString().replace('.', '');
+        dataString += `callback=${cbFuncName}`;
+        // 3. 创建一个script标签并插入到页面中
+        let scriptEle = document.createElement('script');
+        scriptEle.src = url + dataString;
+        // 4. 挂载回调函数
+        window[cbFuncName] = (data) => {
+            callback(data);
+            // 处理完回调函数的数据之后，删除jsonp的script标签
+            document.body.removeChild(scriptEle);
+            delete window[cbFuncName];
+        }
+        document.body.appendChild(scriptEle);
+    }
+    window.$jsonp = jsonp;
+})(window, document)

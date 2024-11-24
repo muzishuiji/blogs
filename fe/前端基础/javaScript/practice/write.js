@@ -476,7 +476,7 @@ function Child(...args) {
 }
 function inheritPrototype(Child, Parent) {
     Child.prototype = Object.create(Parent.prototype);
-    Child.prototype.constructor = Parent.prototype;
+    Child.prototype.constructor = Child;
 }
 inheritPrototype(Child, Parent);
 let child1 = new Child('muzishuiji')

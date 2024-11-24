@@ -18,6 +18,7 @@ console.log(i) // Uncaught ReferenceError: i is not defined
     - 暂时性死区，let和const声明的变量不能在声明前使用；
 
 3. ES5实现const
+
 ```js
 function _const(key, value) {
     Object.defineProperty(window, key, {
@@ -73,7 +74,8 @@ foo.myApply(obj, [])
 ```
 
 6. 手写bind
-bind方法创建一个新的函数，在bind()方法被调用时，这个新函数的this被指定为bind()的第一个参数，而其余参数作为新函数的刹那火速，提供调用时使用。
+bind方法创建一个新的函数，在bind()方法被调用时，这个新函数的this被指定为bind()的第一个参数，而其余参数作为新函数的参数，提供调用时使用。
+
 ```js
 Function.prototype.myBind = function (context, ...args1) {
     // 如果返回的函数被以构造函数调用，就沿用旧逻辑，否则使用apply修改this
@@ -333,14 +335,14 @@ shift内部实现是使用this代表对象。那么[].shift.call()传入argument
 24. 任务队列
 
   - 所有同步任务都在主线程执行，形成一个执行栈（execution context stack）；
-  - 主线程之外，还存在一个“任务队列”，只要异步任务有了运行结果，就在”任务队列“中放置一个事件；
+  - 主线程之外，还存在一个“任务队列”，只要异步任务有了运行结果，就在“任务队列”中放置一个任务；
   - 一旦“执行栈”中所有同步任务执行完毕，系统就会读取”任务队列“，看看里面有哪些事件。将任务队列中的任务一一push进执行栈，开始执行。
 
-  任务队列分为宏任务队列和微任务队列，每次同步任务执行完毕后，会先将微任务队列一一执行，然后从宏任务队列中取出一个宏任务执行，接着去执行同步任务，重复上述步骤；
+  任务队列分为宏任务队列和微任务队列，每次同步任务执行完毕后，会先将微任务队列一一执行，然后从宏任务队列中取出一个宏任务执行，此为一个事件循环，接着重复上述步骤；
 
 25. requestAnimationFrame的执行机制
 
-requestAnimationFrame是浏览器提供的一个API，用于在浏览器重绘之前执行动画相关的代码，它允许开发者以一种有效且与浏览器渲染周期同步的方式来更新动画。
+requestAnimationFrame是浏览器提供的一个API，用于在浏览器下一次重绘之前执行动画相关的代码，它允许开发者以一种有效且与浏览器渲染周期同步的方式来更新动画。
 
 requestAnimationFrame的主要目的是在浏览器准备重绘下一帧之前执行指定的回调函数。这使得动画能够在最佳的时间点执行，从而提高性能和流畅度。
 
@@ -397,7 +399,7 @@ Proxy 和 Object.defineProperty 都是js中用于实现对象属性拦截和代�
     -  Object.defineProperty在定义属性时如果发生错误，可能会导致整个对象的定义失败；
 
   4. 支持的对象类型
-    - Proxy可以带来数组和函数，而Object.defineProperty 只能代理对象的属性。
+    - Proxy可以代理数组和函数，而Object.defineProperty 只能代理对象的属性。
   5. 语法简洁性
     - Proxy的语法更简洁，拦截多个操作时，只需要定义一个handler对象，并在其中定义需要拦截的操作，而不需要为每个属性单独定义拦截器。
     - Object.defineProperty：需要为每个属性单独定义拦截器，语法相对繁琐；
@@ -466,7 +468,7 @@ Reflect提供了一组静态方法，这些方法与Proxy的拦截器方法一�
 
 32. Object.prototype.toString.call
 
-原理：读取对象的`Symbol.toStringTag`一个内置`symbol`，它通常作为对象的属性键使用，对应的属性值应该为字符串类型，这个字符还用来表示该对象的自定义类型标签，通常只有内置的Object.prototype.toString方法回去读取这个表亲啊并把它包含在自己的返回值里。
+原理：读取对象的`Symbol.toStringTag`一个内置`symbol`，它通常作为对象的属性键使用，对应的属性值应该为字符串类型，这个字符还用来表示该对象的自定义类型标签，通常只有内置的Object.prototype.toString方法回去读取这个标签并把它包含在自己的返回值里。
 
 ```js
 const obj = {};
@@ -486,7 +488,7 @@ console.log(Object.prototype.toString.call(obj)); // '[object Module]'
     statement;
   }
   ```
-  JavaScript 查找某个未使用命名空间的变量时，会通过作用域链来查找，作用域链是跟执行代码的 context 或者包含这个变量的函数有关。'with'语句将某个对象添加到作用域链的顶部，如果在 statement 中有某个未使用命名空间的变量，跟作用域链中的某个属性同名，则这个变量将指向这个属性值。如果沒有同名的属性，则将拋出ReferenceError异常。
+  JavaScript 查找某个未使用命名空间的变量时，会通过作用域链来查找，作用域链是跟执行代码的 context 或者包含这个变量的函数有关。`with`语句将某个对象添加到作用域链的顶部，如果在 statement 中有某个未使用命名空间的变量，跟作用域链中的某个属性同名，则这个变量将指向这个属性值。如果沒有同名的属性，则将拋出`ReferenceError`异常。
 
   **注意事项**
 
@@ -518,7 +520,7 @@ Web Component的局限性：
   2. 复杂性：开发和维护Web Component比使用框架更复杂，尤其在处理复杂交互和状态管理时；
   3. 生态系统：Web Component的生态系统相对较小，没有像React或Vue那样丰富的第三方库和工具；
 
-Web Component是一组强大的Web平台API，允许开发者创建可重用的自定义元素，并将它们封装起来，以便在不同的项目中使用。
+Web Component是一组强大的Web平台API，允许开发者创建可重用的自定义元素或组件，并将它们封装起来，以便在不同的项目中使用。
 
 34. 大文件上传
 
@@ -527,7 +529,6 @@ Web Component是一组强大的Web平台API，允许开发者创建可重用的�
     1. 读取本地的文件，读成一个文件对象；
     2. 使用slice对文件对象进行切割，并得到blob类型的文件对象；
     核心就是利用Blob.prototype.slice这个方法，它和数组的slice方法相似，但不是，文件的slice方法可以返回原文件的某个切片，将大文件对象切割成小的blob对象，由于后端无法识别blob对象，所以需要转为前后端都能识别的formData对象，再用post请求发送给后端。
-
     3. 将blob类型的文件对象转成formData表单类型的对象；
     4. 发送请求，将formData对象切片一个一个发送给后端；
 
@@ -545,6 +546,88 @@ Web Component是一组强大的Web平台API，允许开发者创建可重用的�
   1. 存储程序：这一概念指出计算机的程序和数据都应以同等地位存储在计算机的内存中。这意味着程序指令和处理的数据都被视为二进制信息，并且可以按地址访问。在计算机运行之前，程序会被加载到内存中，等待执行。
   2. 程序控制：计算机根据存储在内存中的程序指令序列自动执行任务，无需人工干预。计算机从第一条指令开始，控制器负责输出指令、解码并执行，然后根据指令的要求顺序执行后续指令，知道程序结束或者遇到停止指令。指令不仅指定了数据的运算方式，也指定了下一条要执行的指令地址，从而实现了流程控制。
 
+36. String 对象有哪些静态方法
 
+```js
+// 可通过以下命令获取
+Object.getOwnPropertyNames(String);
+
+```
+  - length: 字符串长度
+  - name: 字符串名称
+  - fromCharCode(num1[, ...[, numN]]):
+  返回使用指定的Unicode值创建的字符串。参数为一个或多个Unicode值，返回值为一个新的字符串。
+  ```js
+  console.log(String.fromCharCode(65, 66, 67)); // 输出: 'ABC'
+  ```
+  - fromCodePoint(num1[, ...[, numN]):
+  返回使用指定的代码点序列创建的字符串。
+  ```js
+  console.log(String.fromCodePoint(65, 66, 67)); // 输出: 'ABC'
+  console.log(String.fromCodePoint(0x1F600)); // 输出: "😀"
+  ```
+  - raw: 用于获取模版字符串的原始字符串形式，即不进行任何转义处理。它通常用于模版字符串中。
+  ```js
+  let rawStr = String.raw`Hello\nWorld`;
+  console.log(rawStr); // 输出：hello\\world
+  ```
+
+37. js的基础数据类型
+
+  - Null；
+  - Undefined；
+  - Boolean;
+  - Number;
+  - String;
+  - Symbol;
+  - BigInt：表示任意精度的整数，可以表示大于Number类型支持的整数范围（-(2^53 - 1) 到 2^53 - 1），ES11/ES2020引入。
 
   
+38. BOM对象
+
+BOM（browser object model），浏览器对象模型，提供了独立于内容和浏览器窗口进行交互的对象。
+
+  - window；
+  - location；
+  - navigator；
+  - screen；
+  - history；
+
+39. 闭包是内层函数有权访问它外部作用域中的任何变量。
+
+闭包使得函数中变量的生命周期得到延长，函数柯里化正式借助闭包实现的。
+
+40. 作用域：即变量和函数生效的区域或集合。
+
+词法作用域，又叫静态作用域，变量被创建时就确定好了，而非执行阶段确定的。也就是说我们写代码时它的作用域就确定了，js遵循的就是词法作用域。
+
+41. 函数的this
+
+函数的this关键字在js中的表现略有不同，在绝大多数情况下，函数的调用方式决定了this的值（运行时绑定）。
+
+this关键字是函数运行时自动生成一个内部对象，只能在函数内部使用，总是指向调用它的对象。
+
+严格模式下，不能将全局对象用于默认绑定，this会绑定到undefined，只有函数运行在非严格模式下，默认绑定才能绑定到全局对象。
+
+关于this绑定的优先级：new绑定的优先级 > 显式绑定优先级 > 隐式绑定优先级 > 默认绑定优先级。
+
+
+42. 事件流会经历三个阶段
+
+  - 事件捕获阶段（capture phase）；
+  - 处于目标阶段（target phase）；
+  - 事件冒泡阶段（bubbling phase）；
+
+43. 事件委托
+
+事件委托，会把一个或者一组元素的事件委托到它頋父层或者更外层元素上，真正绑定事件的是外层元素，而不是目标元素。
+
+当事件响应到目标元素上时，会通过事件冒泡机制从触发它的外层元素的绑定事件上，然后在外层元素上去执行函数。
+
+适合事件委托的事件有：click、mousedown、mouseup、keydown、keyup、keypress (即拥有冒泡机制的事件)。
+
+事件委托的有点：
+  - 减少事件绑定的数量，减少整个页面所需的内存，提升整体性能；
+  - 动态绑定，减少重复工作；
+
+

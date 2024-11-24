@@ -69,7 +69,7 @@ preset就是插件的集合，但是它可以动态确定包含的插件，比�
 ```
 7. 如果不写任何配置项,env 等价于 latest,也等价于 es2015+es2016+es2017 三个相加.
 8. babel-cli 让我们可以使用 babel 命令来编译文件.
-9. babel-node 是 babel-cli 的一部分,不需要单独安装.bable-node = babel-polyfill+ babel-register.
+9. babel-node 是 babel-cli 的一部分,不需要单独安装.babel-node = babel-polyfill+ babel-register.
 10. babel-require 会对 require 命令引入的文件进行转码.
 11. babel-polyfill
 
@@ -147,7 +147,7 @@ babel在parse阶段就在ast节点中保存了loc属性，存源码中的行列�
 
 21. babel runtime
 
-babel-runtime是一个由babel提供的运行时库，它包括了一些在编译过程中需要用到的辅助函数和类，比如es6/es7语法的polyfill、generator函数的书处理，promise的实现等；
+babel-runtime是一个由babel提供的运行时库，它包括了一些在编译过程中需要用到的辅助函数和类，比如es6/es7语法的polyfill、generator函数的特殊处理，promise的实现等；
 
 babel runtime里面放运行时加载的模块，会被打包工具打包到产物中，包含三部分：regenerator、corejs、helper。
 
@@ -339,12 +339,12 @@ babel的AST最外层节点是File，它是program、comments、tokens等属性�
 根据babel的编译流程：parse、transform、generate，会有以下api。
 
   - @babel/parser: parse阶段有@babel/parser，功能是把源码转成AST；
-  - @babel/traverse: 可以遍历AST，并调用visitor函数修改AST;
-  - @babel/types: 修改AST自然涉及到AST的判断、创建、修改等，这就需要@babel/types了，当需要批量创建AST的时候可以使用@babel/template来简化AST创建逻辑。
+  - @babel/traverse: 可以遍历AST，并调用visitor函数修改AST；
+  - @babel/types: 修改AST自然涉及到AST的判断、创建、修改等，这就需要@babel/types了，当需要批量创建AST的时候可以使用@babel/template来简化AST创建逻辑；
   - @babel/generator: generate阶段会把AST打印为目标代码字符串，同时生成sourcemap，需要@babel/generator包
-  - @babel/traverse: 通过visitor函数对遍历到的ast进行处理，分为enter（进入节点时调用）和exit（离开节点时调用）两个阶段，具体操作ast使用的ptah的api，可以通过state在遍历过程中传递一些数据。
-  - 中途遇到错误想打印代码未知的时候，使用@babel/code-frame包
-  - @babel/core: babel整体功能通过@babel/core提供，@babel/cored的功能就是完成babel整体的编译流程，从源码到目标代码，生成sourcemap。实现plugin和preset的调用。
+  - @babel/traverse: 通过visitor函数对遍历到的ast进行处理，分为enter（进入节点时调用）和exit（离开节点时调用）两个阶段，具体操作ast使用的ptah的api，可以通过state在遍历过程中传递一些数据；
+  - 中途遇到错误想打印代码未知的时候，使用@babel/code-frame包；
+  - @babel/core: babel整体功能通过@babel/core提供，@babel/core的功能就是完成babel整体的编译流程，从源码到目标代码，生成sourcemap。实现plugin和preset的调用。
   - 可以安装@types/babel_xxx的包来增加ts的提示，比如@types/babel_parser、@types/babel_traverse等。
 
 ### Babel的visitor模式
@@ -372,3 +372,90 @@ visitor模式是23种设计模式中的一种。visitor模式的思想是：当�
         ]
     }
     // 还需要在webpack的入口文件中引入 "babel-polyfill"
+
+### 遍历AST的最佳实践
+
+1. 尽量避免遍历抽象语法树（AST）
+
+遍历AST的代价很昂贵，并且很容易做出非必要的遍历，优化的思路是合并多个visitor，能够在单次遍历做完所有事情的话那就合并它们。
+
+```js
+// before
+path.traverse({
+    Identifier(path) {
+        // ...
+    }
+});
+path.traverse({
+    BinaryExpression(path) {
+        // ...
+    }
+});
+
+// after
+path.traverse({
+    Identifier(path) {
+        // ...
+    },
+     BinaryExpression(path) {
+        // ...
+    }
+});
+```
+2. 可以手动查找就不要遍历
+
+```js
+// before
+const visitorOne = {
+    Identifier(path) {
+        // ...
+    }
+}
+const MyVisitor = {
+    FunctionDeclaration(path) {
+        path.get('params').traverse(visitorOne);
+    }
+}
+// after
+const MyVisitor = {
+    FunctionDeclaration(path) {
+        path.node.params.forEach(function () {
+
+        })
+    }
+}
+```
+
+3. 优化嵌套的访问者对象
+
+```js
+// 嵌套访问者会使得每次调用都会创建新的访问者对象
+const MyVisitor = {
+  FunctionDeclaration(path) {
+    path.traverse({
+      Identifier(path) {
+        // ...
+      }
+    });
+  },
+}
+// 可以考虑把访问者提升，每次复用已创建的访问者对象
+const visitorOne = {
+  Identifier(path) {
+    // ...
+    console.log(this.exampleState)
+  }
+}
+const MyVisitor = {
+  FunctionDeclaration(path) {
+    path.traverse({
+      visitorOne,
+      // 传递给嵌套的访问者的参数
+      {
+        exampleState
+      }
+    });
+  },
+}
+```
+
