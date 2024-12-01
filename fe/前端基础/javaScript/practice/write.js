@@ -57,14 +57,15 @@ let aa = myNew(testFunc, 'ddd');
 // Set， map + for循环， indexOf + for循环， 快慢指针（有序数组，或者现将数组排序）；
 
 // 6. flatArray
-function flattenArr(arr, depth) {
-    return arr.reduce((pre, cur) => {
-        if(Array.isArray(cur) && depth >= 1) {
-            return pre.concat(flattenArr(cur, depth - 1))
+function flattenArr(arr, depth, result = []) {
+    arr.forEach((element) => {
+        if(Array.isArray(element) && depth >= 1) {
+            result = result.concat(flattenArr(element, depth - 1, []))
+        } else {
+            result.push(element)
         }
-        pre.push(cur);
-        return pre;
-    }, []);
+    })
+    return result;
 }
 
 flattenArr([1, 2, 3, [4, 5]], 1);

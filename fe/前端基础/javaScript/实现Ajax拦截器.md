@@ -210,6 +210,7 @@ function runSync() {
         return Promise.reject(error);
     }
     i = 0, len = requestInterceptorChain.length;
+    // 构建response拦截的链式调用
     while(i < len) {
         promise = promise.then(responseInterceptorChain[i++], responseInterceptorChain[i++])
     }
@@ -322,6 +323,7 @@ function runAsync() {
       i = 0;
     let len = interceptorChain.length;
     promise = Promise.resolve(config);
+    // 总体思路：将请求拦截，请求体执行，响应拦截全部用promise then回调串联起来
     while (i < len) {
       promise = promise.then(interceptorChain[i++], interceptorChain[i++]);
     }

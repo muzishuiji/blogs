@@ -66,7 +66,7 @@ requestAnimationFrame，可以理解为渲染前的一个生命周期，requestA
 
 **requestIdleCallback**
 
-requestIdleCallback会在每次check结束发现距离下一帧还有时间，就执行，如果时间不够，就下一帧再说。为了防止一直等待下去，提供了timeout参数来制定最长的等待时间，如果一直没时间处理这个逻辑，那就算拖延了帧渲染也要执行。这个api目前还有兼容性问题，react自己实现了类似requestIdleCallback的fiber机制，在执行之前判断距离下一帧执行还有多久，来判断是否执行逻辑。
+requestIdleCallback会在每一帧渲染工作完成后，检查是否有空闲时间，如果有就执行回调，如果时间不够，就下一帧再说。为了防止一直等待下去，提供了timeout参数来制定最长的等待时间，如果一直没时间处理这个逻辑，那就算拖延了帧渲染也要执行。这个api目前还有兼容性问题，react自己实现了类似requestIdleCallback的fiber机制，在执行之前判断距离下一帧执行还有多久，来判断是否执行逻辑。
 
 计算机的本质就是解释器，cpu用电路解释机器码，解释器用机器码解释更上层的脚本代码，例如字节码。
 

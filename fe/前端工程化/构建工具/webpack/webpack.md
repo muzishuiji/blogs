@@ -8,6 +8,17 @@
 
 3. webpack-cli 使得我们可以直接在命令行里执行 webpack 命令
 4. chunk
+
+chunk是webpack内部一个非常重要的底层设计，用于组织、管理、优化最终产物，在构建阶段进入生成（Seal）阶段后：
+
+  1. webpack首先根据entry配置创建若干chunk对象；
+  2. 遍历构建（make）阶段找到的所有module对象，同一Entry下的模块分配到Entry对应的chunk中；
+  3. 遇到异步模块则创建新的chunk对象，并将异步模块放入该chunk；
+  4. 分配完毕后，根据SplitChunksPlugin的启发式算法进一步对这些chunk进行裁剪、拆分、合并、代码调优，最终调整成运行时性能更优的形态；
+  5. 最后，将这些chunk一个个输出成最终的产物（Asset）文件，编译工作到此结束；
+
+chunk的一些关键属性：
+
     - chunks, 存放每个文件对应的 id 值,和相关联的文件的 id 值
     - chunksName, 每个文件对应的名字,和相关的文件的名字.
 
@@ -170,7 +181,7 @@ Webpack构建可以简单划分成init、make、seal三个阶段：
   1. HOST（宿主）：加载远程模块的应用；
   2. Remote（远程）：可访问的远程模块；
   3. Exposed Modules（暴露的模块）：远程应用中被暴露出来供其他应用使用的模块；
-  4. Shared Modules（共享模块）：多个应用之间的共享的模块，可以比main重复加载；
+  4. Shared Modules（共享模块）：多个应用之间的共享的模块，可以避免重复加载；
 
 4. 远程模块的加载逻辑：
 
@@ -198,21 +209,21 @@ Webpack构建可以简单划分成init、make、seal三个阶段：
     const { ModuleFederationPlugin } = require("webpack").container;
 
     module.exports = {
-    plugins: [
-        new ModuleFederationPlugin({
-            name: "hostApp",
-            remotes: {
-                remoteApp: "remoteApp@http://localhost:3001/remoteEntry.js",
-            },
-            // 可以细粒度的控制共享范围，以及应用支持共享版本
-            shared: ["react", "react-dom"],
-        }),
-    ],
+        plugins: [
+            new ModuleFederationPlugin({
+                name: "hostApp",
+                remotes: {
+                    remoteApp: "remoteApp@http://localhost:3001/remoteEntry.js",
+                },
+                // 可以细粒度的控制共享范围，以及应用支持共享版本
+                shared: ["react", "react-dom"],
+            }),
+        ],
     };
   ```
   MF中的模块导入/导出都依赖于ModuleFederationPlugin插件，其中导出方需要使用插件的exposes项声明导出那些模块，使用filename指定生成的入口文件；导入方需要使用remotes声明远程模块地址，之后在代码中使用异步导入语法import("module"）引入模块。
 
-  通过MF的方式，一是可以将业务代码分解为更细粒度的应用形态；二是应用可以各自管理路由逻辑，降低应用见耦合性。最终能降低系统组件见耦合度，更多有利于团队协作。非常适用于微前端或代码重构迁移场景。
+  通过MF的方式，一是可以将业务代码分解为更细粒度的应用形态；二是应用可以各自管理路由逻辑，降低应用间耦合性。最终能降低系统组件间耦合度，更多有利于团队协作。非常适用于微前端或代码重构迁移场景。
 
   2. 生成远程入口文件
   在远程应用中，webpack会生成一个远程入口文件，这个文件包含了远程应用暴露的模块信息。
@@ -231,8 +242,9 @@ Webpack构建可以简单划分成init、make、seal三个阶段：
   6. 模块解析和加载
   当宿主应用尝试加载远程模块时，webpack会根据远程入口文件中的信息，动态加载远程模块的代码，具体步骤如下：
     1. 解析模块路径：webpack解析模块路径'remoteApp/Button'，并根据远程入口文件的映射关系，找到对应的模块；
-    2. 加载模块代码：webpack动态加载远程模块的代码，并将爱你情感i注入到宿主应用的运行环境中；
+    2. 加载模块代码：webpack动态加载远程模块的代码，并将加载后的代码注入到宿主应用的运行环境中；
     3. 执行模块代码：远程模块的代码被执行，宿主应用可以使用这些模块；
+
   7. 共享模块
   如果远程模块和宿主应用之间有共享模块（如react、react-dom），webpack会优先使用宿主应用中已经加载的共享模块，避免重复加载。
 
@@ -271,10 +283,11 @@ Module Federation支持动态加载，但在某些情况下，动态加载可能
 
 由于模块是动态加载的，调试可能会变的困难。特别是在开发环境中，需要确保所有模块都是正确加载和运行。
 
+如果需要调试则需要额外的代理机制，拉取远程模块的sourcemap进行调试。
+
 5. 改动时评估影响范围
 
 需要有一个明确的地方集中维护依赖当前模块的其他模块，保证有修改的时候其他的所有模块能够及时感知，并做好充分的测试。
-
 
 ### PWA应用
 
@@ -374,6 +387,7 @@ PWA：Progressive Web Apps（渐进式Web应用），可以简单理解为一系
 changeOrigin: true; // 解决 origin 的请求限制
 
 secure: false; // 解除 https 协议下的安全限制
+
 ```js
       // 设置请求头的相关配置
       header: {
@@ -404,17 +418,17 @@ secure: false; // 解除 https 协议下的安全限制
   `文件），以及一个包含更新模块代码的js文件（称为`hot-update.js`文件）；
   - 发送更新信息：webpack dev server通过WebSocket将更新信息发送给浏览器；
   - 接收更新信息：浏览器接收到更新文件信息后，会通过HMR Runtime应用这些信息，HMR Runtime是webpack在打包时注入到每个模块中的代码，它负责处理模块的热更新逻辑；
-  - 客户端脚本根据更新信息更新对应的模块，而不会刷新整个页面；
+  - 客户端脚本根据更新信息更新对应的模块，重新解析、运行发生变化的模块，而不会刷新整个页面；
 
 
 ### tree-shaking
 
-webpack4.0 已经提供了 tree-shaking 的功能,仅支持 ES6 Module 引入的语法.
+webpack4.0 已经提供了 tree-shaking 的功能，仅支持 ES6 Module 引入的语法.
 tree-shaking 的主要作用就是只打包用到的代码逻辑。
 
 1. package.json 里可以通过设置 sideEffects 的值来指定不需要进行 tree-shaking 的模块.
 
-一般如果页面中是用来 css 文件,使用 tree-shaking 的时候可能也会在打包的时候被丢掉,我们会在 package.json 里这样配置:
+一般如果页面中是用来 css 文件，使用 tree-shaking 的时候可能也会在打包的时候被丢掉,我们会在 package.json 里这样配置:
 
     sideEffects: ['*.css'];  // 意思对.css为后缀的文件不要使用tree-shaking
 
@@ -425,7 +439,7 @@ Elimination技术，它能够自动删除无效（没有被使用、且没有副
 
 ### development 和 production 模式的区分打包
 
-- development 环境下生成的的 sourcemap 的更完整, production 环境下的 sourcemap 更简洁.
+- development 环境下生成的 sourcemap 的更完整, production 环境下的 sourcemap 更简洁.
 
 - 压缩与非压缩, development 的 map 文件可以不用压缩,production 的 map 文件要压缩
 
@@ -540,7 +554,7 @@ maxAsyncRequests 对异步模块进行代码分割的最大模块数
 可以利用 webpack(magic comments)魔法注释的功能在网络空闲的时候为我们加载需要的异步模块,这样既可以减少首屏加载的代码的体积,又省去了用到该异步代码逻辑的时候等待对应资源加载的过程.
 
 webpack Prefetch: 会在核心代码加载完毕,网络空闲的状态加载异步资源,但是 webpack Prefetch 在某些浏览器中会存在兼容性问题.
-webpackLoad: 会在核心业务代码的加载过程中加载
+webpackLoad: 会在核心业务代码的加载过程中加载。
 
 4. prefetching
 
@@ -553,6 +567,7 @@ webpackLoad: 会在核心业务代码的加载过程中加载
     - 单个配置对象：比较常用的一种方式，逻辑简单，适合大多数业务项目；
     - 配置对象数组：每个数组项都是一个完整的配置对象，每个对象都会触发一次单独构建，通常用于需要为同一份代码构建多种产物的场景，如Library；
     - 函数：webpack启动时会执行该函数获取配置，我们可以在函数中环境参数（如NODE_ENV）动态调整配置对象。
+
 7. Scope Hoisting（作用域提升）
 
 Scope Hoisting是一种优化技术，旨在减少打包后的代码体积并提高运行时性能。它的主要作用是将多个模块合并到一个函数中，从而减少函数声明的数量和作用域嵌套的层级。
@@ -562,6 +577,7 @@ Scope Hoisting是一种优化技术，旨在减少打包后的代码体积并提
 - 减少作用域嵌套：将模块合并到一个函数中，可以减少作用域嵌套的层级，降低变量查询耗时，从而提高代码的执行效率。
 
 优点：
+
 - 减少打包体积：通过减少函数声明的数量，打包后的文件体积会更小。
 - 提高执行效率：减少作用域嵌套层级，代码执行时需要查找变量的次数减少，从而提高执行效率。
 - 更好的tree shaking：合并到一个函数中，模块之间的依赖关系更加清晰，更容易识别未使用的代码并移除。
@@ -570,6 +586,7 @@ Scope Hoisting在production默认启用并激活。
 
 注意事项：
 - 不支持所有模块：Scope Hoisting不支持所有类型的模块，特别是使用了动态导入（`import()`）或使用了`eval`等非标准模块加载方式的模块；
+
 - 可能增加构建时间：Scope Hoisting可以提高运行时性能，但它会增加构建时间，因为它需要分析模块之间的依赖关系并进行合并。
 
 ### css 代码分割
@@ -960,6 +977,8 @@ pitch阶段按配置顺序从左到右执行loader.pitch函数（如果有的话
 
 
 ### plugin
+
+plugin本质上是一种事件流机制，打咯了固定的时间节点就广播特定的事件，用户可以在事件里执行特定的逻辑，类似于生命周期。
 
 1. plugin 的作用: plugin 生效的场景,在打包的某个时刻想要做一些处理逻辑的时候,比如: 在新的打包代码生成的时候先清空 dist 目录的插件(clean-webpack-plugin),多用于文件的创建和移除操作.
 
@@ -1653,7 +1672,8 @@ module.exports = {
 
 设置externals有一下优点：一是能够就近获取资源，缩短网络通讯链路。二是能够将资源分发到前置节点服务器，减轻原服务器QPS负担。三是用户访问不同站点共享一份CDN资源副本。网络性能效果比重复打包好很多。
 
-11. tree-shaking 删除多余模块导出
+11. tree-shaking
+主要功能：删除多余模块导出
 
 - 配置optimization.usedExports 为 true，标记模块导入导出列表；
 - 启动代码优化功能，可通过如下方式实现：
@@ -1672,6 +1692,13 @@ module.exports = {
 };
 
 ```
+
+webpack中Tree Shaking的实现分为如下步骤：
+  - 在FlagDependencyExportsPlugin插件中根据模块的dependencies列表手机模块导出值，并记录到moduleGraph体系的exportsInfo中；
+  - 在FlagDependencyUsagePlugin插件中收集模块的导出值的使用情况，并记录到exportInfo._usedInRuntime集合中；
+  - 在HarmonyExportXXXDependency.Template.apply方法中根据导出值的使用生成不同的导出语句；
+  - 使用DCE工具删除Dead Code，实现完整的树摇效果；
+
 
 12. 使用 Scope Hoisting 合并模块
 

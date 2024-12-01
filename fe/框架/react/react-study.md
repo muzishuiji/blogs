@@ -55,6 +55,27 @@ jsx优点:
 * 代码动态创建界面的灵活
 * 无需学习新的模板语言
 
+jsx会被babel最终转化成React.createElement这种形式：
+```js
+<div>
+ <img src="avatar.png" className="profile" />
+ <Hello />
+</div>
+```
+babel或tsc转译后：
+
+```js
+React.createElement(
+  'div',
+  null,
+  React.createElement('img', {
+    src: '',
+    className: '',
+  }),
+  React.createElement(Hello, null)
+)
+```
+
 9. React的生命周期和使用场景
 
         * render阶段
@@ -423,7 +444,7 @@ React的事件系统基于合成事件（SyntheticEvent），这是一种跨浏�
 
 2. 事件委托（Event Delegation）
 
-React的事件系统采用了事件委托（Event Delegation）的机制。事件委托是一种优化技术，它将事件处理程序附加到DOM树的顶层元素（通常是document或reactDom.render的根元素），而不是每个子元素上。当事件触发时，React会在顶层元素上捕获事件并分发给对应的组件。
+React的事件系统采用了事件委托（Event Delegation）的机制。事件委托是一种优化技术，它将事件处理程序附加到DOM树的顶层元素（通常是document或reactDom.render的根元素），而不是每个子元素上。当事件触发时，React会在冒泡到顶层元素上时将事件并分发给对应的组件。
 
 事件委托的优势：
   - 性能优化：减少事件处理程序的数量，用特别是在处理大量子元素时；
@@ -463,7 +484,7 @@ React和Vue是两个非常流行的前端框架库，他们都用于构建用户
 3. 数据绑定
 
   - React：使用单向数据流，数据从父组件流向子组件。React中的状态（state）是不可变的，每次修改都要返回新的state；
-  - Vue：使用双向数据绑定，数据可以在试图和模型之间自动同步。VU饿的状态是响应式的，当数据变化时，视图会自动更新。
+  - Vue：使用双向数据绑定，数据可以在视图和模型之间自动同步。Vue的状态是响应式的，当数据变化时，视图会自动更新。
 
 4. 性能
 
@@ -479,6 +500,26 @@ commit阶段会在layout操作完dom后遍历fiber链表更新HostComponent的re
 
 react并不关心ref是哪里创建的，用createRef、useRef创建的，或者forwardRef传过来的都行，甚至普通对象也可以。createRef、useRef只是把普通对象 Object.seal了一下。
 
-useImperativeHandle的底层实现就是useEffect，只不过执行的函数是它指定的，bind了传入的ref和create函数，这样layoutr阶段调用hook的effect函数就可以更新ref。
+useImperativeHandle的底层实现就是useEffect，只不过执行的函数是它指定的，bind了传入的ref和create函数，这样layout阶段调用hook的effect函数就可以更新ref。
+
+## React18的新特性
+
+### 改动点
+
+1. 通过react18的新api来开启并发模式
+2. ReactDOM.createRoot(root).render(<App />)
+3. 如果你的项目使用了ssr服务端渲染，需要把hydration升级为hydrateRoot
+4. tsx中child属性需要手动声明
+5. 在18之前，只有在react事件处理函数中，才会自动执行批处理，其他情况会多次更新；
+6. 在18之后，任何情况下都会自动进行批处理，将多次更新操作始终合并为一次
+7. 批处理是一个破坏性改动，如果你想退出批量更新，你可以使用flushSync
+8. 18之前的版本，开启严格模式会对每个组件进行两次渲染，以便你观察一些意想不到的结果，但是react17中，取消了其中一次渲染的控制台日志，一边让日志更容易阅读；
+react18中，官方取消了这个限制，如果你安装了devtools，第二次渲染的日志颜色将显示为灰色，以柔和的方式显示在控制台。
+
+### 新的API
+
+1. useId
+
+支持客户端和服务端生成相同的唯一的ID，避免hydration的不兼容，这解决了React17及以下版本中存在的问题。因为服务器渲染提供的HTML时无序的，userId的原理就是每个id代表组件在组件树中的层级结构。
 
 
