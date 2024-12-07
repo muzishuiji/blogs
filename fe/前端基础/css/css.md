@@ -167,12 +167,13 @@ module.exports = {
 响应式设计的基本原理是通过媒体查询检测不同的设备屏幕尺寸做处理，为了很好的处理移动端的响应式，页面头部必须有meta声明viewport。
 
 ```js
+// 自适应手机屏幕的最大尺寸，禁止缩放
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" >
 ```
 
 属性对应如下：
   - width=device-width：自适应手机屏幕的最大尺寸；
-  - maximum-scale： 缩放比例的最大值；
+  - maximum-scale：缩放比例的最大值；
   - initial-scale：缩放的初始值；
   - user-scalable：是否允许用户做缩放操作；
 
@@ -332,7 +333,7 @@ module.exports = {
 视差滚动（Parallax Scrolling）是指多层背景以不同的速度移动，形成立体的运动效果，带来出色的视觉体验。
 
 我们可以把网页解刨成：背景层 -> 内容层 -> 悬浮层。
-主要是借助background-attachment来视差滚动的效果。
+主要是借助background-attachment来视差滚动（fixed）的效果。
 perspective 可以定义我们眼睛看到的3d立体效果，即空间感。
 
 22. grid网格布局
@@ -342,8 +343,6 @@ Grid布局即网格布局，是一个二维的布局方式，由纵横相交的�
 与之前讲到的flex一维布局不同，设置display:grid/inline-grid的元素就是网格布局容器，这样就能触发浏览器渲染引擎的网格布局算法。
 
 利用grid布局可更容易的实现复杂的布局，目前的兼容性不错，IE10以下不支持，grid布局在手机端支持不太友好。
-
-
 
 23. css像素、设备像素、设备独立像素、dpr、ppi
 
@@ -373,6 +372,7 @@ Grid布局即网格布局，是一个二维的布局方式，由纵横相交的�
   - 元素的尺寸发生变化；
   - 元素内容变化，文本变化或图片被另一个不同尺寸的图片所替代；
   - 浏览器的窗口尺寸发生变化；
+  - 获取元素的布局属性（scrollTop、offsetTop等）
 
 重绘触发时机：
 
@@ -389,7 +389,14 @@ Grid布局即网格布局，是一个二维的布局方式，由纵横相交的�
 
 减少回流的策略：
 
-  
+  - 如果想设定元素的样式，通过改变元素的class类名，来一次性处理；
+  - 避免设置多项内联样式；
+  - 避免使用table布局，table布局中每个元素的大小及内容的改动，都会导致整个table的重新计算；
+  - 对于复杂的动画，对齐设置position:fixed/absolute，尽可能的使元素脱离文档流；
+  - 使用css3硬件加速，可以让transform、opacity，filters这些动画不会引起回流重绘；
+  - 每次获取元素的布局属性时，可以使用变量缓存起来，避免频繁获取元素的布局属性；
+  - 动态插入多个节点时，使用DocumentFragment，创建后一次性插入，避免多次渲染；
+
 
 
 

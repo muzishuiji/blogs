@@ -8,8 +8,8 @@
 SameSite 有三个值:
 
 - Strict: 允许一方请求携带 cookie,即浏览器将只发送相同站点请求的 cookie,即当前网页 url 与请求目标的 url 完全一致.
-- Lax,允许部分第三方请求携带 cookie
-- None,无论是否跨站都会发送 cookie
+- Lax：默认值，相对Strict宽松，阻止发送Cookie，但对超链接放行；
+- None,无论是否跨站都会发送 cookie，使用改值时需要保证Cookie为Secure，否则无效；
 
 chrome 之前都是默认 None,Chrome80 后默认是 Lax
 

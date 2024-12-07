@@ -7,7 +7,6 @@
 const batchFetchFn = (ids) => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            console.log('batchFetchFn===')
             let params = Array.isArray(ids) ? ids : [ids];
             let res = [];
             for(let i = 0; i < params.length; i++) {
@@ -63,6 +62,7 @@ const queryClient = (function () {
             };
             return new Promise((resolve, reject) => {
                 if(!context.currentFetchPromise) {
+                    // 保证多个并发请求，共用一个promise请求实例
                     context.currentFetchPromise = new Promise(async (resolve, reject) => {
                         let timer = setTimeout(() => {
                             context.batchSize++;

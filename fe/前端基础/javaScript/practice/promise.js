@@ -13,25 +13,30 @@ class MyPromise {
 
 
         let _resolve = (value) => {
-            if(this._status === PENDING) {
-                this._value = value;
-                this._status = FULFILLED;
-                while(this._resolveQueue.length) {
-                    let callback = this._resolveQueue.shift();
-                    callback(value);
+            queueMicrotask(() => {
+                if(this._status === PENDING) {
+                    this._value = value;
+                    this._status = FULFILLED;
+                    while(this._resolveQueue.length) {
+                        let callback = this._resolveQueue.shift();
+                        callback(value);
+                    }
                 }
-            }
+            })
         }
     
         let _reject = (reason) => {
-            if(this._status === PENDING) {
-                this._reason = reason;
-                this._status = REJECTED;
-                while(this._rejectQueue.length) {
-                    let callback = this._rejectQueue.shift();
-                    callback(value);
+            queueMicrotask(() => {
+                if(this._status === PENDING) {
+                    this._reason = reason;
+                    this._status = REJECTED;
+                    while(this._rejectQueue.length) {
+                        let callback = this._rejectQueue.shift();
+                        callback(value);
+                    }
                 }
-            }
+            })
+
         }
         executor(_resolve, _reject);
     }

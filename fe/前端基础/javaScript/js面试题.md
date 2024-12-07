@@ -342,9 +342,7 @@ shift内部实现是使用this代表对象。那么[].shift.call()传入argument
 
 25. requestAnimationFrame的执行机制
 
-requestAnimationFrame是浏览器提供的一个API，用于在浏览器下一次重绘之前执行动画相关的代码，它允许开发者以一种有效且与浏览器渲染周期同步的方式来更新动画。
-
-requestAnimationFrame的主要目的是在浏览器准备重绘下一帧之前执行指定的回调函数。这使得动画能够在最佳的时间点执行，从而提高性能和流畅度。
+requestAnimationFrame是浏览器提供的一个API，用于在浏览器下一次重绘之前执行指定的回调函数。它允许开发者以一种有效且与浏览器渲染周期同步的方式来更新动画，这使得动画逻辑能够在最佳的时间节点执行，从而提高了应用的性能和动画的流畅度。
 
 26. js中的显式绑定和隐式绑定
 
@@ -396,7 +394,7 @@ Proxy 和 Object.defineProperty 都是js中用于实现对象属性拦截和代�
     
   Object.defineProperty 
 
-    -  Object.defineProperty在定义属性时如果发生错误，可能会导致整个对象的定义失败；
+    - Object.defineProperty在定义属性时如果发生错误，可能会导致整个对象的定义失败；
 
   4. 支持的对象类型
     - Proxy可以代理数组和函数，而Object.defineProperty 只能代理对象的属性。
@@ -620,7 +618,7 @@ this关键字是函数运行时自动生成一个内部对象，只能在函数�
 
 43. 事件委托
 
-事件委托，会把一个或者一组元素的事件委托到它頋父层或者更外层元素上，真正绑定事件的是外层元素，而不是目标元素。
+事件委托，会把一个或者一组元素的事件委托到它的父层或者更外层元素上，真正绑定事件的是外层元素，而不是目标元素。
 
 当事件响应到目标元素上时，会通过事件冒泡机制从触发它的外层元素的绑定事件上，然后在外层元素上去执行函数。
 
@@ -657,3 +655,104 @@ function factorial(n, total) {
 }
 factorial(5); // 120
 ```
+
+46. 埋点平台的采样方案
+
+总体思路梳理：
+  1. 实现一个util支持输入一个uid字符串，输出一个哈希值；这个方法需要确保两点：
+    - 输出一个1-1000的哈希值；
+    - 保证每次相同的输入都是确定的哈希值；
+  2. 将生成的哈希值对1000取余，如果值在 [1, ratio * 1000）范围内，则命中灰度，否则，未命中灰度；
+
+```js
+function hashUserId(userId) {
+  let hash = 5381;
+  for (let i = 0; i < userId.length; i++) {
+    hash = hash * 33 + userId.charCodeAt(i);
+  }
+  return Math.abs(hash) % 1000 + 1;
+}
+console.log(hashUserId('85d46fd47bdfa7476a2bc1f51f45726')); // 输出某个值，例如 345
+console.log(hashUserId('85d46fd47bdfa7476a2bc1f51f45726')); // 应该输出相同的值，例如 345
+console.log(hashUserId('abcdef12345')); // 输出另一个值，例如 876
+function isHitRatio(userId, ratio) {
+  let baseVal = 1000;
+  // 保证每次相同的userid生成相同的hash值
+  let hashVal = hashUserId(userId);
+  return hashVal % baseVal < ratio * baseVal;
+}
+isHitRatio('ssss', 0.1);
+```
+
+47. tsc --noEmit
+
+tsc --noEmit是ts编译器的一个命令行选项，用于编译检查你的ts代码而不生成任何输出文件。它会执行所有的类型检查和编译阶段的验证，但是不会将ts文件编译成js文件或输出声明文件。
+
+使用场景：
+
+  1. 类型检查：当你只想验证代码是否符合TypeScript类型系统的要求，而不希望生成新的js文件时，可以使用--noEmit。这在持续集成（CI）环境中特别有用，以确保代码库中么有类型错误。
+  2. 构建过程优化：如果你有一个复杂的构建流程，并且只在某些阶段进行类型检查，其他阶段才需要实际编译输出，那么可以在不需要输出文件的时候用--noEmit来节省时间和资源。
+  3. 编译器/IDE集成：一些编辑器或IDE可能在后台运行带有--noEmit的tsc实例，以便提供实时的类型检查和错误报告，而不会干扰用户的开发环境。
+  4. 预提交钩子：在Git的pre-commit hooks中使用--noEmit可以确保在每次提交之前都进行了完整的类型检查，从而避免将包含类型错误的代码提交到仓库。
+
+48. import.meta
+
+import.meta元属性将特定上下文的元数据暴露给js模块。它包含了这个模块的信息，例如这个模块的URL。
+
+  - url：此模块的完整URL，包括查询参数和片段标识符（在？和#之后）。在浏览器中，它是可获得此脚本的URL（对外部脚本）或者是包含此脚本的URL（对内联脚本）。在Node.js中，它是文件路径（包括 file:// 协议部分）。
+  - resolve：将一个模块的标识符解析为相对于当前模块的URL；
+
+import.meta不是属性访问器而是特殊的表达式语法（因为import是保留字而不是标识符）。
+
+import.meta元属性在js模块中可用；在模块之外（包括在模块中直接调用eval），使用import.meta是语法错误。
+
+示例：
+
+  - 传递查询参数：
+  在import声明中使用查询参数允许为特定模块传递参数，可作为应用程序从window.location读取参数的补充方式：
+
+  ```HTML
+  <script type="module">
+    import './index.mjs?someURLInfo=5'
+  </script>
+  ```
+  index.mjs模块可以通过import.meta获取someURLInfo参数：
+
+  ```js
+  new URL(import.meta.url).searchParams.get("someURLInfo");  // 5
+  ```
+  - 相对当前文件解析文件路径
+  在Node.js的commonjs模块中，有专门的__dirname变量，值为包含当前文件的文件夹的绝对路径，可以用来解析相对路径。但是，ES模块除了import.meta之外没有上下文变量。因此，要解析相对路径的文件，可以使用import.meta.url。注意这个属性使用的是URL而非文件系统的路径。
+
+  ```js
+  // 之前（commonjs）
+  const fs = require('fs/promises');
+  const path = require('path');
+  const filePath = path.join(__dirname, 'someFile.txt');
+  fs.readFile(filePath, 'utf8').then(console.log);
+
+  // 之后（ES模块）
+  import fs from 'node:fs/promises';
+  const fileURL = new URL('./someFile.tex', import.meta.url);
+  fs.readFile(fileURL, 'utf8').then(console.log)
+  ```
+
+49. 埋点主要采集什么？
+  1. 程序错误
+  2. 性能问题
+  3. 用户行为：页面访问、跳转、停留时长
+
+业界比较优秀的埋点平台：神策、ARMS、Sentry。
+
+50. 埋点上报的方案
+
+  1. 创建image标签的上报；
+  2. 设置定时或一定数据量上报；
+  比如一秒上报一次，或者数据到达10条以上上报；
+  3. 页面离开时上报，可以利用navigator.sendBeacon委托浏览器在页面关闭时上报；
+
+51. 跨域和跨站
+
+跨域：协议、域名、端口有一个不一样就是跨域；
+跨站：域名不一样是跨站；
+通常是顶级域名+二级域名一样则视为同站，否则视为跨站。有一些公共后缀的特殊情况也会涉及跨站。

@@ -144,8 +144,11 @@ function getFileHash(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = function(e) {
+            // 第一步：拿到文件的buffer数据
             const arrayBuffer = e.target.result;
+            // 第二步：用buffer数据生成unit8的数据格式
             const unit8Array = new unit8Array(arrayBuffer);
+            // 第三步：生成文件的hash值
             crypto.subtle.digest('SHA-256', unit8Array)
             .then(hashBuffer => {
                 const hashArray = Array.from(new Uint8Array(hashBuffer));
