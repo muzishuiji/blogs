@@ -19,7 +19,8 @@ useCapture: 是否允许事件捕捉，很少会传true，然后就变成可选�
 ```javascript
 addEventListener(type, listener, {
     capture: false, // 是否在捕获阶段触发
-    passive: false, 
+    // 当你打算监听滚动操作而不打算阻止滚动（即不调用preventDefault），设置为true可以提高页面滚动性能
+    passive: false, // 主动触发or被动触发
     once: false  // 只触发一次
 })
 ```

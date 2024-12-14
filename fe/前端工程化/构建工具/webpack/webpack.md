@@ -414,8 +414,7 @@ secure: false; // 解除 https 协议下的安全限制
 7. 热更新原理
 
   - 文件变化监听：webpack使用watch模式来监听文件系统的变化；
-  - 编译与打包：当文件发生变化时，webpack会重新编译并打包发生变化的模块，webpack会生成一个包含更新模块信息的json文件（简称`update
-  `文件），以及一个包含更新模块代码的js文件（称为`hot-update.js`文件）；
+  - 编译与打包：当文件发生变化时，webpack会重新编译并打包发生变化的模块，webpack会生成一个包含更新模块信息的json文件（简称`update.json`文件），以及一个包含更新模块代码的js文件（称为`hot-update.js`文件）；
   - 发送更新信息：webpack dev server通过WebSocket将更新信息发送给浏览器；
   - 接收更新信息：浏览器接收到更新文件信息后，会通过HMR Runtime应用这些信息，HMR Runtime是webpack在打包时注入到每个模块中的代码，它负责处理模块的热更新逻辑；
   - 客户端脚本根据更新信息更新对应的模块，重新解析、运行发生变化的模块，而不会刷新整个页面；

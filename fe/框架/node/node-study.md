@@ -1,5 +1,6 @@
 # Node.js 开发实战
 
+
 ## Node 的基本认知
 
 1. 使用 node.js 开发遇到的一些问题
@@ -33,6 +34,10 @@ Node.js 使用了一个事件驱动,非阻塞式 I/O 的模型.
 5. 技术预研
 
 BFF(backend for frontend)
+
+6. NodeJS的辐射范围
+
+NodeJS可是配的领域涵盖了泛前端和后端，传统服务和Serverless，工具、商业、游戏等等。
 
 ## Node.js 内置模块
 
@@ -98,6 +103,12 @@ async function 是 generator 的语法糖,它是异步的一个很好的解决�
 - HTTP 服务要做什么事情
   - 解析进来的 HTTP 请求报文
   - 返回对应的 HTTP 请求报文
+
+## NodeJS 与 Web-interoperable Runtime
+
+Web-interoperable Runtime 简称Winter，Web可互操运行时。这里有一个核心的单词 interoperable，就是可互操。可互操，就是运行时之间可以互相替代、互相兼容。各浏览器之间就是interoperable，经过标准化之后，大家的API长的都一样，这就是所谓的互通性。
+
+Winter就是针对服务端js提出的一种规范。只要大家都遵循Winter规范，那么整个生态就是可共享的。好多厂商都基于V8做了js的运行时，后来经过标准化、规范化之后，国际上的几家厂商就一起给它起了一个新的名字，并且开始做一些标准化的事情，组建了一个组织叫WinterCG，它是由几家国际公司联合起来搞的W3C的下一个社区组，致力于做Web-interoperable Runtime标准化。
 
 ## express
 
