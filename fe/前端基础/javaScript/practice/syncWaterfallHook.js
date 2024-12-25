@@ -4,7 +4,7 @@ const HooksType = {
     SYNC: 'sync'
 }
 
-class SyncHook {
+class SyncWaterfallHook {
     constructor(args) {
         this.args = Array.isArray(args) ? args : []; // 形参列表
         this.listeners = [];
@@ -36,10 +36,10 @@ class SyncHook {
         }
 
         const getContent = () => {
-            let code = '';
+            let code = 'var preRes;';
             for(let i = 0; i < listeners.length; i++) {
                 code += `var fn${i}=listeners[${i}].fn;\n`;
-                code += `fn${i}(${args.join(',')});\n`;
+                code += `preRes = fn${i}(preRes, ${args.join(',')});\n`;
             }
             return code;
         }
@@ -56,17 +56,25 @@ class SyncHook {
     }
 }
 
-const syncHook = new SyncHook(["author", "age"]);
+const syncWaterfallHook = new SyncWaterfallHook(["author", "age"]);
 
 //第二步：注册事件1
-syncHook.tap("监听器1", (name, age) => {
-    console.log("监听器1:", name, age);
+syncWaterfallHook.tap("监听器1", (res, name, age) => {
+    console.log("监听器1:", res, name, age);
+    return '111'
 });
 
 //第二步：注册事件2
-syncHook.tap("监听器2", (name, age) => {
-    console.log("监听器2:", name, age);
+syncWaterfallHook.tap("监听器2", (res, name, age) => {
+    console.log("监听器2:", res, name, age);
+    return '222'
 });
 
-syncHook.call("木子水吉", "18");
+//第二步：注册事件3
+syncWaterfallHook.tap("监听器3", (res, name, age) => {
+    console.log("监听器3:", res, name, age);
+    return '333'
+});
+
+syncWaterfallHook.call("木子水吉", "18");
 
