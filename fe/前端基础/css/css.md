@@ -113,7 +113,7 @@ Formatting Context是W3C CSS2.1规范中的一个概念，它是页面中的一�
   2. float的值不是none；
   3. position的值为absolute或fixed；
   4. overflow的值不是visible，为auto、scroll、hidden；
-  5. display的值是inline-block,table,table-cell, table-caption,inline-table,flex,inline-flex,grid,inline-grid;
+  5. display的值是inline-block,table,table-cell, table-caption,flex,inline-flex,grid,inline-grid;
 
 **BFC的作用**
   1. 利用BFC避免margin重叠；
@@ -396,6 +396,12 @@ Grid布局即网格布局，是一个二维的布局方式，由纵横相交的�
   - 使用css3硬件加速，可以让transform、opacity，filters这些动画不会引起回流重绘；
   - 每次获取元素的布局属性时，可以使用变量缓存起来，避免频繁获取元素的布局属性；
   - 动态插入多个节点时，使用DocumentFragment，创建后一次性插入，避免多次渲染；
+
+25. border 和 outline的区别
+
+  - border是元素盒模型的一部分，占据布局空间，用于设计元素的外观；
+  - outline不占据布局空间，通常用于凸显元素，特别是在可访问性方面；
+
 
 
 

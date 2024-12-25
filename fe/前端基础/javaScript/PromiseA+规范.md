@@ -3,7 +3,7 @@
 
 ### 术语
 
-* 解决（fulfill）： 指一个promise成功时进行的一系列操作，如状态的改变，回调的执行。虽然规范中用fulfill来表示解决，但在后世的peomise实现多以resolve来取代之。
+* 解决（fulfill）： 指一个promise成功时进行的一系列操作，如状态的改变，回调的执行。虽然规范中用fulfill来表示解决，但在后世的promise实现多以resolve来取代之。
 
 * 拒绝（reject）： 指一个promise失败时进行的一系列操作。
 
@@ -90,7 +90,7 @@ onFulfilled 和 onRejected必须作为函数被调用（即没有this值）
 
 **多次调用**
 
-then方法可以背同一个promise调用多次
+then方法可以被同一个promise调用多次
 
 * 当promise成功执行时，所有onFulfilled需按照其注册顺序依次回调；
 
@@ -109,8 +109,7 @@ then方法必须返回一个promise对象
 
 **Promise解决过程**
 
-Promise 解决过程是一个抽象的操作，其输入一个promise和一个值，我们表示为`[[Rresolve]](promise,x)`,如果x有then方法并且看上去像一个Promise，解决程序即尝试使promise接受x的状态，否则其用x的值来执行promise。
-
+Promise 解决过程是一个抽象的操作，其输入一个promise和一个值，我们表示为`[[Resolve]](promise,x)`,如果x有then方法并且看上去像一个Promise，解决程序即尝试使promise接受x的状态，否则其用x的值来执行promise。
 
 **Promise的手写实现**
 

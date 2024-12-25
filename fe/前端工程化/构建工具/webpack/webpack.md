@@ -178,8 +178,8 @@ Webpack构建可以简单划分成init、make、seal三个阶段：
 
 3. Module Federation的核心概念：
 
-  1. HOST（宿主）：加载远程模块的应用；
-  2. Remote（远程）：可访问的远程模块；
+  1. HOST（宿主）：需要加载远程模块的应用；
+  2. Remote（远程）：需要访问的远程模块；
   3. Exposed Modules（暴露的模块）：远程应用中被暴露出来供其他应用使用的模块；
   4. Shared Modules（共享模块）：多个应用之间的共享的模块，可以避免重复加载；
 
@@ -282,7 +282,6 @@ Module Federation支持动态加载，但在某些情况下，动态加载可能
 4. 调试困难
 
 由于模块是动态加载的，调试可能会变的困难。特别是在开发环境中，需要确保所有模块都是正确加载和运行。
-
 如果需要调试则需要额外的代理机制，拉取远程模块的sourcemap进行调试。
 
 5. 改动时评估影响范围
@@ -432,9 +431,32 @@ tree-shaking 的主要作用就是只打包用到的代码逻辑。
     sideEffects: ['*.css'];  // 意思对.css为后缀的文件不要使用tree-shaking
 
 2. tree-shaking是一种只对ESM有效的Dead Code 
+
 Elimination技术，它能够自动删除无效（没有被使用、且没有副作用）的模块导出变量，优化产物体积。不过，受限于js语言灵活性带来的高度动态特性，tree-shaking并不能完美删除所有无效的模块导出，需要我们在业务代码中遵循若干实践规则，帮助tree-shaking更好的运行。
 
 在异步模块中使用tree-shaking需要加一些特殊语法备注：`/* webpackExports: xxx */`
+
+使用tree-shaking时，如果主体代码中将导出模块赋值给某个变量，但该变量未被使用，也会导致tree-shaking失败，因为webpack的tree-shaking逻辑只停留在静态分析层面。，只是浅显的判断：
+
+  - 模块导出变量是否被其它模块引用；
+  - 引用模块的主题代码中有没有出现这个变量；
+
+3. tree-shaking使用的一些最佳实践；
+
+  - 始终使用ESM：尽量坚持使用ESM编写模块代码；
+  - 避免将导出模块赋值给未使用的变量；
+  - 使用#pure标注纯函数调用；
+  默认情况下webpack不会对函数调用做tree-shaking操作，但开发者可以在语句前加/*#PURE*/备注，webpack则会对此函数调用做tree-shaking。
+  - 避免使用babel将导入导出语句转译为commonjs；
+  - 优化导出值的粒度，统一默认导出也会导致tree-shaking失败；
+  - 在异步模块中使用tree-shaking，需要显式声明导出了哪些模块；
+  ```js
+  // webpack借助备注语句，分析模块依赖，实现tree-shaking
+  import(/* webpackExports: ['foo','default']*/).then((module) => {
+    console.log(module.foo);
+  })
+  ```
+
 
 ### development 和 production 模式的区分打包
 
@@ -1713,7 +1735,7 @@ Webpack 提供了三种开启 Scope Hoisting 的方法：
 
 - 非ESM模块
 
-遇到 AMD、CMD 一类模块时，由于导入导出内容的动态性，Webpack 无法确保模块合并后不会产生意料之外的副作用，因此会关闭 Scope Hoisting 功能。这一问题在导入 NPM 包尤其常见，许多框架都会自行打包后再上传到 NPM，并且默认导出的是兼容性更佳的 CommonJS 包，因而无法使用 Scope Hoisting 功能，此时可通过 mainFileds 属性尝试引入框架的 ESM 版本：
+遇到 AMD、CMD 一类模块时，由于导入导出内容的动态性，Webpack 无法确保模块合并后不会产生意料之外的副作用，因此会关闭 Scope Hoisting 功能。这一问题在导入 NPM 包尤其常见，许多框架都会自行打包后再上传到 NPM，并且默认导出的是兼容性更佳的 CommonJS 包，因而无法使用 Scope Hoisting 功能，此时可通过 mainFields 属性尝试引入框架的 ESM 版本：
 ```js
 module.exports = {
   resolve: {

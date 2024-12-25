@@ -211,14 +211,14 @@ React Hooks不能写在条件语句、循环或其他嵌套函数中。这是因
   3. 遍历虚拟DOM树，将其转换为fiber结构（这个过程叫reconcile）；
   reconcile过程并不只是创建fiber节点，当更新的时候，还会和之前fiber节点做diff，判断是新增、修改还是删除，然后打上对应的标记。
   4. 根据增删改的标记，更新真实DOM中发生变化的部分；
-  5. 调用组件的生命周期方法，执行副作用操作；
+  5. 调用组件的生命周期方法，执行清理副作用操作；
 
 25. React Router
 
   1. history.scrollRestoration可以设置保留滚动位置
   它的值有auto、manual，默认是auto，也就是会自动定位到上次滚动位置，设置为manual就不会了。
-  2. 当你在history中导航时，popstate就会触发，比如history.forward，history.back，history.go。但是history.pushState、history.replaceState并不会触发popState。
-  添加、修改history不会触发popstate，只有history之间导航才会触发。
+  2. 当你在history中导航时，popState就会触发，比如history.forward，history.back，history.go。但是history.pushState、history.replaceState并不会触发popState。
+  添加、修改history不会触发popState，只有history之间导航才会触发。
   3. react的路由跳转是封装了pushState和replaceState的，当pushState或者replaceState触发的时候，会触发matchRoutes，match完会pushState修改history，然后更新state，触发了setState，组件树会重新渲染。
 
   渲染时会用到Outlet渲染子路由，用到useXxx来取一些匹配信息，这些都是通过context传递的。
@@ -289,7 +289,7 @@ forwardRef + useImperativeHandle组合使用使得子组件可以自定义暴露
 
 32. React的生命周期
 
-  - useEffect不添加依赖类似于componentWillMount，不添加依赖的返回值类似于componentWillUnmount；
+  - useEffect不添加依赖类似于componentDidMount，不添加依赖的返回值类似于componentWillUnmount；
   - useEffect添加prop为依赖，类似于getDerivedStateFromProps；
   - useEffect添加state为依赖，类似于componentDidUpdate；
 
@@ -299,7 +299,7 @@ React引入Fiber架构的主要原因是为了解决处理大型应用时，虚�
 
   1. 调度：
     - 问题：在旧版本的架构中，React的渲染过程是同步的，这意味着React开始渲染一个组件树时，它会一直执行到渲染完成，期间不会中断。这在处理大型组件树时会导致长时间的阻塞，影响用户体验，尤其是在低端设备上。
-    - 解决方案：fiber结构引入了任务调度的概念，允许React将渲染工作分解为多个小任务，并在浏览器的主线成空闲时执行这些任务。这使得React可以在渲染过程中暂停、恢复和中断任务，从而避免长时间的阻塞，提高应用的响应性。
+    - 解决方案：fiber结构引入了任务调度的概念，允许React将渲染工作分解为多个小任务，并在浏览器的主线程空闲时执行这些任务。这使得React可以在渲染过程中暂停、恢复和中断任务，从而避免长时间的阻塞，提高应用的响应性。
   2. 优先级
     - 问题：在旧版本的架构中，所有任务的优先级都是相同的，React无法区分哪些任务更重要，哪些任务可以稍后处理。这可能导致一些高优先级的任务（如用户交互）被低优先级的任务（如渲染）阻塞。
     - 解决方案：Fiber架构引入了优先级机制，允许react根据任务的优先级来调度任务。如果进来的任务的优先级比当前在执行的任务的优先级高，React会维护一个优先级队列，优先处理用户交互事件等高优先级的任务，然后再处理数据更新等较低优先级的任务。
@@ -384,7 +384,6 @@ function forwardRef(render) {
 6. forwardRef创建了单独的react element类型，在beginWork处理到它的时候做了特殊处理，就是把ref作为第二个参数传递给了函数组件。
 
 7. useImperativeHandle的底层实现就是useEffect，只不过执行的函数和需要的对象是指定传入的，这样在layout阶段调用hook的effect函数的时候就可以更新ref了。
-
 
 ## redux
 
@@ -490,7 +489,6 @@ React和Vue是两个非常流行的前端框架库，他们都用于构建用户
   - React：使用虚拟DOM来优化性能，React的diff算法能够最小化DOM操作，提高渲染效率。但是更细粒度的避免重渲染需要开发者管理好状态依赖，以及给组件增加memo等逻辑来实现；
   - Vue：vue也使用虚拟DOM，但vue的响应式系统能够更细粒度的追踪依赖关系，减少不必要的重渲染；
 
-
 ## Ref的实现原理
 
 render阶段处理到原生标签也就是HostComponent类型的时候，如果有ref属性会在fiber.flags里加一个标记。
@@ -511,14 +509,33 @@ useImperativeHandle的底层实现就是useEffect，只不过执行的函数是�
 4. tsx中child属性需要手动声明
 5. 在18之前，只有在react事件处理函数中，才会自动执行批处理，其他情况会多次更新；
 6. 在18之后，任何情况下都会自动进行批处理，将多次更新操作始终合并为一次
+批处理更新的工作原理：
+
+React在执行更新时采用了一种懒惰的方式，它会将同一个事件循环中的多个更新累积起来，然后一次性应用这些更新，不会对每个更新立即进行重新渲染。避免了不必要的重渲染，从而提高了性能。该特性的引入使得React应用可以更有效率的处理状态更新，尤其是在复杂的应用和异步操作中。
+
+react也支持使用flushSync来推出批量更新处理。
+
 7. 批处理是一个破坏性改动，如果你想退出批量更新，你可以使用flushSync
 8. 18之前的版本，开启严格模式会对每个组件进行两次渲染，以便你观察一些意想不到的结果，但是react17中，取消了其中一次渲染的控制台日志，一边让日志更容易阅读；
 react18中，官方取消了这个限制，如果你安装了devtools，第二次渲染的日志颜色将显示为灰色，以柔和的方式显示在控制台。
+
+StrictMode故意通过双重渲染组件，帮助开发者发现副作用在渲染之间可能不一致的问题，在并发模式下，React可能会开始一个更新，然后在完成之间中断它，稍后再恢复更新。这意味着如果你的render函数或其他函数有副作用，那么这些副作用可能会在更新完成之前执行多次，从而可能暴露出问题。
+
+StrictMode主要解决以下问题：
+  - 不安全的生命周期警告：帮助识别使用了即将废弃的生命周期钩子的组件，鼓励开发者使用更加安全的生命周期方法；
+  - 脱离react api的警告：使用比较老的ref api或者直接修改dom；
+  - 意外的副作用：识别出不恰当的副作用，使它们在react并发模式下不会产生问题；
+  - 弃用的api使用：探测到使用废弃的API和模式；
+  - 开发习惯：鼓励使用如key属性等的最佳实践，从而提高应用性能；
 
 ### 新的API
 
 1. useId
 
 支持客户端和服务端生成相同的唯一的ID，避免hydration的不兼容，这解决了React17及以下版本中存在的问题。因为服务器渲染提供的HTML时无序的，userId的原理就是每个id代表组件在组件树中的层级结构。
+
+2. useInsertionEffect
+
+useInsertionEffect是react18新增的hook，专门用于处理样式注入的场景。它在样式计算之前同步执行，确保在浏览器开始绘制之前，样式已经插入到dom中。这个hook的目的是避免在使用css-in-js库时的样式闪烁问题。
 
 

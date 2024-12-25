@@ -1,7 +1,7 @@
 ## Vite的简介
 
 Vite是一种新型的前端构建工具，能够显著提升前端开发体验。它主要由两部分组成：
-  - 一个开发服务器，它基于原生ES模块提供了丰富的内奸功能，如速度快到惊人的模块热替换（HMR）。
+  - 一个开发服务器，它基于原生ES模块提供了丰富的内建功能，如速度快到惊人的模块热替换（HMR）。
   - 一套构建指令，它使用Rollup打包你的代码，并且它是预配置的，可输出用于生产环境的高度优化过的静态资源；
 
 Vite是一种具有明确建议的工具，具备合理的默认设置。也提供了强大饿扩展性，可通过其插件API和JS API进行扩展，并提供完整的类型支持。
@@ -26,9 +26,21 @@ import { someMethod } from 'my-dep'
 上面的代码会在浏览器中抛出一个错误。Vite将会检测到所有被加载的源文件中的此类模块导入，并执行以下操作：
 
 1. 「预构建」它们可以提高页面加载速度，并将CommonJS/UMD转换为ESM格式。预构建这一步由esbuild执行，这使得Vite的冷启动时间比任何基于js的打包器都要快得多。
+
 2. 重写导入为合法的URL，例如`/node_modules/.vite/deps/my-dep.js?v=f3sf2ebd`以便浏览器能够正确导入它们。
 
 ### 模块热替换
+
+Vite的热更新的主要作用是为了实现局部刷新的效果，这样之前操作的状态能够保存。
+
+Vite热更新的基本方式如下：
+- 基于一套完整的ESM HMR规范，在文件发生改变时vite会检测到相应的esm模块变化，触发相应的api，实现局部的更新；
+- import.meta 对象是现代浏览器原生的一个内置对象，vite在这个对象上的hot属性中定义了一套完整的热更新的属性和方法；
+
+实现原理：
+1. 创建模块依赖图谱：建立模块间的依赖关系；
+2. 服务端收集更新模块：监听文件变化，确定需要更新的模块；
+3. 客户端派发更新：客户端执行文件更新，实现局部刷新；
 
 Vite提供了一套原生ESM的HMR API。具有HMR功能的框架可以利用该API提供即时、准确的更新，而无需重新加载页面或清除应用程序状态。Vite内置了HMR到Vue但文件组件（SFC）和React Fast Refresh中。也通过@prefresh/vite对Preact实现了官方集成。
 
@@ -124,4 +136,27 @@ Vite使用esbuild将ts转译成js，约是tsc速度的20-30倍，同时HMR更新
 ```js
 import type { T } from 'only/types';
 export type { T }  
+```
+
+### 在Vite中使用预处理器
+
+在vite.config.js中配置preprocessorOptions，出生年份i全局变量和配置选项。
+
+```js
+import { defineConfig } from 'vite';
+export default defineConfig({
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@import "./src/styles/variables.scss";`,
+      },
+      less: {
+        additionalData: `@import "./src/styles/variables.less";`
+      },
+      stylus: {
+        additionalData: `@import "./src/styles/variables.styl";`
+      }
+    }
+  }
+})
 ```
