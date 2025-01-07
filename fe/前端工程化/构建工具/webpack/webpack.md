@@ -22,7 +22,7 @@ chunk的一些关键属性：
     - chunks, 存放每个文件对应的 id 值,和相关联的文件的 id 值
     - chunksName, 每个文件对应的名字,和相关的文件的名字.
 
-5. mode：打包模式,默认是 production, development 模式打包出来的文件时非压缩的, production 模式打包出来的文件时压缩过的.
+5. mode：打包模式,默认是 production, development 模式打包出来的文件是非压缩的, production 模式打包出来的文件是默认压缩的.
 6. Webpack的打包流程可以简化为：
 ![alt text](./images/image.png)
 
@@ -44,11 +44,13 @@ chunk的一些关键属性：
         - resolve：用于配置模块路径解析规则，可用于帮助 Webpack 更精确、高效地找到指定模块
         - module：用于配置模块加载规则，例如针对什么类型的资源需要使用哪些 Loader 进行处理
         - externals：用于声明外部资源，Webpack 会直接忽略这部分资源，跳过这些资源的解析、打包操作
-    -后处理：
+    - 后处理：
         - optimization：用于控制如何优化产物包体积，内置 Dead Code Elimination、 Scope Hoisting、代码混淆、代码压缩等功能
         - target：用于配置编译产物的目标运行环境，支持 web、node、electron 等值，不同值最终产物会有所差异
         - mode：编译模式短语，支持 development、production 等值，可以理解为一种声明环境的短语
+
 9. 工具类配置项：
+
 - 开发效率类：
     - watch：用于配置持续监听文件变化，持续构建
     - devtool：用于配置产物 Sourcemap 生成规则
@@ -78,11 +80,11 @@ chunk的一些关键属性：
     - 开始编译：执行compiler对象的run方法，创建compilation对象；
     - 确定入口：根据entry配置找到所有入口文件，调用compilation.addEntry将入口文件转换为dependence对象。
   2. 构建阶段：
-    - 编译模块（make）：从entry文件开始，调用loader将模块转译为标准js内容，调用js解释器将内容转换为AST对象，从中找出该模块依赖的模块，再递归处理这些依赖模块，直到所有入口依赖的文件都经过了本步骤的处理；
+    - 编译模块（make）：从entry文件开始，调用loader将模块转译为标准js内容，调用js解释器将内容转换为AST对象，从中找出该模块依赖的模块，再递归处理这些依赖模块，直到所有依赖的文件都经过了本步骤的处理；
     - 完成模块编译：上一步递归处理所有能触达的模块后，得到了每个模块被翻译后的内容以及他们之间的依赖关系图；
   3. 封装阶段：
     - 合并（seal）：根据入口和模块间的依赖关系，封装成一个个包含多个模块的chunk；
-    - 优化（optimization）：对上述chunk施加一系列优化操作，包括：tree-shaking、terser、scope-hoisting、code split等。
+    - 优化（optimization）：对上述chunk施加一系列优化操作，包括：tree-shaking、terser、scope-hoisting、code split等；
     - 写入文件系统（emitAssets）确定好输出内容后，根据配置确定输出的路径和文件名，把文件内容写入到文件系统中。
 
 一些行之有效的构建性能优化手段：并行编译、缓存、缩小资源搜索范围等。设置`profile=true`，运行编译命令，并添加--json参数，如：`npx webpack --json=stats.json`,可在生成的stats.json下查看每个模块打包的性能数据，可以从这些数据中分析出模块之间的依赖关系、体积占比、编译构建耗时等。结合社区里的分析工具，可以从可视化图表里更直观的找到性能卡点。
@@ -114,6 +116,8 @@ module.exports = {
 
 这些并行构建方案的核心设计很类似，针对某种计算任务创建子进程，之后将运行所需参数通过IPC传递到子进程并启动计算操作，计算完毕后子进程再将结果通过IPC传递回主进程，寄宿在主进程的组件实例，再将结果提交给webpack；
 
+happyPack和thread-loader主要将耗时的文件加载操作拆散到多个子进程中并发执行，子进程执行完毕后再将结果回传到webpack进程，从而提升构建性能。
+
 14. webpack内部的几个核心对象
 
   - Compiler：全局构建管理器，Webpack启动后会先创建compiler对象，负责管理配置信息、Loader、Plugin等。从启动构建到结束，compiler会触发一系列的钩子函数。
@@ -125,12 +129,12 @@ module.exports = {
   - 接口：需要提供一套逻辑接入方法，让开发者能够将代码插入特定环节，变更相关逻辑；
   - 输入：如何将上下文信息高效传导给插件；
   - 输出：插件内部通过何种方式影响整套运行体系；
-  给插件提供固有方法来修改相关逻辑，提供有限的修改能力，且可以对插件的修改做监控，保障插件对模块的修改时合理范围内的。
+  给插件提供固有方法来修改相关逻辑，提供有限的修改能力，且可以对插件的修改做监控，保障插件对模块的修改是合理范围内的。
 
 针对这些问题，webpack基于tapable实现了：
   1. 编译过程的特定节点以钩子形式，通知插件此刻正在发生什么事情；
   2. 通过tapable提供的回调机制，以参数方式传递上下文信息；
-  3. 在上下文参数对象中附带了很多存在Side Effect的交互接口，插件可以通过这些接口改变；
+  3. 在上下文参数对象中附带了很多存在Side Effect的交互接口，插件可以通过这些接口修改相关逻辑；
 
 16. Webpack的构建流程
 
@@ -249,8 +253,7 @@ Webpack构建可以简单划分成init、make、seal三个阶段：
   如果远程模块和宿主应用之间有共享模块（如react、react-dom），webpack会优先使用宿主应用中已经加载的共享模块，避免重复加载。
 
 
-指定对应模块的入口文件，如果是npm包可以通过package.json的main来制定模块入口文件。如果是MF则则使用remotes里定义的指定模块的地址来确定模块的入口文件。
-
+指定对应模块的入口文件，如果是npm包可以通过package.json的main来指定模块入口文件。如果是MF则使用remotes里定义的指定模块的地址来确定模块的入口文件。
 
 **MF的优点与缺点**
 
@@ -436,7 +439,7 @@ Elimination技术，它能够自动删除无效（没有被使用、且没有副
 
 在异步模块中使用tree-shaking需要加一些特殊语法备注：`/* webpackExports: xxx */`
 
-使用tree-shaking时，如果主体代码中将导出模块赋值给某个变量，但该变量未被使用，也会导致tree-shaking失败，因为webpack的tree-shaking逻辑只停留在静态分析层面。，只是浅显的判断：
+使用tree-shaking时，如果主体代码中将导出模块赋值给某个变量，但该变量未被使用，也会导致tree-shaking失败，因为webpack的tree-shaking逻辑只停留在静态分析层面，只是浅显的判断：
 
   - 模块导出变量是否被其它模块引用；
   - 引用模块的主题代码中有没有出现这个变量；
@@ -478,7 +481,7 @@ Elimination技术，它能够自动删除无效（没有被使用、且没有副
             }
         }
 
-- 通过在用到的地方 import,也就是异步加载的方式进行代码分割，webpack 会将我们异步加载的文件打包成单独的 js 文件，从而减少 main.js 的体积，在用到的时候再去加载对应的 js 文件.代码示例:
+- 通过在用到的地方动态import,也就是异步加载的方式进行代码分割，webpack 会将我们异步加载的文件打包成单独的 js 文件，从而减少 main.js 的体积，在用到的时候再去加载对应的 js 文件.代码示例:
 
         function getComponent() {
             return import('lodash').then(({default: _}) => {
@@ -607,7 +610,6 @@ Scope Hoisting在production默认启用并激活。
 
 注意事项：
 - 不支持所有模块：Scope Hoisting不支持所有类型的模块，特别是使用了动态导入（`import()`）或使用了`eval`等非标准模块加载方式的模块；
-
 - 可能增加构建时间：Scope Hoisting可以提高运行时性能，但它会增加构建时间，因为它需要分析模块之间的依赖关系并进行合并。
 
 ### css 代码分割
@@ -741,8 +743,6 @@ webpack 中使用`workbox-webpack-plugin`来打包后,会为我们自动生成�
 
 还可以使用 git 的钩子命令,在提交代码的时候对代码做 eslint 校验.
 
-
-
 ### webpack 性能优化
 
 1. 跟上技术的迭代(尽可能的使用最新的 webpack,npm,yarn)
@@ -757,7 +757,7 @@ webpack 中使用`workbox-webpack-plugin`来打包后,会为我们自动生成�
 
 4. 合理的使用 resolve 配置
 
-过多的配置 extensions 和 mainFields 会降低 webpack 的打包速度,所以我们需要在必要的情况下省略文件名的后缀和为嵌套过多的路径设置别名.
+过多的配置 extensions 和 mainFields 会降低 webpack 的打包速度,所以我们需要在必要的情况下省略文件名的后缀、为嵌套过多的路径设置别名.
 
 5. 使用 DllPlugin 来有效提高打包速度
 
@@ -791,10 +791,10 @@ webpack 中使用`workbox-webpack-plugin`来打包后,会为我们自动生成�
      // 引入 webpack 插件
      const AddAssetHtmlWebpackPlugin = require('add-asset-html-webpack-plugin');
      plugins: [
-     // ...
-     new webpack.DllReferencePlugin({
-     manifest: path.resolve(__dirname, '../dll/vendors.manifest.json'),
-     })
+        // ...
+        new webpack.DllReferencePlugin({
+        manifest: path.resolve(__dirname, '../dll/vendors.manifest.json'),
+        })
      ]
 
 6. 控制包文件的大小从而提升 webpack 的打包速度
@@ -811,7 +811,7 @@ sourceMap 越完整,打包出来的代码的体积就会越大,打包速度就�
 
 9. 结合 stats 分析打包结果
 
-利用目前已有的可视化工具,结合 stats.json 帮助我们分析是哪些模块占据了打包后的代码的体积,那些模块托慢了打包速度,从而进行有针对性的优化.
+利用目前已有的可视化工具,结合 stats.json 帮助我们分析是哪些模块占据了打包后的代码的体积,哪些模块托慢了打包速度,从而进行有针对性的优化.
 
 10. 开发环境内存编译.
 
@@ -925,16 +925,16 @@ loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
 2. 编写一个 loader 的大致流程:
     - 1.创建 loader 对应的文件夹,以及 js,编写对应的处理逻辑,代码示例:
         ```js
-            const LoaderUtils = require('loader-utils');
-            // loaders的导出函数最好不要使用箭头函数,因为使用箭头函数你会找不到想要的this.
-            module.exports = function(source) {
-                const options = LoaderUtils.getOptions(this);
-                const result = source.replace('dongdong', options.name);
-                return this.callback(null, result);
-            }
+        const LoaderUtils = require('loader-utils');
+        // loaders的导出函数最好不要使用箭头函数,因为使用箭头函数你会找不到想要的this.
+        module.exports = function(source) {
+            const options = LoaderUtils.getOptions(this);
+            const result = source.replace('dongdong', options.name);
+            return this.callback(null, result);
+        }
         ```
     - 2.在 webpack 中做以下配置
-    resolveLoader是webpack中用于配制加载器解析规则的配置项。通过 resolveLoader，开发者可以自定义加载器的查找路径、文件扩展名，从而有效缩短查找范围，提升查找效率，不指定则走默认的查找逻辑。
+    resolveLoader是webpack中用于配置加载器解析规则的配置项。通过 resolveLoader，开发者可以自定义加载器的查找路径、文件扩展名，从而有效缩短查找范围，提升查找效率，不指定则走默认的查找逻辑。
     ```js
         // 这里我们把编写的loaders放在loaders目录中
         // loaders的查找顺序,先从node_modules里查找,然后从loaders中查找
@@ -970,15 +970,15 @@ loader 的执行顺序是后引入的先执行,有点像栈结构,后进先出.
     - 移动图片到打包目录下,并可以做一些重命名,压缩之类的操作
 
     - 在引入该图片的文件中,填充上图片相当于该文件的地址
-
-    2. file-loader 会把我们的图片资源打包到对应的目录下
-    3. url-loader
-        - 会帮我们把图片打包成 base64 字符串,然后在打包的 js 中导出这个 baose64 字符串,在引用到它的 js 中引入.
+    2. url-loader（图片压缩）
+        - 会帮我们把图片打包成 base64 字符串,然后在打包的 js 中导出这个 base64 字符串,在引用到它的 js 中引入.
         - 图片比较小的话,把图片打包成 base64 格式 是可取的,但是如果图片很大,打包成的 base64 格式的字符串就会很大,这也会导致打包后的 js 体积很大,如果图片比较大的情况,我们则把它打包成图片而不是 base64 字符串.我们可以通过配置 limit,来帮我们把图片大小小于 limit 的图片打包成 base64 格式的,大于 limit 的图片打包成图片文件.
-    4. react-svg-loader：导入SVG图片并自动转化为React组件形态。
-    5. raw-loader：不做任何转译，只是简单将文件内容复制到产物中，适用于SVG场景。
-    6. image-webpack-loader：用于做图像压缩。
-    7. responsive-loader：生成响应式图片的loader，为不同设备提供不同的分辨率、不同尺寸的图片。
+    3. react-svg-loader：导入SVG图片并自动转化为React组件形态。
+    4. raw-loader：不做任何转译，只是简单将文件内容复制到产物中，适用于SVG场景。
+    5. image-webpack-loader：用于做图像压缩。
+    6. responsive-loader：生成响应式图片的loader，为不同设备提供不同的分辨率、不同尺寸的图片。
+    7. ts-loader：处理typescript转换为javascript；
+    8. babel-loader：将ES6+代码转换为指定版本；
 
 4. loader开发方法论
 
@@ -996,10 +996,9 @@ loader的链条执行过程分为三个阶段：pitch、解析资源、执行，
 
 pitch阶段按配置顺序从左到右执行loader.pitch函数（如果有的话），开发者可以在pitch返回任意值中断后续的链路的执行。
 
-
 ### plugin
 
-plugin本质上是一种事件流机制，打咯了固定的时间节点就广播特定的事件，用户可以在事件里执行特定的逻辑，类似于生命周期。
+plugin本质上是一种事件流机制，到了固定的时间节点就广播特定的事件，用户可以在事件里执行特定的逻辑，类似于生命周期。
 
 1. plugin 的作用: plugin 生效的场景,在打包的某个时刻想要做一些处理逻辑的时候,比如: 在新的打包代码生成的时候先清空 dist 目录的插件(clean-webpack-plugin),多用于文件的创建和移除操作.
 
@@ -1048,9 +1047,12 @@ plugin本质上是一种事件流机制，打咯了固定的时间节点就广�
         ]
     ```
 3. 常用plugin介绍
-    1. `html-webpack-plugin` 会在打包结束后,自动生成一个 html 文件,并把打包生成的 js 都自动引入到这个 html 文件中.
-    2. `webpack-spritesmith`: 实现雪碧图效果；
-    3. 
+    1. `html-webpack-plugin` 会在打包结束后,根据模版或者默认模版生成一个 html 文件,并把打包生成的 js 都自动引入到这个 html 文件中.
+    2. `clean-webpack-plugin`: 每次打包删除旧的构建文件；
+    3. `webpack-spritesmith`: 实现雪碧图效果；
+    4. `mini-css-extract-plugin`: 将css提取到单独的文件中；
+
+
 4. Webpack plugin hooks
 
 借助webpack数量庞大的hook，我们几乎能改写webpack所有特性，这使得plugin功能强大，但也伴随着巨大的开发复杂度。
@@ -1250,7 +1252,7 @@ Tapable 是一个用于实现插件系统的库，它允许你在特定的生命
 
 ### webpack的持久化缓存
 
-持久化缓存是webpack5的新特性，能够将首次构建的过程与结果持久化保存到本地文件系统，在下次执行构建时跳孤傲解析、链接、编译等一系列非常消耗性能的操作，直接复用上次的Module/ModuleGraph/Chunk对象数据，迅速构建出最终产物。
+持久化缓存是webpack5的新特性，能够将首次构建的过程与结果持久化保存到本地文件系统，在下次执行构建时跳过解析、连接、编译等一系列非常消耗性能的操作，直接复用上次的Module/ModuleGraph/Chunk对象数据，迅速构建出最终产物。
 
 简单配置示例：
 
@@ -1337,7 +1339,7 @@ module.exports = {
 
 1. HardSourceWebpackPlugin, 可以为模块提供中间缓存.
 2. noParse, 如果你使用到了不需要解析的第三方依赖,可以通过配置 noParse 属性来实现优化.
-3. monent(2.24.0 版本)会将所有本地化内容和核心功能一起打包,我们就可以使用 IgnorePlugin 在打包时忽略本地化内容.(如果在使用的时候需要指定语言,就需要手动去引入语言包)
+3. moment(2.24.0 版本)会将所有本地化内容和核心功能一起打包,我们就可以使用 IgnorePlugin 在打包时忽略本地化内容.(如果在使用的时候需要指定语言,就需要手动去引入语言包)
 4. 我们可以通过 script 手动引入对应的模块包,然后通过 webpack 的 externals 来让 webpack 不对其进行打包.
 
 5. 可以通过配置将 react 和 react-dom 拆分并单独打包.
@@ -1368,8 +1370,7 @@ module.exports = {
     }
     // 打包语句: "build:dll": "webpack --config webpack.config.dll.js"
 
-6. scope hosting 作用域提升,这个没有实战过,不是很清楚.
-减小浏览器解析和javascript执行的开销。
+6. scope hosting 作用域提升,减小浏览器解析和javascript执行的开销。
 
 7. babel 配置,只打包一次 babel 的辅助函数,其他模块引用这些辅助函数,而不是将它注入到每个需要它的文件中.
 

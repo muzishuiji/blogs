@@ -57,9 +57,8 @@ function arrToTree(data, parentId = null) {
         .filter(item => item.parentId === parentId)
         .map(item => ({
             ...item,
-            children: arrToTree(data, item.id);
+            children: arrToTree(data, item.id)
         }))
-    
 }
 arrToTree(arr)
 

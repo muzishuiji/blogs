@@ -43,4 +43,4 @@ DHCP简介
 
 DHCP（dynamic host configuration protocol），动态主机配置协议，是一个应用层协议。当我们将客户主机ip地址设置为动态获取方式时，DHCP服务器就会根据DHCP协议给客户端分配ip，实际的客户机能够利用这个ip上网。
 
-DHCP的前身是BOOTP协议（boostrap protocol），BOOTOP被创建出来为连接到网络中的设备自动分配地址，后来被DHCP取代了，DHCP比BOOTP更复杂，功能更强大。
+DHCP的前身是BOOTP协议（bootstrap protocol），BOOTOP被创建出来为连接到网络中的设备自动分配地址，后来被DHCP取代了，DHCP比BOOTP更复杂，功能更强大。

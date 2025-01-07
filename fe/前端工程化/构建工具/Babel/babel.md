@@ -155,7 +155,7 @@ babel runtime里面放运行时加载的模块，会被打包工具打包到产�
   - regenerator：facebook实现的async的runtime库，babel使用regenerator-runtime来支持实现async await的支持；
   - helper是babel做语法转换用到的函数，比如_typeof、_extends等
 
-（babel做语法转换是自己实现的helper，但是做polyfill都不是自己实现的，而是接着来第三方的corejs、regenerator）
+（babel做语法转换是自己实现的helper，但是做polyfill都不是自己实现的，而是来自第三方的corejs、regenerator）
 
 ## 常见的AST节点
 

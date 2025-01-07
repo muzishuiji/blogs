@@ -8,7 +8,7 @@
 3. 把你从繁琐的ui操作中解放出来,你无需关心ui的更新,只需要关注状态的管理和更新.
 
 4. React很简单
-        * 组件化开发：让你用组件的方式去开发项目
+        * 组件化开发：让你用组件化的方式去开发项目
         * 单向数据流
         * 完善的错误提示
 
@@ -29,7 +29,7 @@
             }
         />
         ```
-        * 非受控组件,表单状态由自身维护
+        * 非受控组件，表单状态由自身维护
 
         ```js
         <input 
@@ -74,6 +74,7 @@ React.createElement(
   }),
   React.createElement(Hello, null)
 )
+
 ```
 
 9. React的生命周期和使用场景
@@ -114,7 +115,6 @@ React.createElement(
         * 典型场景: 资源释放,定时器清除
 
 14. getSnapshotBeforeUpdate
-
         * 在页面render之前会调用
         * 典型场景: 获取render之前的dom状态,做一些副作用操作
 
@@ -167,7 +167,7 @@ react的virtual dom采用广度优先的深层比较,当节点跨层移动的时
 21. React的渲染流程
 
 整体分为两大阶段：
-        - render阶段：把React Element树（也可以叫vdom）转成fiber链表的reconcile过程，reconcile过程并不只是创建新的fiber节点，当更新的时候，还会和之前的fiber节点做diff，判断是新增、修改、还是删除，并打上对应的标记。由Scheduler负责调度，通过时间分片来把计算任务分到多个任务里去。
+        - render阶段：把React Element树（也可以叫vdom）转成fiber链表的reconcile过程，reconcile过程并不只是创建新的fiber节点，当更新的时候，还会和之前的fiber节点做diff，判断是新增、修改、还是删除，并打上对应的标记。整个reconciler过程由Scheduler负责调度，通过时间分片来把计算任务分到多个子任务里去。
         - commit阶段：reconcile结束就有了完整的fiber链表，再次遍历这个fiber链表，执行其中的effect、增删改dom等。
         commit也分成了三个小阶段：
             - before mutation：操作dom之前，effect函数会在before mutation前异步调度执行；
@@ -183,7 +183,7 @@ React的并发模式简单来说就是基于优先级的可打断的渲染流程
         更新过程中，React会在工作树上进行计算和修改，完成后将工作树切换为当前树，从而实现了UI的更新。这种方式避免了直接修改当前树，减少了不必要的计算和渲染。（将状态变更汇总起来处理）
         - 递归变迭代
         传统的React渲染过程是递归的，即在更新阶段，react会递归地遍历整个组件树，这种方式在处理大型组件树时，可能会导致栈溢出或性能问题。
-        fiber架构将递归遍历改为迭代遍历，每个fiber节点都包含了指向父节点、子节点和兄弟节点的指针。React可以通过这些指针在fiber树上进行迭代遍历，从而避免了递归带来的栈溢出和性能问题。
+        fiber架构将递归遍历改为迭代遍历，每个fiber节点都包含了指向父节点、子节点和兄弟节点的指针。React可以通过这些指针在fiber树上进行迭代遍历、查询节点，从而避免了递归带来的栈溢出和性能问题。
 
 23. React的Hook为什么不能写在判断和循环里？
 
@@ -234,7 +234,7 @@ React Hooks不能写在条件语句、循环或其他嵌套函数中。这是因
     * 2.易于扩展,重构和维护
     * 3.路由层面实现lazy load,统一的地方做懒加载的处理
     navLink带有选中状态的link.prompt,页面要切换时的确认操作.
-    redirect,登陆校验时会用到,route路由匹配显示对应组件
+    redirect,登陆校验时会用到route路由匹配显示对应组件
     exact是否精确匹配,route默认会显示所有匹配的组件,采用switch只显示第一个匹配的组件.页面状态可以通过url参数控制.
 
 26. React Context
@@ -285,13 +285,14 @@ forwardRef + useImperativeHandle组合使用使得子组件可以自定义暴露
 
 如果子组件用了memo，给它传递的对象，函数类的props就需要用useMemo、useCallback包裹，否则，每次props都会变，memo就没用了。
 
-反之，如果props使用useMemo，useCallback，但是子组件没有被memo包裹，那也没意义，因为不管props变没变父组件重渲染都会导致子组件重渲染，只是做了无用功。
+反之，如果props使用useMemo，useCallback，但是子组件没有被memo包裹，那也没意义，因为不管props变没变父组件重渲染都会导致子组件重渲染。
 
 32. React的生命周期
 
   - useEffect不添加依赖类似于componentDidMount，不添加依赖的返回值类似于componentWillUnmount；
   - useEffect添加prop为依赖，类似于getDerivedStateFromProps；
   - useEffect添加state为依赖，类似于componentDidUpdate；
+  - useLayoutEffect：useLayoutEffect会在dom更新之后，浏览器绘制之前调用（commit的layout阶段）。getSnapshotBeforeUpdate会在render方法之后，dom更新之前调用（commit的before mutation阶段）；
 
 33. React引入Fiber架构的原因和必要性
 
@@ -324,6 +325,54 @@ React引入Fiber架构的主要原因是为了解决处理大型应用时，虚�
     - 问题：在旧版本的架构中，React的reconciler是基于递归的，这会导致在处理大型组件树时，调用栈过深，影响性能，且容易发生栈溢出；
     - 解决方案：Fiber架构将reconciler过程从递归改为基于链表的迭代，这使得React可以在不消耗过多调用栈空间的情况下，处理大型组件树。此外，Fiber架构还允许React在调和过程中暂停和恢复，从而更好地控制渲染过程。
 
+34. React是如何触发重渲染的
+
+- 当调用setState（类组件）或状态更新函数（如setCount，函数组件）时，React会新的状态值存储起来，并标记组件为“需要更新”，并安排重新渲染；
+当调用setState或者this.setState时，会创建一个状态更新任务，加入队列，然后调度更新。
+```js
+function dispatchSetState(fiber, queue, action) {
+  const update = {
+    action,
+    next: null,
+  }
+  enqueueUpdate(fiber, queue, update);  // 将更新加入队列
+  schedulerUpdateOnFiber(fiber); // 调度更新
+}
+function enqueueSetState(inst, payload, callback) {
+  const fiber = getInstance(inst);
+  const update = createUpdate(payload, callback);
+  enqueueUpdate(fiber, update); // 将更新加入队列
+  scheduleUpdateOnFiber(fiber); // 调度更新
+}
+
+function scheduleUpdateOnFiber() {
+  // 底层调用performSyncWorkOnRoot来同步执行渲染任务
+  // 主要分为两个阶段：
+  // 1. render阶段；vdom -> fiber, dom diff 给dom打上增删改的标记
+  // 2. commit阶段；根据标记将dom diff的结果应用到真实dom上
+}
+```
+- React在触发重新渲染的时候，会使用虚拟DOM比较前后dom状态的变化，计算出最小的dom更新操作，然后应用到真实dom上；
+
+35. class组件和函数组件的区别和优缺点：
+
+  1. class组件
+  **优点：**
+    - 提供丰富的生命周期方法，便于控制组件的不同阶段，适合复杂的组件逻辑；
+    - 
+  **缺点：**
+    - 代码冗余：需要编写较多的模版代码；
+    - 生命周期方法导致代码逻辑分散，难以维护；
+    - 需要理解this绑定、生命周期等概念；
+    - 由于实例化的开销，class组件的性能略低于函数组件；
+    - 逻辑复用只能通过HOC或Render Props，写起来比较笨重；
+  2. 函数组件
+  **优点：**  
+    - 减少了模版代码，逻辑更清晰；
+    - 通过自定义Hooks可以很方便的复用逻辑；
+    - 不需要理解this绑定和生命周期方法；
+  **缺点：** 
+    - 需要模拟实现组件的生命周期方法；
 
 ### React Ref
 
@@ -409,7 +458,7 @@ store有三个方法:
 * 2.dispatch(action); // 触发action,更新state
 * 3.subscribe(listener); // 监听store的变化,调用回调函数
 
-定义reducer,创建store,createAction,subscribe订阅状态,bindActionCreators帮我们给函数包裹一层dispatch操作,免去了手动调用dispatch的操作.高阶函数,combineReducer用于组合多个renducer.
+定义reducer,创建store,createAction,subscribe订阅状态,bindActionCreators帮我们给函数包裹一层dispatch操作,免去了手动调用dispatch的操作.高阶函数,combineReducer用于组合多个reducer.
 
 3. connect
 
@@ -493,7 +542,7 @@ React和Vue是两个非常流行的前端框架库，他们都用于构建用户
 
 render阶段处理到原生标签也就是HostComponent类型的时候，如果有ref属性会在fiber.flags里加一个标记。
 
-commit阶段会在layout操作完dom后遍历fiber链表更新HostComponent的ref，也就是把fiber.stateNode赋值给ref.current。
+commit阶段会在layout操作完dom后遍历fiber链表更新HostComponent的ref，也就是把fiber.stateNode赋值给ref.current。（更新ref的引用）
 
 react并不关心ref是哪里创建的，用createRef、useRef创建的，或者forwardRef传过来的都行，甚至普通对象也可以。createRef、useRef只是把普通对象 Object.seal了一下。
 
@@ -507,13 +556,13 @@ useImperativeHandle的底层实现就是useEffect，只不过执行的函数是�
 2. ReactDOM.createRoot(root).render(<App />)
 3. 如果你的项目使用了ssr服务端渲染，需要把hydration升级为hydrateRoot
 4. tsx中child属性需要手动声明
-5. 在18之前，只有在react事件处理函数中，才会自动执行批处理，其他情况会多次更新；
-6. 在18之后，任何情况下都会自动进行批处理，将多次更新操作始终合并为一次
+5. 在18之前，只有在react事件处理函数中，才会自动执行批处理，其他情况会多次更新； 在18之后，任何情况下都会自动进行批处理，将多次更新操作始终合并为一次，包含在异步代码和原生时间处理函数中的状态更新。
+
 批处理更新的工作原理：
 
 React在执行更新时采用了一种懒惰的方式，它会将同一个事件循环中的多个更新累积起来，然后一次性应用这些更新，不会对每个更新立即进行重新渲染。避免了不必要的重渲染，从而提高了性能。该特性的引入使得React应用可以更有效率的处理状态更新，尤其是在复杂的应用和异步操作中。
 
-react也支持使用flushSync来推出批量更新处理。
+react也支持使用flushSync来退出批量更新处理。
 
 7. 批处理是一个破坏性改动，如果你想退出批量更新，你可以使用flushSync
 8. 18之前的版本，开启严格模式会对每个组件进行两次渲染，以便你观察一些意想不到的结果，但是react17中，取消了其中一次渲染的控制台日志，一边让日志更容易阅读；
