@@ -803,3 +803,22 @@ function c(){
     - await Promise.resolve() 会将后续代码包装成一个微任务，放入微任务队列中；
     - 这样可以让事件循环先处理其他任务（如宏任务或其他微任务）；
 
+58. DOM解析方法
+```js
+const domStr = `
+<div class='container'>
+  <div>Dom Parser</div>
+  <ul>
+    <li>Lorem.</li>
+    <li>Adipisci.</li>
+    <li>Mon.</li>
+    <li>EA.</li>
+  </ul>
+</div>
+`;
+function removeTag(fragment) {
+  const res = new DOMParser().parseFromString(fragment, 'text/html');
+  console.log(res.body.textContent);
+}
+removeTag(domStr);
+```

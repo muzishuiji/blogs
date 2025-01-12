@@ -196,10 +196,11 @@ console.log(obj2 === copyObj2);
 // 13. 节流的手写实现，保证一段时间内只触发一次
 const throttle=(cb, delay) => {
     let start = Date.now()
-    return function(cb) {
+    return function(...args) {
+        const context = this;
         let current = Date.now();
         if(current - start >= delay) {
-            cb();
+            cb.apply(context, args);
             start = Date.now();
         }
     }
@@ -219,7 +220,85 @@ document.getElementById('222').onclick = debounce(() => {}, 2000);
 // resize，滚动操作，拖拽操作
 
 // 15. 实现JSON.parse，使用eval
+function parseJSON(jsonString) {
+    let index = 0; // 标记当前解析的位置
+    // 辅助函数：跳过空白字符
+    function skipWhitespace() {
+        while(/\s/.test(jsonString[index])) {
+            index++;
+        }
+    }
+    // 辅助函数：解析值
+    function parseValue() {
+        skipWhitespace();
+        const char = jsonString[index];
+        if(char === '{') {
+            return parseObject();
+        } else if(char === '[') {
+            return parseArray();
+        } else if(char === '"') {
+            return parseString();
+        } else if(char === 't' || char === 'f') {
+            return parseBoolean();
+        } else if(char === 'n') {
+            return parseNull();
+        } else if(/\d|-/.test(char)) {
+            return parseNumber();
+        } else {
+            throw new SyntaxError('unexpected token');
+        }
+    }
+    // 解析对象
+    function parseObject() {
+        let obj = {};
+        // 递归遍历该字符串，返回最终的对象
+        // 中途遇到value，则又会开始调用parseValue，递归调用
+        return obj;
+    }
+    // 解析数组
+    function parseArray() {
+        let arr = [];
+        //
+        return arr;
+    }
+    // 解析字符串
+    function parseString() {
+        // 解析到单引号终止，最终返回一个字符串
+        let result = '';
+        index++; // 跳过开始的单引号
+        while(jsonString[index] !== '"') {
+
+        }
+        return result;
+    }
+    // 解析数字
+    function parseNumber() {
+        let numStr = '';
+        while(/\d|\.|-|e|E/.test(jsonString[index])) {
+            numStr += jsonString[index];
+            index++;
+        }
+        const num = parseFloat(numStr);
+        return num;
+    }
+    // 解析布尔值
+    function parseBoolean() {
+
+    }
+    // 解析null
+    function parseNull() {
+
+    }
+    // 开始解析
+    try {
+        const result = parseValue();
+        return result;
+    } catch(err) {
+
+    }
+}
 // 16. 手写实现Promise
+
 
 // 17. 手写实现Promise.all
 Promise.all = function (promises) {
