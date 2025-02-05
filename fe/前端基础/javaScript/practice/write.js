@@ -503,27 +503,13 @@ var a = Parent.getInstance('muzishuiji');
 var b = Parent.getInstance('muzishuiji');
 console.log(a === b); // true
 
-// 27. 洗牌算法
-function disorder(arr) {
-    let len = arr.length;
-    let count = len - 1;
-    while(count >= 0) {
-        let randomIndex = Math.floor(Math.random() * len);
-        [arr[randomIndex], arr[count]] = [arr[count], arr[randomIndex]];
-        count--;
-    }
-    return arr;
-}
-let arr = [3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48];
-disorder(arr);
+// 27. dom diff
 
-// 28. dom diff
+// 28. dom list diff
 
-// 29. dom list diff
+// 29. webpack dynamic import
 
-// 30. webpack dynamic import
-
-// 31. 借助闭包实现计数器
+// 30. 借助闭包实现计数器
 function createCounter() {
     let count = 0;
     return function() {
@@ -537,7 +523,7 @@ counter();
 counter();
 counter();
 
-// 32. 寄生组合继承
+// 31. 寄生组合继承
 /**
  * 构造函数的优点：
  * - 只调用一次父类构造函数；
@@ -561,7 +547,7 @@ function inheritPrototype(Child, Parent) {
 inheritPrototype(Child, Parent);
 let child1 = new Child('muzishuiji')
 
-// 33. 手写promise
+// 32. 手写promise
 const PENDING = 'pending';
 const FULFILLED = 'fulfilled';
 const REJECTED = 'rejected';
@@ -753,12 +739,12 @@ const p1 = new MyPromise((resolve, reject) => {
     .then(() => {}, err => {
       console.log(err)
     })
-// 34. 状态管理redux
+// 33. 状态管理redux
 
-// 35. 状态管理mobx
+// 34. 状态管理mobx
 
 
-// 36. jsonp
+// 35. jsonp
 (function (window, document) {
     'use strict';
     var jsonp = function(url, data, callback) {
@@ -780,7 +766,7 @@ const p1 = new MyPromise((resolve, reject) => {
      window.$jsonp = jsonp;
 })(window, document);
 
-// 37. 异步中间件控制
+// 36. 异步中间件控制
 class AsyncQueue {
     constructor() {
       // 你的代码
@@ -864,49 +850,49 @@ asyncQueue.exec('init', () => {
 // fn4
 // 执行结束
 
-// 38. 找到对应节点的父节点数组
+// 37. 找到对应节点的父节点数组
 // 输入 45dss 返回 ['广东省', '深圳市']
 
 const cityData = [
     {
-    id: 'axzx',
-    name: '广东省',
-    children: [
-    {
-        id: 'sdsd',
-        name: '深圳市',
+        id: 'axzx',
+        name: '广东省',
         children: [
         {
-            id: '45dss',
-            name: '南山区',
-        },
-        {
-            id: 'sdsd11',
-            name: '福田区',
+            id: 'sdsd',
+            name: '深圳市',
             children: [
             {
-                id: 'ddrr2',
-                name: 'A街道',
+                id: '45dss',
+                name: '南山区',
+            },
+            {
+                id: 'sdsd11',
+                name: '福田区',
+                children: [
+                {
+                    id: 'ddrr2',
+                    name: 'A街道',
+                },
+                ],
+            },
+            ],
+        },
+        {
+            id: '2323d',
+            name: '东莞市',
+            children: [
+            {
+                id: 'xxs2',
+                name: 'A区',
+            },
+            {
+                id: 'kklio2',
+                name: 'B区',
             },
             ],
         },
         ],
-    },
-    {
-        id: '2323d',
-        name: '东莞市',
-        children: [
-        {
-            id: 'xxs2',
-            name: 'A区',
-        },
-        {
-            id: 'kklio2',
-            name: 'B区',
-        },
-        ],
-    },
-    ],
     },
 ];
 
@@ -953,5 +939,65 @@ function traverseListBfs(data, targetId) {
     }
 }
 traverseListDfs(cityData, '45dss');
-// dom diff的逻辑梳理
-// 自定义plugin如何编写
+
+/**
+ * 38. 实现lastPromise，持续请求只有最后一次输出
+ * let lastFn = lastPromise(promiseFn); //promiseFn 是一个普通的异步函数，返回一个 Promise
+ * lastFn().then(); //无输出
+ * lastFn().then(); //无输出
+ * lastFn().then(); //有输出
+ */
+
+function lastPromise(promiseFn) {
+    let callId = 0;
+    return function(...args) {
+        let lastId = ++callId;
+        let context = this;
+        return new Promise((resolve, reject) => {
+            promiseFn.apply(context, args).then(res => {
+                if(callId === lastId) {
+                    resolve(res);
+                }
+            }).catch(err => {
+                if(callId === lastId) {
+                    reject(err);
+                }
+            })
+        })
+    }
+}
+let count = 0;
+let promiseFunc = () => new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(count++);
+    }, 0);
+});
+let lastFn = lastPromise(promiseFunc);
+lastFn().then(console.log).catch(console.error);
+lastFn().then(console.log).catch(console.error);
+lastFn().then(console.log).catch(console.error);
+
+/**
+ * 39. 防止重复发请求，多次调用只响应第一次
+ * let firstFn = firstPromise(promiseFunction);
+ * firstFn().then(console.log); // 1
+ * firstFn().then(console.log); // 1
+ * firstFn().then(console.log); // 1
+ */
+function firstPromise(promiseFn) {
+    let p;
+    return function(...args) {
+        return p ? p : (p = Promise.resolve(promiseFn.apply(this, args)).finally(() => p = null))
+    }
+}
+let count1 = 0;
+let promiseFunc1 = () => new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(++count1);
+    }, 0);
+});
+
+let firstFn = firstPromise(promiseFunc1);
+firstFn().then(console.log); // 1
+firstFn().then(console.log); // 1
+firstFn().then(console.log); // 1

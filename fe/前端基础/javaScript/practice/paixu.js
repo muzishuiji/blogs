@@ -32,7 +32,7 @@ function quickSort(arr) {
     let innerQuickSort = (arr, left, right) => {
         if(left >= right) return;
         let pivot = partition(arr, left, right);
-        innerQuickSort(arr, 0, pivot - 1);
+        innerQuickSort(arr, left, pivot - 1);
         innerQuickSort(arr, pivot + 1, right);
     }
     innerQuickSort(arr, 0, arr.length - 1);

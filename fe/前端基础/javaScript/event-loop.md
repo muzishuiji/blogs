@@ -20,7 +20,7 @@
 
 1. 一个tick执行的操作：
 
-执行宏任务 -> 清空微任务队列 -> check渲染 （是否需要渲染，requestAnimationFrame， 阻塞本线程，切到渲染线程） -> check worker（是否需要处理worker的信息，requestidlecallback，离下次渲染还有时间，或者timeout到了）
+执行宏任务 -> 清空微任务队列 -> check渲染 （是否需要渲染，requestAnimationFrame， 阻塞本线程，切到渲染线程） -> check worker（是否需要处理worker的信息，requestIdleCallback，离下次渲染还有时间，或者timeout到了）
 
 ## JS引擎
 
@@ -66,9 +66,40 @@ requestAnimationFrame，可以理解为渲染前的一个生命周期，requestA
 
 **requestIdleCallback**
 
-requestIdleCallback会在每一帧渲染工作完成后，检查是否有空闲时间，如果有就执行回调，如果时间不够，就下一帧再说。为了防止一直等待下去，提供了timeout参数来制定最长的等待时间，如果一直没时间处理这个逻辑，那就算拖延了帧渲染也要执行。这个api目前还有兼容性问题，react自己实现了类似requestIdleCallback的fiber机制，在执行之前判断距离下一帧执行还有多久，来判断是否执行逻辑。
+1. requestIdleCallback是什么？
 
-计算机的本质就是解释器，cpu用电路解释机器码，解释器用机器码解释更上层的脚本代码，例如字节码。
+requestIdleCallback允许开发者在浏览器空闲时间执行任务，而不会影响关键的用户交互、动画或渲染。它的核心思想是将非关键人物推迟到浏览器空闲时执行，从而提升页面的响应速度和用户体验。
+
+```js
+const handle = requestIdleCallback(callback, options);
+```
+  - callback: 在浏览器空闲时执行的函数，回调函数会接收一个IdleDeadline对象作为参数，该对象包含以下属性：
+    - timeRemaining()：返回当前空闲周期的剩余时间（以毫秒为单位）；
+    - didTimeout：布尔值，表示任务是否因超时而被强制执行；
+  - options（可选）：配置对象，包含以下属性：
+    - timeout：设置超时时间（以毫秒为单位）。如果任务在超时时间内为执行，则会在下一个空闲周期强制执行。
+
+2. requestIdleCallback的工作原理
+  - 浏览器会在每一帧的空闲时间调用requestIdleCallback注册的任务；
+  - 如果当前帧没有空闲时间，任务会推迟到下一帧；
+  - 如果任务在指定的timeout时间内为执行，浏览器会在下一个空闲周期执行任务；
+3. requestIdleCallback常见使用场景
+  - 数据上报：在用户交互或页面渲染完成后，将日志、性能数据或用户行为上报到服务器；
+  - 延迟加载非关键资源：在页面加载完成后，延迟加载非关键的图片、视频或其他资源；
+  - 预加载或预取数据：在空闲时预加载或预取用户可能需要的资源或数据；
+  - 执行复杂的计算任务：将复杂的计算任务拆分成多个小块，在空闲时逐步执行；
+  - 垃圾回收或清理任务：在空闲时执行垃圾回收或清理任务，如清理缓存、释放内存等；
+  ```js
+  function cleanupCache() {
+    console.log('Cleaning up cache....')
+  }
+  processIdleTime(cleanupCache);
+  ```  
+
+
+
+
+
 
 
 

@@ -47,7 +47,7 @@ decorate(Store, {
 ```js
 function createAction(fn, name) {
     const res = function() {
-        return executeAction(name, fn, this. arguments);
+        return executeAction(name, fn, this, arguments);
     }
     return res;
 }

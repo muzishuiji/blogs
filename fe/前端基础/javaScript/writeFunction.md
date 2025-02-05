@@ -473,17 +473,17 @@ Promise的实现原理几句话很难说清楚,这里分享一个地址, [史上
             console.log(err);
         }
     }
-    MyPromise.prototype.then = function(onFullfilled, onRejected) {
+    MyPromise.prototype.then = function(onFulfilled, onRejected) {
         const that = this;
-        onFullfilled = typeof onFullfilled === 'function' ?
-                        onFullfilled : v => v;
+        onFulfilled = typeof onFulfilled === 'function' ?
+                        onFulfilled : v => v;
         onRejected = typeof onRejected === 'function' ?
         onRejected : err => { throw new Error(err);};
         if(that.state === PENDING) {
             return (promise2 = new MyPromise((resolve, reject) => {
                 setTimeout(() => {
                     try {
-                        const x = onFullfilled(that.value);
+                        const x = onFulfilled(that.value);
                         resolutionProcedure(promise2, x, resolve, reject)
                     } catch(err) {
                         reject(err);
@@ -492,7 +492,7 @@ Promise的实现原理几句话很难说清楚,这里分享一个地址, [史上
             }))
         }
         if(that.state === RESOLVED) {
-            onFullfilled(that.value);
+            onFulfilled(that.value);
         }
         if(that.state === REJECTED) {
             onRejected(that.value);

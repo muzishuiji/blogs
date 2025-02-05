@@ -120,7 +120,7 @@ happyPack和thread-loader主要将耗时的文件加载操作拆散到多个子�
 
 14. webpack内部的几个核心对象
 
-  - Compiler：全局构建管理器，Webpack启动后会先创建compiler对象，负责管理配置信息、Loader、Plugin等。从启动构建到结束，compiler会触发一系列的钩子函数。
+  - Compiler：全局构建管理器，Webpack启动后会先创建compiler对象，负责管理配置信息、Loader、Plugin等。从启动构建到结束，Compiler会触发一系列的钩子函数。
   - Compilation: 单次构建过程的管理器，负责遍历模块，执行编译操作。当watch=true时，每次文件变更触发重新编译，都会创建一个新的compilation对象；
   - 此外，还有 Module、Resolver、Parser、Generator 等关键类型，也都相应暴露了许多 Hook。
 
@@ -163,13 +163,12 @@ Dependency Graph是webpack底层最关键的模块地图数据，因此在webpac
 [Webpack构建流程](./images//webpack.png)
 
 Webpack构建可以简单划分成init、make、seal三个阶段：
-  - init阶段负责模块初始化webpack内部若干插件与状态，逻辑比较简答；
+  - init阶段负责模块初始化webpack内部若干插件与状态，逻辑比较简单；
   - make阶段解决资源读入问题，这个阶段会从entry--入口模块开始、递归读入、解析所有模块内容，并根据模块之间的依赖关系构建ModuleGraph-模块依赖关系图；
   - seal阶段：
     - 一方面，根据ModuleGraph构建ChunkGraph；
     - 另一方面，开始遍历ChunkGraph，转译每一个模块代码；
     - 最后，将所有模块与模块运行时依赖合并为最终输出的bundle资产文件；
-
 
 ### Module Federation
 
@@ -225,7 +224,7 @@ Webpack构建可以简单划分成init、make、seal三个阶段：
         ],
     };
   ```
-  MF中的模块导入/导出都依赖于ModuleFederationPlugin插件，其中导出方需要使用插件的exposes项声明导出那些模块，使用filename指定生成的入口文件；导入方需要使用remotes声明远程模块地址，之后在代码中使用异步导入语法import("module"）引入模块。
+  MF中的模块导入/导出都依赖于ModuleFederationPlugin插件，其中导出方需要使用插件的exposes项声明导出那些模块，使用filename指定生成的入口文件；导入方需要使用remotes声明远程模块地址，之后在代码中使用异步导入语法`import("module"）`引入模块。
 
   通过MF的方式，一是可以将业务代码分解为更细粒度的应用形态；二是应用可以各自管理路由逻辑，降低应用间耦合性。最终能降低系统组件间耦合度，更多有利于团队协作。非常适用于微前端或代码重构迁移场景。
 
@@ -234,7 +233,7 @@ Webpack构建可以简单划分成init、make、seal三个阶段：
   3. 宿主应用远程加载入口文件
   宿主应用在运行时会加载远程应用的入口文件。这个文件会被动态加载到宿主应用的运行环境中。
   4. 初始化远程应用
-  远程入口文件加载完成后，会初始化远程应用（解析执行），并暴露远程模块。宿主应用可以通过import() 动态加载这些模块。
+  远程入口文件加载完成后，会初始化远程应用（解析执行），并暴露远程模块。宿主应用可以通过`import()` 动态加载这些模块。
   5. 动态加载远程模块
   ```js
   import("remoteApp/Button").then((Button) => {
@@ -442,7 +441,7 @@ Elimination技术，它能够自动删除无效（没有被使用、且没有副
 使用tree-shaking时，如果主体代码中将导出模块赋值给某个变量，但该变量未被使用，也会导致tree-shaking失败，因为webpack的tree-shaking逻辑只停留在静态分析层面，只是浅显的判断：
 
   - 模块导出变量是否被其它模块引用；
-  - 引用模块的主题代码中有没有出现这个变量；
+  - 引用模块的主体代码中有没有出现这个变量；
 
 3. tree-shaking使用的一些最佳实践；
 
@@ -1535,7 +1534,7 @@ Chunk 分包结果的好坏直接影响了最终应用性能，Webpack 默认会
 
 使用SplitChunksPlugin插件科学的分包策略可以解决这个问题：
 - 将被多个chunk依赖的包分离成独立chunk，防止资源重复；
-- node_modules 中的资源通常变动较少，抽历程独立的包，业务代码的改动不会导致这部分资源缓存失效，避免无意义的资源加载。
+- node_modules 中的资源通常变动较少，抽离成独立的包，业务代码的改动不会导致这部分资源缓存失效，避免无意义的资源加载；
 
 SplitChunksPlugin插件的主要能力有：
 
@@ -1546,10 +1545,10 @@ SplitChunksPlugin插件的主要能力有：
 
 - SplitChunksPlugin还提供了optimization.splitChunks.cacheGroup概念，用于对不同特点的资源做分组处理，并未这些分组设置更有针对性的分包规则；
 - SplitChunksPlugin还内置了default和defaultVendors两个cacheGroup,提供一些开箱即用的分包特性：
-  - node_modules资源会命中defaultVendors规则额，并被单独打包；
+  - node_modules资源会命中defaultVendors规则，并被单独打包；
   - 只有包体积超过20kb的chunk才会被单独打包；
-  - 加载Async Chunk所需请求书不得超过30；
-  - 加载Initial Chunk所需请求书不得超过30；
+  - 加载Async Chunk所需请求数不得超过30；
+  - 加载Initial Chunk所需请求数不得超过30；
 
 splitChunks 主要有两种类型的配置：
 
@@ -1611,7 +1610,6 @@ SplitChunksPlugin 分包的主体流程如下：
     - 首屏用不上的代码，尽量以异步方式引入；
     - 设置optimization.runtimeChunk为true，将运行时代码拆分为独立资源；
 
-
 6. 缓存组cacheGroups简介
 
 缓存组的作用在于为不同类型的资源设置更具适用性的分包规则，一个典型场景就是将所有node_modules模块统一打包到vendors产物，从而实现第三方库与业务代码的分离。
@@ -1649,7 +1647,7 @@ module.exports = {
 7. 推荐的实践
 
 - 针对node_modules资源：
-    - 将node_modules打包成独立文件（通过cache_group实现），防止业务代码的变更影响NPM包的缓存，同时通过maxSize设置阈值，防止verndor包体积过大；
+    - 将node_modules打包成独立文件（通过cache_group实现），防止业务代码的变更影响NPM包的缓存，同时通过maxSize设置阈值，防止vendor包体积过大；
     - 如果生产环境已经部署HTTP2/3一类高性能网络协议，甚至可以考虑将每个npm包都打包成独立文件；
 - 针对业务代码
     - 设置common分组，通过minChunks配置项奖使用频率较高的资源合并为common资源；
@@ -1658,10 +1656,9 @@ module.exports = {
 
 8. 打包代码压缩
 在 Webpack 中需要使用 optimization.minimizer 数组接入代码压缩插件，比较常用的插件有：
-
-- terser-webpack-plugin：用于压缩ES6代码的插件；
-- css-minimizer-webpack-plugin：用于压缩css代码的插件;
-- html-minifier-terser: 用于压缩HTML代码的插件；
+    - terser-webpack-plugin：用于压缩ES6代码的插件；
+    - css-minimizer-webpack-plugin：用于压缩css代码的插件;
+    - html-minifier-terser: 用于压缩HTML代码的插件；
 
 这些插件用法非常相似，都支持include/test/exclude配置项。用于控制压缩功能的应用范围，也都支持minify配置项切换压缩器。
 
@@ -1673,7 +1670,7 @@ Webpack提供了一种模版字符串（Template String）能力，用于根据�
 - [contenthash]: 产物内容的Hash值，仅当产物内容发生变化时才产生新的contenthash，实用性较强；
 
 
-建议为生产环境启动[contenthash]功能，并搭配optimization.runtimeChunk将运行时代码抽里为单独产物文件，以防止异步模块contenthash发生变化，引用它的chunk的contenthash也发生变化，可以用optimization.runtimeChunk将这部分代码抽取为单独的Runtime Chunk。
+建议为生产环境启动[contenthash]功能，并搭配optimization.runtimeChunk将运行时代码抽离为单独产物文件，以防止异步模块contenthash发生变化，引用它的chunk的contenthash也发生变化，可以用optimization.runtimeChunk将这部分代码抽取为单独的Runtime Chunk。
 
 10. 三方npm包以CDN方式实现，使用externals来将三方npm包排除在webpack打包系统之外。
 
@@ -1716,7 +1713,7 @@ module.exports = {
 ```
 
 webpack中Tree Shaking的实现分为如下步骤：
-  - 在FlagDependencyExportsPlugin插件中根据模块的dependencies列表手机模块导出值，并记录到moduleGraph体系的exportsInfo中；
+  - 在FlagDependencyExportsPlugin插件中根据模块的dependencies列表收集模块导出值，并记录到moduleGraph体系的exportsInfo中；
   - 在FlagDependencyUsagePlugin插件中收集模块的导出值的使用情况，并记录到exportInfo._usedInRuntime集合中；
   - 在HarmonyExportXXXDependency.Template.apply方法中根据导出值的使用生成不同的导出语句；
   - 使用DCE工具删除Dead Code，实现完整的树摇效果；
@@ -1764,4 +1761,20 @@ webpack启动后会以一种所谓的链式调用的方式按use数组从后到�
 
   1. 首先给原始文件路径增加不同的参数，后续配合resourceQuery 参数就可以分开处理这些内容，这样的实现相比于一次性处理，逻辑更加清晰简洁，更容易理解。
   2. 经过Normal Loader，Pitch Loader两个阶段后，SFC内容会被转化为import xxx from '!-babel-loader!vue-loader?xxx'格式的引用路径，以此复用用户配置。
+
+16. Webpack的loader和plugin的区别
+
+  1. Loader
+    - 功能：用于处理模块的源代码；
+    - 作用：将非javascript文件（如css、图片、字体等）转换为webpack能够处理的模块；
+    - 特点：
+      - 针对单个文件进行处理；
+      - 在模块加载时运行；
+      - 用于转换、编译或加载资源；
+  2. Plugin
+    - 功能：用于扩展webpack的功能；
+    - 作用：在webpack构建过程中执行广泛的任务，如打包优化、资源管理、环境变量注入等；
+    - 特点：
+      - 针对整个构建过程的不同生命周期进行操作；
+      - 通常用于优化、管理、扩展构建流程；
 

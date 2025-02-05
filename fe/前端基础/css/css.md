@@ -162,6 +162,14 @@ module.exports = {
 }
 ```
 
+在豆包里的尺寸适配，使用的单位是rpx，可以简单认为1rpx会对应安卓上的1（device pixel）；
+1rpx（lynx）= 屏幕宽度 / 750 = 1dp(android)
+屏幕宽度可以通过相关api定义
+这个dp是设备无关的单位，可以简单比做是安卓设备上的1px。
+但在豆包里有进行缩放，所以豆包的1dp'跟正常的安卓使用的1dp是差别的，也就是1dp' = 1dp * scale;
+因此，lynx提供了一个dataprocessor，当获取屏幕的宽度时，getScreenMetricsOverride 会返回屏幕宽度 * scale，这样lynx里面设置1rpx就能对应豆包的1dp'，从而实现豆包的字体和ui尺寸的适配。
+
+
 15. 响应式设计
 
 响应式设计的基本原理是通过媒体查询检测不同的设备屏幕尺寸做处理，为了很好的处理移动端的响应式，页面头部必须有meta声明viewport。
@@ -403,6 +411,13 @@ Grid布局即网格布局，是一个二维的布局方式，由纵横相交的�
   - outline不占据布局空间，通常用于凸显元素，特别是在可访问性方面；
 
 
+26. PurgeCss
 
+PurgeCss通过分析你的内容和css文件，首先它将css文件中使用的选择器与内容文件中的选择器进行匹配，然后它会从css文件中删除未使用的选择器，从而生成更小的css文件。
 
-
+27. position属性介绍
+  - static：元素按照正常的文档流排列；
+  - relative：元素按照正常的文档流排列，可以通过top、left、bottom、right设置相对其原始位置的偏移；
+  - absolute：元素相对于非static定位的祖先元素进行定位；
+  - fixed：元素相对于浏览器视口进行定位，元素位置不随页面滚动改变；
+  - sticky：粘性定位，元素根据滚动位置在relative和fixed之间切换；

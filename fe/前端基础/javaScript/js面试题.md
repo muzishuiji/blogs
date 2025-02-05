@@ -664,6 +664,9 @@ factorial(5); // 120
   2. 将生成的哈希值对1000取余，如果值在 [1, ratio * 1000）范围内，则命中灰度，否则，未命中灰度；
 
 ```js
+// 整体设计用传入的userId的unicode码生成对应的数值
+// 在用这个数值对1000取余，求这个数据的映射范围
+// 根据映射范围判断是否命中用户采样灰度
 function hashUserId(userId) {
   let hash = 5381;
   for (let i = 0; i < userId.length; i++) {
@@ -822,3 +825,52 @@ function removeTag(fragment) {
 }
 removeTag(domStr);
 ```
+
+58. Web页面的多窗口通信
+
+  1. localStorage + Storage事件
+  在一个窗口中修改localStorage或sessionStorage，其他窗口通过监听storage事件捕获数据变更。
+  ```js
+  localStorage.setItem('message', JSON.stringify({ data: 'Hello' }));
+  window.addEventListener('storage', e => {
+    if(e.key === 'message') {
+      const data = JSON.parse(e.newValue);
+      console.log('Received:', data);
+    }
+  })
+  ```
+  2. Broadcast Channel API
+  创建一个命名频道，所有窗口都通过该频道发送和接收消息。
+  ```js
+  const channel = new BroadcastChannel('my_channel');
+  channel.postMessage({ data: 'Hello' });
+  channel.onmessage = e => {
+    console.log('received: ', e.data);
+  }  
+  ```
+  3. SharedWorker
+  实现方式：使用ShareWorker创建共享的后台线程，各窗口通过该线程中转消息。
+  ```js
+  const worker = new SharedWorker('worker.js');
+  worker.port.postMessage({ data: 'Hello' });
+  worker.port.onmessage = (e) => {
+    console.log('Received:', e.data);
+  } 
+  ```
+  4. window.postMessage和MessageChannel
+  实现方式：通过window.postMessage直接向其他窗口发送消息（需要持有目标窗口的引用）；
+  ```js
+  const targetWindow = window.open('https://example.com');
+  targetWindow.postMessage('hello', 'https://example.com');
+
+  window.addEventListener('message', e => {
+    if(e.origin === 'https://example.com') {
+      console.log("Received:", e.data);
+    }
+  })
+  ```
+  5. Server-Send Events或WebSocket
+  实现方式：通过服务器中转消息来完成多窗口之间的通信；
+  6. IndexDB
+  实现方式：使用IndexDB存储共享数据，通过轮询或监听变更事件实现通信；
+

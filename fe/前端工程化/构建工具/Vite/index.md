@@ -160,3 +160,14 @@ export default defineConfig({
   }
 })
 ```
+
+## Vite的实现原理
+
+1. 它基于浏览器的type为module的script可以直接下载es module模块来加载js资源；
+2. 本地启动了一个开发服务，会根据请求的url来对模块做编译，调用Vite插件来做不同模块的transform；
+3. node_modules下的文件有的包是commonjs的，并且可能有多个模块，这时vite做了预购建也叫deps optimize；
+4. 它用esbuild做一啊来分析，然后用esbuild打包成esm的包之后输出到node_modules/.vite下，并生成了一个metadata.json来记录hash。
+5. 浏览器使用max-age强缓存这些预打包的模块，但是带了hash的query。这样当重新build的时候，可以通过修改query的hash来触发更新；
+6. 在开发时通过connect起了一个服务器，调用vite插件来做transform，并且对node_modules下的模块做了预购建，用esbuild打包；
+7. 在生产环境用rollup来打包，因为Vite插件兼容了rollup插件，所以也是同样的插件来处理，这样能保证开发和生产环境的代码一致；
+8. Vite基于chokidar和websocket来实现模块的热更新；
