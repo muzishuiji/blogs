@@ -19,6 +19,7 @@ app.all('*', (req,res,next) => {
     // 用于指示浏览器是否可以将凭证（如cookies、HTTP认证或客户端SSL证书）包含在跨域请求中。
     // 当设置true时，浏览器会在跨域请求中包含凭证信息
     // 同时，需要记住Access-Control-Allow-Origin必须设置为具体的域名，而不能是*，因为*不允许包含凭证信息
+    // 是否允许发送cookie
     res.header('Access-Control-Allow-Credentials', 'true');
     next();
 })

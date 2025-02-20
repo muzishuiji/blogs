@@ -16,12 +16,14 @@ function calculateDiscount(type, price) {
 }
 
 // 使用策略模式
+// 1. 定义不同type对应的handler维护在策略对象中
 const discountStrategies = {
     vip: price => price * 0.8,
     regular: price => price * 0.9,
     default: price => price,
 };
-const calculateDiscount(type, price) {
+// 2. 根据传入的type，获取对应该type的handler并执行
+function calculateDiscount(type, price) {
     const strategy = discountStrategies[type] || discountStrategies.default;
     return strategy(price);
 }

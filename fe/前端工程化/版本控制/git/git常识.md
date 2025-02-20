@@ -25,5 +25,21 @@ git commit -m 'balabala'
 10. git revert 和 git reset
 
 * git revert 是用一次新的commit来回滚之前的commit，git reset是直接删除指定的commit。
+ 
 * 这两个操作，效果差不多，但是在日后继续merge以前的老版本时有区别。因为git revert是用一次逆向的commit中和之前的提交，因此日后合并老的branch时，导致这部分改变不再出现，但是git reset是直接把某些 commit 从branch上删除，因为和老的branch再次merge时，这些被回滚的commit应该还是会被引入。
 * git reset是把head向后移动了一下，而git revert时head继续前进，只是新的commit的内容和自己想要回退到的那个commit的内容相同。
+
+11. git rebase 和 git merge
+  - git rebase：
+    - 是一种将分支上的修改移到另一个基准的方法；
+    - 主要目的为了整合修改并保持线性的历史记录；
+    - 它通过将一系列提交提交“挪动”到新的基底上，从而避免了产生合并提交；
+- git merge：
+  - git merge是一种将两个或多个分支的修改合并到一个分支的操作；
+  - 主要目的是结合多个开发历史，使其合并成一个统一的历史；
+  - 当进行合并时，会生成一个合并提交，记录两个分支的合并历史；
+
+git merge：通常处理两个长期存在的分支，希望保存合并的历史记录；
+git rebase：希望不同的需求分支往主分支上合并，希望主分支的提交历史保持整洁；
+
+

@@ -116,19 +116,78 @@ function myDebounce(fn, wait) {
 ```
 8. 手写节流
 ```js
+// 存在的问题：最后一次不触发
+// 方案一：使用时间戳计算
 function myThrottle(fn, wait) {
-    let timer = null;
-    return function(...args) {
-        let context = this;
-        if(!timer) {
-            timer = setTimeout(function () {
-                clearTimeout(timer)
-                timer = null;
-                fn.apply(context, args);
-            }, wait);
-        }
+  let start = 0;
+  return function (...args) { 
+    let context = this;
+    let current = Date.now();
+    if(current - start >= wait) {
+      fn.apply(context, args);
+      start = Date.now();
     }
+  }
 }
+// 方案二：使用定时器
+function myThrottle(fn, wait) {
+  let start= 0;
+  let timer = null;
+  return function (...args) {
+    if(!timer) {
+      let context = this;
+      timer = setTimeout(() => {
+        fn.apply(context, args);
+        clearTimeout(timer);
+        timer = null;
+      }, wait);
+    }
+  }
+}
+
+// 方案三：使用时间戳+定时器，保证最后一次执行
+function myThrottle(fn, wait) {
+  let timer;
+  let start = 0;
+  let lastArgs;
+  return function (...args) {
+    let now = Date.now();
+    let context = this;
+    let remaining = wait - (now - start);
+    // 如果剩余时间<=0 或时间异常（系统时间被修改）
+    if(remaining <= 0 || remaining > wait) {
+      if(timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      start = Date.now();
+      fn.apply(context, args);
+    }
+    // 如果定时器未启动，保存最后一次调用的参数，并设置定时器
+    else if(!timer) {
+      lastArgs = args;
+      timer = setTimeout(() => {
+        clearTimeout(timer);
+        timer = null; 
+        fn.apply(context, lastArgs);
+      }, remaining);
+    } else {
+      lastArgs = args;
+    }
+  } 
+}
+// 定义一个被节流的函数
+const logScroll = myThrottle((position) => {
+  console.log("当前位置:", position);
+}, 1000);
+
+// 模拟连续触发
+logScroll(0);      // 立即输出：当前位置: 0
+logScroll(100);    // 被忽略，但保存参数
+logScroll(200);    // 被忽略，但保存参数
+logScroll(300);    // 被忽略，但保存参数
+
+// 1秒后输出：当前位置: 300
 ``` 
 
 9. 数组扁平化

@@ -586,6 +586,24 @@ react并不关心ref是哪里创建的，用createRef、useRef创建的，或者
 
 useImperativeHandle的底层实现就是useEffect，只不过执行的函数是它指定的，bind了传入的ref和create函数，这样layout阶段调用hook的effect函数就可以更新ref。
 
+## react的性能优化
+1. React.memo
+React.memo是一个高阶组件，用于对函数组件的props进行浅比较，避免在props未发生变化时重新渲染；
+React.PureComponent是类组件的优化版本。
+2. 使用useCallback和useMemo
+  - useCallback：缓存回调函数，避免每次渲染创建新的函数；
+  - useMemo：缓存计算结果，避免重复计算；
+3. 优化列表渲染；
+  - 使用id等作为列表项的唯一key，以便react可以最小化dom更新操作；
+  - 虚拟列表
+4. 避免useContext的不当使用导致重渲染；
+  - 状态拆分：拆分成更小的部分，避免状态变化导致不必要的重渲染；
+  - 使用状态管理库：zustand等集中管理状态，减少组件之间的耦合；
+  - 使用useReducer：组件内部的负载状态，使用useReducer代替useState，减少状态的更新次数；
+5. 代码分割与懒加载
+  - 借助React.lazy + Suspense来动态加载组件，减少初始包体积；
+  - 动态import+webpack的代码分割，来懒加载模块；
+
 ## React18的新特性
 
 ### 改动点
