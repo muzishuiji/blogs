@@ -933,3 +933,6 @@ removeTag(domStr);
   6. IndexDB
   实现方式：使用IndexDB存储共享数据，通过轮询或监听变更事件实现通信；
 
+59. 不会改变原数组的方法
+
+forEach、map、filter、reduce、reduceRight、some、every、concat、join、toString、slice、flat

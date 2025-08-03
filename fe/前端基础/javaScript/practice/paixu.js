@@ -135,6 +135,7 @@ quickSort(arr);
 
 
 
+// 冒泡排序
 function bubble(arr) {
     for(let i = 0; i < arr.length; i++) {
         for(let j = 0; j < i; j++) {
@@ -150,8 +151,38 @@ function bubble(arr) {
 let arr = [3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48];
 bubble(arr);
 
+// 插入排序
+function insertSort(arr) {
+    for(let i = 1; i < arr.length; i++) {
+        for(let j = i; j >= 0; j--) {
+            if(arr[j] < arr[j - 1]) {
+                let temp = arr[j-1];
+                arr[j-1] = arr[j];
+                arr[j] = temp;
+            }
+        }
+    }
+    return arr;
+}
+let arr = [3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48];
+insertSort(arr);
 
 
-
-
-
+// 选择排序
+// 每次选择i-n中最小的数放在i位置上
+function selectSort(arr) {
+    for(let i = 0; i < arr.length; i++) {
+        let minkey = arr[i]
+        for(let j = i; j < arr.length; j++) {
+            if(minkey > arr[j]) {
+                let temp = arr[j];
+                arr[j] = minkey;
+                minkey = temp;
+            }
+        }
+        arr[i] = minkey;
+    }
+    return arr;
+}
+let arr = [3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48];
+selectSort(arr);
