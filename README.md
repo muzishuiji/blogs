@@ -81,6 +81,11 @@
 ## 数据结构与算法
 1. [数据结构与算法](./fe/数据结构与算法/数据结构与算法.md)
 
+## AI编程
+
+1. [Claude Code 最佳实践](./fe/AI/AI编程ClaudeCode最佳实践.md)
+
+
 ## 读书笔记
 
 1. [JavaScript 设计模式与开发实践读书笔记](./reading-notes/javaScript-advanced-programming)
