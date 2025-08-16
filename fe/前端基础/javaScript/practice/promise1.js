@@ -62,7 +62,7 @@ class MyPromise {
             } 
             let rejectedFn = (reason) => {
                 try {
-                    let x = onRejectedCb(rea(son);
+                    let x = onRejectedCb(reason);
                     x instanceof myPromise ? x.then(resolve, reject) : reject(x);
                 } catch(err) {
                     reject(err);

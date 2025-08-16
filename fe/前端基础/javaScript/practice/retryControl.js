@@ -14,10 +14,12 @@ const retryWithDelay = (fn, retryArr) => {
             }).catch((err) => {
                 if(retryArr.length) {
                     const timer = retryArr.pop();
-                    console.log('retry: ', timer, err)
+                    console.log('retry: ', timer)
                     setTimeout(() => {
                         attemptFunc();
                     }, timer);
+                } else {
+                    reject(err);
                 }
             })
         })

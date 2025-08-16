@@ -67,3 +67,68 @@ sticky上x-index不生效的原因我猜测跟这个元素设计的目的有关�
 
 
 15. 父组件和子组件的生命周期钩子的执行顺序
+
+16. vue3为什么用Proxy代替 Object.defiendProperty；
+  1. 拦截能力更强大；
+    - Object.defiendProperty值嗯嗯个拦截get/set操作；
+    - Proxy可以拦截13种操作，包括属性删除，枚举等；
+  2. 数组处理更完善；
+    - Object.defiendProperty无法监听到索引赋值和length变化；
+    - Proxy可以监听所有数组操作；
+  3. 动态属性监听；
+    - Vue2需要用Vue.set监听新属性；
+    - Vue3的Proxy可以监听所有数组操作；
+  4. 性能更优；
+    - Object.defiendProperty需要递归遍历所有属性，初始化时递归处理所有嵌套对象；
+    - Proxy采用惰性代理，按需处理，在实际访问时才对嵌套对象进行代理；
+
+17. 惰性代理是指？
+**vue2的预处理方式**
+```js
+const data = {
+  user: {
+    profile: {
+      address: {
+        city: 'Beijing',
+        street: 'xxx'
+      }
+    }
+  }
+}
+function observe() {
+  if(typeof obj !== 'object') return;
+  Object.keys(obj).forEach(key => {
+    defineProperty(obj, key, obj[key]);
+    if(typeof obj === 'object') {
+      observe(obj[key])
+    }
+  })
+}
+```
+**vue3的惰性代理方式**
+```js
+function reactive(target) {
+  if(!isObject(target)) {
+    return traget;
+  }
+  return new Proxy(target, {
+    get(target, key, receiver) {
+      const result = Reflect.get(target, key, receiver);
+      return result;
+    },
+    set(target, receive, receiver) {
+      return Reflect.set(target, key, receiver);
+    }
+  })
+}
+const state = reactive({
+  user: {
+    profile: {
+      address: {
+        city: 'beijing'
+      }
+    }
+  }
+})
+```
+

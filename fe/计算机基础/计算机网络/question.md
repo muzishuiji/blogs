@@ -29,10 +29,12 @@ options请求与HEAD请求类似，一般用于客户端查看哪服务端的性
   - 预检请求：在某些情况下，客户端可能需要检查某个资源是否存在或者是否可以访问，然后再决定是否发起GET请求。例如，在下载大文件之前，可以先使用HEAD请求检查文件的大小和可用性。
 
   - 监控和调试：在监控或调试网络服务时，HEAD请求可以用来快速检查服务的可用性和响应状态，而无需返回响应数据。
-
 6. 简单请求与复杂请求
 
-- 简单请求：没有设置自定义header的get，head，post方法；
+- 简单请求：
+  - get/head；
+  - content-tyep为：application/x-www-form-urlencode、multipart/form-data、text/plain；
+  - 没有设置自定义header；
 - 复杂请求：非get，head方法，设置了自定义header的post方法，以及其他方法（post，put，delete，patch等）
 
 在发送复杂请求之前会先发送一个预检请求，预检请求的作用如下：
