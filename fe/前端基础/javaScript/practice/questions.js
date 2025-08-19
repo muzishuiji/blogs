@@ -233,3 +233,107 @@ function compressNumbers(str) {
     }
     return ans.join(',');
 }
+
+/**
+ * 题目六： 解析
+红灯三秒亮一次，绿灯一秒亮一次，黄灯2秒亮一次，意思就是3秒，执行一次 red 函数，2秒执行一次 green 函数，1秒执行一次 yellow 函数，不断交替重复亮灯，意思就是按照这个顺序一直执行这3个函数，这步可以就利用递归来实现。
+
+答案
+ */
+function red() {
+    console.log('red');
+}
+function green() {
+    console.log('green');
+}
+function yellow() {
+    console.log('yellow');
+}
+
+var light = function (timmer, cb) {
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            cb();
+            resolve();
+        }, timmer);
+    });
+};
+
+var step = function () {
+    Promise.resolve().then(function () {
+        return light(3000, red);
+    }).then(function () {
+        return light(2000, green);
+    }).then(function () {
+        return light(1000, yellow);
+    }).then(function () {
+        step();
+    });
+}
+
+step();
+
+/**
+ * 题目七：
+实现 mergePromise 函数，把传进去的数组按顺序先后执行，并且把返回的数据先后放到数组 data 中。} ms 
+ */
+
+const timeout = ms => new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve();
+    }, ms);
+});
+
+const ajax1 = () => timeout(2000).then(() => {
+    console.log('1');
+    return 1;
+});
+
+const ajax2 = () => timeout(1000).then(() => {
+    console.log('2');
+    return 2;
+});
+
+const ajax3 = () => timeout(2000).then(() => {
+    console.log('3');
+    return 3;
+});
+
+const mergePromise = ajaxArray => {
+    // 在这里实现你的代码
+    let res = [];
+    let runner = (resolve, reject) => {
+        if(!ajaxArray.length) {
+            resolve(res)
+        }
+        let task = ajaxArray.pop();
+        task().then(data => {
+            res.push(data)
+            runner(resolve, reject)
+        }).catch(err => {
+            reject(err)
+        })
+    }
+    return new Promise(funner)
+};
+
+mergePromise([ajax1, ajax2, ajax3]).then(data => {
+    console.log('done');
+    console.log(data); // data 为 [1, 2, 3]
+});
+// 要求分别输出
+// 1
+// 2
+// 3
+// done
+// [1, 2, 3]
+
+
+/**
+ * 题目八：有 8 个图片资源的 url，已经存储在数组 urls 中（即urls = ['http://example.com/1.jpg', ...., 'http://example.com/8.jpg']），而且已经有一个函数 function loadImg，输入一个 url 链接，返回一个 Promise，该 Promise 在图片下载完成的时候 resolve，下载失败则 reject。
+但是我们要求，任意时刻，同时下载的链接数量不可以超过 3 个。
+请写一段代码实现这个需求，要求尽可能快速地将所有图片下载完成。
+ * 
+ */
+
+
