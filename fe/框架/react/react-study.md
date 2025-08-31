@@ -837,4 +837,88 @@ StrictMode主要解决以下问题：
 
 useInsertionEffect是react18新增的hook，专门用于处理样式注入的场景。它在样式计算之前同步执行，确保在浏览器开始绘制之前，样式已经插入到dom中。这个hook的目的是避免在使用css-in-js库时的样式闪烁问题。
 
+## React19的新特性
 
+1. React Compuler（自动优化编译器）
+  - 描述：React19引入了一个内置编译器（以前称为React Forget），它自动分析组件代码，生成优化的版本。开发者无需手动使用useMemo，useCallback或memo来避免不必要重渲染，编译器会智能处理依赖关系；
+  - 好处：减少性能优化模版代码，提高代码可读性。适用于函数组件和hooks；
+  - 示例：只编写普通组件，编译器在构建时自动memoize计算密集部分；
+  - 注意：需要babel插件支持，目前是可选启用；
+2. Actions（表单和异步操作简化）；
+  - 描述：引入useActionState hook来处理表单提交和异步动作，支持内置的pending状态、错误处理和乐观更新；
+  - 好处：简化服务端表单处理，自动管理加载状态和错误，无需额外状态管理；
+  - 示例：
+  ```js
+  import { useActionState } from 'react';
+  function Form() {
+    const [state, submitAction, isPending] = useActionState(async (prevState, formData) => {
+      // 异步提交数据
+      const result = await api.submit(formData);
+      return result;
+    });
+    return (
+      <form action={submitAction}>
+        <input name="name" />
+        <button disabled={isPending}>提交</button>
+      </form>
+    )
+
+  }
+  ```
+  - 相关：支持useOptimistic hook用于乐观UI更新；
+
+3. use Hook（简化数据获取）
+  - 描述：一个新Hook，支持直接在组件中使用promise和async/await来获取数据，而无需包装在useEffect中；
+  - 好处：使异步数据加载更直观，结合Suspense实现加载状态管理；
+  - 示例：
+  ```jsx
+  import { use } from 'react';
+  function DataFetcher(){
+    const data = use(fetchDataPromise());
+    return <div>{data.name}</div>
+  }
+
+  ```
+  - 注意：需要与Suspense结合处理加载中状态；
+
+4. 函数组件直接支持ref；
+函数组件可以直接接收ref参数，无需forwardRef包装。简化ref传递方式，减少模版代码；
+```jsx
+  import { use } from 'react';
+  function MyInput({ ref }) {
+    return <input ref={ref} />
+  }
+```
+5. Asset Loading(资源加载优化)
+
+  - 描述：内置支持预加载资源（图像、字体、脚本），通过新的API确保资源在渲染前加载；
+  - 好处：性能改进，尤其在SSR中减少闪烁；
+  - 示例：`<img src="image.jpg" loading="lazy" />`，自动预加载；新hook如preload用于手动控制；
+6. Document Metadata（文档元数据支持）
+描述：允许在组件中直接声明 <title>、<meta> 等标签，而无需外部库或 Helmet。
+好处：简化 SEO 和元数据管理，尤其在 Next.js 等框架中。
+```jsx
+  function Page() {
+    return (
+      <>
+        <title>My Page</title>
+        <meta name="description" content="Hello" />
+        <h1>Content</h1>
+      </>
+    );
+  }
+```
+注意：React 会自动处理重复标签和优先级。
+
+7. 其他改进和变化
+  - Async Components：组件现在可以是 async 函数，直接使用 await（结合 use 和 Suspense）。
+  ```jsx
+    async function AsyncComponent() {
+       const data = await fetchData();
+       return <div>{data}</div>;
+    }
+  ```
+  - Hydration 错误处理：更好的客户端/服务器不匹配恢复，支持部分 hydration（只渲染不匹配的部分）。
+  - Context as Provider：Context 可以直接用作 Provider 组件，简化语法。
+  - Diff 算法优化：细微改进，但核心与 React 18 类似。
+  - 废弃/移除：移除 forwardRef 和 memo 的 render 函数支持；一些旧 API 被弃用。
