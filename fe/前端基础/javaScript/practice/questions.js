@@ -94,6 +94,7 @@ class LRU {
        // 删除过期数据
        if(this.hashMap.size === this.capacity) {
           // 其实可以利用map的插入有序，来删除第一个map节点
+          // map和set的插入是有序的，可以利用这个特性来删除最近最久未使用的节点
           this.hashMap.keys().forEach((key) => {
             if(Date.now() - this.hashMap.get(key).time > this.expires) {
                 this.hashMap.delete(key);

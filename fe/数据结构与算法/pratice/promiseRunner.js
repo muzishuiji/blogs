@@ -45,15 +45,16 @@ setTimeout(() => {
     console.log('settimout')
 }, 0);
 async1();
+Promise.resolve().then(() => {
+    console.log('promise3')
+})
 new Promise((resolve, reject) => {
     console.log('promise1');
     resolve();
 }).then(() => {
     console.log('promise2')
 })
-Promise.resolve().then(() => {
-    console.log('promise3')
-})
+
 console.log('script end')
 // script start
 // async1 start
@@ -61,6 +62,6 @@ console.log('script end')
 // promise1
 // script end
 // async1 end
-// promise2
 // promise3
+// promise2
 // setTimeout

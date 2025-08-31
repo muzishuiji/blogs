@@ -19,24 +19,68 @@
 
 6. 受控组件与非受控组件
 
-        * 受控组件，表单元素状态由使用者维护
+  * 受控组件：状态（state）完全有React组件控制的表单元素（值由React状态控制，变化由React事件处理）；
 
-        ```js
-        <input type="text"
-            value={this.state.value}
-            onChange={evt => 
-                this.setState({ value: evt.target.value});
-            }
-        />
-        ```
-        * 非受控组件，表单状态由自身维护
+  ```js
+  function ControllInpt() {
+    const [value, setValue] = useState('');
+    return (
+      <input
+        type="text"
+        value={value}
+        onChange={(evt) => setValue(evt.target.value)}
+      >
+    )
+  }
+  ```
+  优缺点与适用场景：
+    - 优点：
+      - 数据一致性与可预测性：由于表单值始终由React状态管理，数据流清晰，易于追踪和调试，你可以随时从state中获取表单的当前值；
+      - 实时校验与反馈：可以轻松地在onchange事件中实现实时输入校验，并立即向用户提供反馈；
+      - 易于实现复杂交互：例如，根据一个输入框的值动态禁用/启用另一个输入框，或者根据内容进行格式化；
+      - 方便集成第三方库：许多UI组件库的表单组件都是基于受控模式设计的；
+    - 缺点：
+      - 性能开销：对于每次按键输入，onchange事件都会触发组件的重新渲染。如果表单非常复杂或者输入频率很很高，可能导致性能问题。
+      - 代码量增加：每个受控表单元素都需要value属性和onchange事件处理器，导致代码量相对冗余；
+    - 适用场景：
+      - 需要实时校验和反馈的表单（如密码强度检测、用户名可用性检查）；
+      - 需要根据输入动态改变UI的表单（如级联选择器、动态表单项）；
+      - 需要重置表单或预填充数据的场景；
+      - 与React组件库配合使用；
 
-        ```js
-        <input 
-                type="text"
-                ref={node => this.input = node}
-        />
-        ```
+
+  * 非受控组件：其值由DOM自身维护的表单元素。与受控组件不同，你不需要通过React的state来管理表单的值，而是直接通过DOM引用（通常使用useRef Hook）来获取表单的当前值
+
+  ```js
+  function UncontroledInput({ onSubmit }) {
+    const inputRef = useRef(null); 
+    const handleSumbit = (e) => {
+      const value = inputRef.current.value;
+      console.log('提交的非受控组件值', value);
+    }
+    return (
+      <form onSumbit={handleSumbit}>
+        <input
+          id="dff"
+          type="text"
+          ref={inputRef} 
+        >
+         <input type="submit" value="提交" />
+      </form>
+    )
+  }
+  ```
+  优缺点与适用场景：
+  - 优点：
+    - 性能较好：不需要每次输入都触发组件重新渲染，对于高频输入的表单性能表现更佳；
+    - 代码量较少：无需为每个表单元素编写onchange事件处理器和useState声明，代码更简洁；
+  - 缺点：
+    - 难以实现实时校验：由于React不控制表单的值，实时校验需要额外的逻辑，实时校验需要在onBlur时触发；
+    - 数据流不清晰：表单的值直接由DOM维护，React组件无法直接访问，需要通过ref手动获取，数据流不如受控组件直观；
+  - 适用场景：
+    - 简单的表单，无需实时校验或复杂交互；
+    - 需要集成非React的DOM库或插件：当这些库直接操作DOM时，非受控组件可以避免冲突；
+    - 性能敏感的场景：如需要处理大量输入或高频更新的表单；
 
 7. 创建组件的时候需要遵循的原则
 
@@ -285,6 +329,27 @@ context导致的重渲染如何解决？
 useLayoutEffect和useEffect的区别是useLayoutEffect的执行是同步的，浏览器会等effect逻辑执行完再渲染。
 而如果这段同步执行的逻辑耗时太久，会导致页面卡顿，所以开发者需要根据实际情况考虑选择使用useEffect还是useLayoutEffect。
 
+```js
+useLayoutEffect(() => {
+  // 副作用代码，会阻塞浏览器绘制
+  return () => {
+    // 清理函数
+  }
+}, [dependencies]); // 依赖项数组
+```
+useLayoutEffect的执行流程概述：
+- 组件渲染；
+- react 更新DOM；
+- useLayoutEffect回调函数同步执行；
+- 浏览器绘制页面；
+
+适合使用useLayoutEffect的场景：
+- 需要同步读取DOM布局信息；
+- 需要同步修改DOM样式以避免“闪烁”；
+- 与第三方DOM库集成；
+确保D3.js，一些动画库操作DOM志气那，拿到react更新后的DOM。
+
+
 28. useRef可以视为React的一个组件内的全局变量，它的值的修改不会触发重渲染。useRef一般用来存一些不用于渲染的内容。
 
 29. 在React里，只要涉及到state的修改，就必须返回新的对象，不管是useState还是useReducer。
@@ -292,8 +357,26 @@ useLayoutEffect和useEffect的区别是useLayoutEffect的执行是同步的，�
 如果要修改复杂的深层嵌套的对象，可以用immer来优化。
 
 30. forwardRef + useImperativeHandle
+react不支持直接传入ref获取对组件实例的引用，因为react处理一个普通的函数组件时，会直接调用该函数并返回react元素。由于函数组件没有实例，无法为其创建一个可供ref引用的句柄。
 
 forwardRef + useImperativeHandle组合使用使得子组件可以自定义暴露给父组件的内容，是父组件访问和修改子组件状态的一种方式。
+
+React遇到一个由forwardRef创建的组件时，它会进行以下处理：
+1. 特殊类型标记：forwardRef返回的组件在内部会被react标记为一种特殊的类型（$$typeof Symbol(react.forwardRef）)；
+2. Ref参数传递：在协调过程中，当react渲染这个forwardRef组件时，如果服组件传递了ref属性，react会识别这个特殊标记，并将这个ref对象作为第二个参数传递给forwardRef的渲染函数；
+3. 内部绑定：渲染函数内部，开发者将这个ref绑定到实际的DOM节点或子组件上。此时，React会将父组件的ref对象与这个内部的DOM节点或组件实例关联起来；
+
+forwardRef 就像一个中间人，它拦截了父组件传递的ref，并将其作为普通参数传递给函数组件，从而绕过来函数组件不能直接接收ref的限制。这样，父组件就可以通过其ref对象，间接获取到forwardRef组件内部的某个DOM节点或组件实例的引用；
+
+>> 如果绑定ref的组件是一个函数组件，通常需要借助forwardRef做一个中转处理；
+>> 如果绑定ref的组件是一个类组件，通常可以直接传入ref，绑定这个类组件实例，访问类组件的相关方法
+
+过度使用ref的缺点：
+- 数据流不清晰：直接操作DOM或组件实例会绕过react的数据流，使得组件的行为难以预测和测试；
+- 组件耦合度增加：父组件直接操作子组件内部，增加了组件之间的耦合；
+- 难以维护：命令式代码通常比声明式代码更难理解和维护；
+
+>> react19已经支持函数组件可以直接接收ref，无需forwardRef.
 
 31. 可以使用memo包裹组件来避免非必要的重渲染。
 
@@ -423,6 +506,11 @@ useState是react的一个hook，用于在函数组件中添加状态管理。它
   - 使用事件池来复用事件对象，以减少内存分配和垃圾回收的开销（react17移除，因为现代浏览器性能已经足够好）；
   - React的合成事件不仅适用于web平台，还可以扩展到其他平台（如React Native）；
   - React的合成事件支持自定义事件和高级功能，可以实现更灵活的事件处理；
+
+40. React16的dom diff流程梳理；
+  1. 第一轮遍历：同层一一对比，若新旧fiber节点类型相同，则复用，更新props。如果新旧fiber节点类型不同，则终止遍历；
+  2. 第二轮遍历，将旧的Fiber节点放入Map，继续遍历新的VDOM中的Fiber节点，如果旧fiber节点存在，则打上更新标记，不存在，则打上新增标记。剩下的旧的Fiber节点，则打上删除的标记；
+  3. 得到最终的Fiber树后，commit阶段操作DOM并渲染；
 
 ### React Ref
 
@@ -686,17 +774,45 @@ React.PureComponent是类组件的优化版本。
 
 ### 改动点
 
-1. 通过react18的新api来开启并发模式
-2. ReactDOM.createRoot(root).render(<App />)
-3. 如果你的项目使用了ssr服务端渲染，需要把hydration升级为hydrateRoot
-4. tsx中child属性需要手动声明
-5. 在18之前，只有在react事件处理函数中，才会自动执行批处理，其他情况会多次更新； 在18之后，任何情况下都会自动进行批处理，将多次更新操作始终合并为一次，包含在异步代码和原生时间处理函数中的状态更新。
+1. 通过react18的新api来开启并发模式（Concurrent Mode）；
+2. 新的根API：ReactDOM.createRoot(root).render(<App />)，启用并发渲染；
+3. 如果你的项目使用了ssr服务端渲染，需要把hydration升级为hydrateRoot；
+4. tsx中children属性需要手动声明；
+5. 在18之前，只有在react事件处理函数中，才会自动执行批处理，其他情况会多次更新； 在18之后，任何情况下都会自动进行批处理，将多次更新操作始终合并为一次，包含在异步代码和原生事件处理函数中的状态更新。
 
 批处理更新的工作原理：
 
 React在执行更新时采用了一种懒惰的方式，它会将同一个事件循环中的多个更新累积起来，然后一次性应用这些更新，不会对每个更新立即进行重新渲染。避免了不必要的重渲染，从而提高了性能。该特性的引入使得React应用可以更有效率的处理状态更新，尤其是在复杂的应用和异步操作中。
 
 react也支持使用flushSync来退出批量更新处理。
+
+并发模式的工作原理：
+并发模式基于React的Fiber架构，在React18中被全面启用。核心机制包括：
+- Fiber树：React将组件树表示为链表结构（Fiber节点），允许渲染过程被暂停、恢复或放弃；
+- 时间分片：渲染任务被分成小片段（通常为5ms内，成为yieldInterval），浏览器每帧渲染后检查是否有更高优先级的任务，如果有，暂停当前渲染，否则，继续；
+- 双缓冲树：React维护两个树，当前树（已渲染的UI）和工作树（正在更新的树）。更新在工作树上进行，完成后替换当前树，避免频繁修改UI；
+- Scheduler：React的调度器管理任务优先级，确保高优先级任务优先执行；
+react会使用requestIdleCallback调度低优先级任务。不用requestIdleCallback而是自己设计时间分片的原因：
+  - 兼容性：safari、旧版edge不支持；
+  - 粒度问题：requestIdleCallback的调度太粗粒度（可能在唱任务后出发），无法精确控制5ms时间分片；
+  - 优先级不支持不足：无法灵活控制任务按优先级调度执行；
+
+```js
+// 调度执行的伪代码逻辑
+function workLoop(startTime) {
+  let nextUnitOfWork = getNextFiber();
+  while(nextUnitOfWork !== null) {
+    // React通常会在批量处理多个fiber节点后检查
+    if(shouldYield(startTime)) {
+      // 时间分片耗尽或有高优先级任务：暂停，重新调度
+      scheduleNextWork(nextUnitOfWoek);
+      return;
+    }
+    // 处理下一个工作单元
+    nextUnitOfWork = performUnitOfWork(nextUnitOfWoek);
+  }
+}
+```
 
 7. 批处理是一个破坏性改动，如果你想退出批量更新，你可以使用flushSync；
 8. 18之前的版本，开启严格模式会对每个组件进行两次渲染，以便你观察一些意想不到的结果，但是react17中，取消了其中一次渲染的控制台日志，一边让日志更容易阅读；
