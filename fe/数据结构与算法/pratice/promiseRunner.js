@@ -65,3 +65,31 @@ console.log('script end')
 // promise3
 // promise2
 // setTimeout
+
+// 第四弹
+console.log('Start');
+setTimeout(() => console.log('timeout1'), 0);
+Promise.resolve()
+.then(()=>{
+    console.log('promise1');
+    setTimeout(() => console.log('timeout2'), 0);
+}).then(()=>{
+    console.log('promise2');
+});
+async function asyncFunc() {
+    console.log('async1');
+    await Promise.resolve();
+    console.log('async2');
+}
+asyncFunc();
+console.log('End');
+
+// Start
+// async1
+// End
+// promise1
+// async2
+// promise2
+// async2
+// timeout1
+// timeout2
