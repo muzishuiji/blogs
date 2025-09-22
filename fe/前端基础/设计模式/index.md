@@ -60,7 +60,7 @@ console.log(instance1 === instance2); // true
 
 - 直接通信（被观察者直接调用观察者的方法）
 - 强耦合
-- 适合对象数量手啊，关系简单的场景
+- 适合对象数手少，关系简单的场景
 
 ```js
 class Subject {
