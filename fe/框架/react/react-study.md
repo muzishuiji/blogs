@@ -922,3 +922,23 @@ useInsertionEffect是react18新增的hook，专门用于处理样式注入的场
   - Context as Provider：Context 可以直接用作 Provider 组件，简化语法。
   - Diff 算法优化：细微改进，但核心与 React 18 类似。
   - 废弃/移除：移除 forwardRef 和 memo 的 render 函数支持；一些旧 API 被弃用。
+
+
+## React Compiler v1.0
+
+React Compiler v1.0 主要用于性能优化。
+
+- 兼容React 和 React Native；
+- 自动优化性能；
+- 支持Vite、Next.js
+
+React Compiler会在构建阶段自动优化React组件的重渲染逻辑，无需开发者手动编写useMemo、useCallback等优化代码，就能提升应用性能，大大减轻开发负担。
+
+## React19.2
+1. <Activity>: 一种用于隐藏和恢复其子项的UI和内部状态的新API，类似于Vue的keep-alive；
+2. useEffectEvent 是一个React Hook，可让您将非反应性逻辑提取到Effect Event中；
+3. cacheSignal：（用于RSC）让您知道cache()生命周期何时结束；
+4. React Performance：轨迹出现在浏览器开发者工具Performance面板时间线上；
+
+React19.2 是一个“打磨型”更新，专注于提升现有功能的稳定性和性能。
+
