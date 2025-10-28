@@ -66,7 +66,7 @@ function myThrottle(cb, delay) {
   return function (...args) {
     let currentTimer = performance.now();
     let context = this;
-    if(currentTimer - startTime >- delay) {
+    if(currentTimer - startTime >= delay) {
       cb.apply(context, args);
       startTime = performance.now();
     }
@@ -113,3 +113,4 @@ let n = nums.length, stack = [];
       stack.push(i % n)
 }
 return ans;
+
