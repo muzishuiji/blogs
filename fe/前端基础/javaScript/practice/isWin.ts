@@ -96,4 +96,4 @@ const board = [
 ]
 const point = [0, 4];
 const color = Color.BLACK;
-console.log(isWin(board, point, color));
+console.log(isWin(board, point, color), '---');
