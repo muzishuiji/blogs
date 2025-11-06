@@ -37,17 +37,37 @@ function moveSteps(board: number[][], point: number[], color: Color, steps: Step
     });
     return count;
 }
-function createIsWin(moveForward: Step, moveBackward: Step) {
-    return (board: number[][], point: number[], color: Color) => {
-        let count = 0;
-        count += moveSteps(board, point, color, [moveForward, moveBackward]);
-        return count >= 5;
+function createIsWin(p1Movement: Step, p2Movement: Step) {
+    return function(board, point, color) {
+        let p1 = p1Movement(point)
+        let p2 = p2Movement(point);
+        let count = 1;
+        while(1) {
+            let p1Valid = false;
+            let p2Valid = false;
+            if(isValid(board, p1, color)) {
+                count++;
+                p1 = p1Movement(p1);
+                p1Valid = true;
+            }
+            if(isValid(board, p2, color)) {
+                count++;
+                p2 = p2Movement(p2);
+                p2Valid = true;
+            }
+            if(count >= 5) {
+                return true;
+            }
+            if(!p1Valid && !p2Valid) {
+                return false;
+            }
+        }
     }
 }
 // createIsWin类似于一个工厂函数，根据传入的参数创造出具有不同功能逻辑的函数
 const isHorizontalWin = createIsWin(
     ([x, y]) => [x - 1, y],
-    ([x, y]) => [x + 1, y]
+    ([x, y]) => [x + 1, y],
 );
 const isVerticalWin = createIsWin(
     ([x, y]) => [x, y - 1],
