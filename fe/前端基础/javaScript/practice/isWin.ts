@@ -2,19 +2,9 @@
 // 胜利的原则：水平/垂直/斜线/反斜线形成五子
 // 低效的方案：每次去遍历整个棋盘，找到连成五子的方案；
 // 高效的方案：每次去检测落子位置是否形成五子；
-enum Color {
-    BLACK = 1,
-    WHITE = 2
-}
-enum Direction {
-    HORIZONTAL = 1,
-    VERTICAL = 2,
-    SLASH = 3,
-    BACK_SLASH = 4
-}
 type Step = (point: number[]) => [number, number]
 // 
-function isValid(board: number[][], point: number[], color: Color) {
+function isValid(board: number[][], point: number[], color: number) {
     const [x, y] = point;
     let row = board.length;
     let col = board[0].length;
@@ -23,7 +13,7 @@ function isValid(board: number[][], point: number[], color: Color) {
     }
     return false;
 }
-function moveSteps(board: number[][], point: number[], color: Color, steps: Step[]) {
+function moveSteps(board: number[][], point: number[], color: number, steps: Step[]) {
     let count = 0;
     steps.map(step => {
         while(true) {
@@ -38,7 +28,7 @@ function moveSteps(board: number[][], point: number[], color: Color, steps: Step
     return count;
 }
 function createIsWin(p1Movement: Step, p2Movement: Step) {
-    return function(board, point, color) {
+    return function(board: number[][], point: number[], color: number) {
         let p1 = p1Movement(point)
         let p2 = p2Movement(point);
         let count = 1;
@@ -81,7 +71,7 @@ const isBackSlashWin = createIsWin(
     ([x, y]) => [x + 1, y - 1],
     ([x, y]) => [x - 1, y + 1]
 );
-function isWin(board: number[][], point: number[], color: Color) {
+function isWin(board: number[][], point: number[], color: number) {
     return isHorizontalWin(board, point, color) ||
         isVerticalWin(board, point, color) ||
         isSlashWin(board, point, color) ||
@@ -95,5 +85,5 @@ const board = [
     [0,0,0,0,0,0,0,0,0,0],
 ]
 const point = [0, 4];
-const color = Color.BLACK;
+const color = 2;
 console.log(isWin(board, point, color), '---');

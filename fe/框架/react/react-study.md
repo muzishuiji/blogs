@@ -350,7 +350,7 @@ useLayoutEffect的执行流程概述：
 确保D3.js，一些动画库操作DOM志气那，拿到react更新后的DOM。
 
 
-28. useRef可以视为React的一个组件内的全局变量，它的值的修改不会触发重渲染。useRef一般用来存一些不用于渲染的内容。
+28. useRef可以视为React的一个组件内的全局变量，它的值的修改不会触发重渲染。useRef一般用来存一些不用于渲染的内容或者dom引用。
 
 29. 在React里，只要涉及到state的修改，就必须返回新的对象，不管是useState还是useReducer。
 这也是react的特性之一：数据不可变性。
@@ -629,11 +629,72 @@ React的事件系统基于合成事件（SyntheticEvent），这是一种跨浏�
 
 2. 事件委托（Event Delegation）
 
-React的事件系统采用了事件委托（Event Delegation）的机制。事件委托是一种优化技术，它将事件处理程序附加到DOM树的顶层元素（通常是document或reactDom.render的根元素），而不是每个子元素上。当事件触发时，React会在冒泡到顶层元素上时将事件并分发给对应的组件。
+React的事件系统采用了事件委托（Event Delegation）的机制。事件委托是一种优化技术，它将事件处理程序附加到DOM树的顶层元素，而不是每个子元素上。
+
+**重要变化：**
+- **React 16 及之前**：事件委托到 `document` 上
+- **React 17 及之后**：事件委托到 React 应用的根容器（root container）上，而不是 document
+
+当事件触发时，React会在冒泡到顶层元素上时将事件并分发给对应的组件。
 
 事件委托的优势：
   - 性能优化：减少事件处理程序的数量，用特别是在处理大量子元素时；
   - 动态元素：对于动态添加或删除的元素，事件委托可以自动处理，无需手动绑定或解绑事件；
+
+**React 合成事件与原生事件冒泡的关系：**
+
+React 合成事件**确实依赖 DOM 事件冒泡机制**。工作流程如下：
+
+1. **事件捕获阶段**：原生事件从 document/root 向下捕获到目标元素
+2. **目标阶段**：在目标元素上触发原生事件
+3. **事件冒泡阶段**：原生事件从目标元素向上冒泡到 document/root
+4. **React 事件分发**：当事件冒泡到 React 委托的容器（document 或 root）时，React 通过 `event.target` 找到实际触发的 DOM 元素，然后根据 Fiber 树找到对应的 React 组件，并触发相应的合成事件处理函数
+
+**关键问题：原生事件阻止冒泡对 React 事件的影响**
+
+如果通过原生事件（如 `addEventListener`）在某个 DOM 元素上调用 `event.stopPropagation()` 阻止了事件冒泡，那么：
+
+- ✅ **如果阻止冒泡发生在 React 事件处理函数之后**：不会影响 React 事件，因为事件已经冒泡到 React 的委托容器并触发了
+- ❌ **如果阻止冒泡发生在 React 事件处理函数之前**：会阻止事件继续冒泡，React 的合成事件**无法触发**
+
+**示例：**
+
+```jsx
+function App() {
+  const handleClick = (e) => {
+    console.log('React 合成事件触发');
+  };
+
+  useEffect(() => {
+    const button = document.getElementById('myButton');
+    // 原生事件在捕获阶段就阻止了冒泡
+    button.addEventListener('click', (e) => {
+      e.stopPropagation(); // 阻止冒泡
+      console.log('原生事件触发并阻止冒泡');
+    }, true); // 使用捕获阶段，会在 React 事件之前执行
+    
+    return () => {
+      button.removeEventListener('click', handleClick);
+    };
+  }, []);
+
+  return (
+    <button id="myButton" onClick={handleClick}>
+      点击我
+    </button>
+  );
+}
+// 结果：只会打印 "原生事件触发并阻止冒泡"，React 合成事件不会触发
+```
+
+**最佳实践：**
+
+1. **避免混用原生事件和 React 事件**：如果必须使用原生事件，注意事件执行顺序
+2. **使用 React 事件系统**：优先使用 React 的合成事件，它已经处理了跨浏览器兼容性
+3. **理解事件执行顺序**：
+   - 原生事件（捕获阶段）→ React 事件 → 原生事件（冒泡阶段）
+   - 在捕获阶段阻止冒泡会影响 React 事件
+   - 在冒泡阶段阻止冒泡不会影响已触发的 React 事件
 
 3. 事件池（Event Pool）
 
@@ -753,20 +814,24 @@ react并不关心ref是哪里创建的，用createRef、useRef创建的，或者
 useImperativeHandle的底层实现就是useEffect，只不过执行的函数是它指定的，bind了传入的ref和create函数，这样layout阶段调用hook的effect函数就可以更新ref。
 
 ## react的性能优化
-1. React.memo
+1. 调整组件颗粒度；
+  - 对频繁渲染的组件颗粒化处理，状态独立维护起来，不会因为状态频繁变更导致其他组件不必要的重渲染；
+  - 建立独立的请求渲染单元，彼此的数据更新不会互相影响；
+
+2. React.memo
 React.memo是一个高阶组件，用于对函数组件的props进行浅比较，避免在props未发生变化时重新渲染；
 React.PureComponent是类组件的优化版本。
-2. 使用useCallback和useMemo
+3. 使用useCallback和useMemo
   - useCallback：缓存回调函数，避免每次渲染创建新的函数；
   - useMemo：缓存计算结果，避免重复计算；
-3. 优化列表渲染；
+4. 优化列表渲染；
   - 使用id等作为列表项的唯一key，以便react可以最小化dom更新操作；
   - 虚拟列表（只渲染当前可视区域）；
-4. 避免useContext的不当使用导致重渲染；
+5. 避免useContext的不当使用导致重渲染；
   - 状态拆分：拆分成更小的部分，避免状态变化导致不必要的重渲染；
   - 使用状态管理库：zustand等集中管理状态，减少组件之间的耦合；
   - 使用useReducer：组件内部的负载状态，使用useReducer代替useState，减少状态的更新次数；
-5. 代码分割与懒加载；
+6. 代码分割与懒加载；
   - 借助React.lazy + Suspense来动态加载组件，减少初始包体积；
   - 动态import+webpack的代码分割，来懒加载模块；
 
