@@ -1,0 +1,128 @@
+{
+  "nodes": [
+    {
+      "id": "0a1b2c3d4e5f6789",
+      "type": "file",
+      "x": 0,
+      "y": 0,
+      "width": 360,
+      "height": 220,
+      "file": "00-知识库管理/知识库入口.md",
+      "color": "5"
+    },
+    {
+      "id": "1a2b3c4d5e6f7890",
+      "type": "file",
+      "x": -520,
+      "y": 320,
+      "width": 420,
+      "height": 260,
+      "file": "00-知识库管理/MOC-前端知识库.md",
+      "color": "4"
+    },
+    {
+      "id": "2a3b4c5d6e7f8901",
+      "type": "file",
+      "x": 40,
+      "y": 320,
+      "width": 420,
+      "height": 260,
+      "file": "00-知识库管理/MOC-读书笔记.md",
+      "color": "3"
+    },
+    {
+      "id": "3a4b5c6d7e8f9012",
+      "type": "text",
+      "x": 600,
+      "y": 320,
+      "width": 420,
+      "height": 260,
+      "text": "# 管理视图\n\n- [[00-知识库管理/知识库总览.base|知识库总览]]\n- [[00-知识库管理/读书笔记.base|读书笔记 Base]]\n- [[00-知识库管理/Obsidian知识库整理建议|整理建议]]",
+      "color": "6"
+    },
+    {
+      "id": "4a5b6c7d8e9f0123",
+      "type": "text",
+      "x": -520,
+      "y": 700,
+      "width": 420,
+      "height": 240,
+      "text": "# 前端主线\n\nJavaScript -> 浏览器 -> 框架 -> 工程化 -> 架构 -> AI 编程",
+      "color": "4"
+    },
+    {
+      "id": "5a6b7c8d9e0f1234",
+      "type": "text",
+      "x": 40,
+      "y": 700,
+      "width": 420,
+      "height": 240,
+      "text": "# 阅读主线\n\n输入 -> 观点摘录 -> 我的启发 -> 行动清单 -> 原则沉淀",
+      "color": "3"
+    },
+    {
+      "id": "6a7b8c9d0e1f2345",
+      "type": "file",
+      "x": 600,
+      "y": 700,
+      "width": 420,
+      "height": 240,
+      "file": "00-知识库管理/使用ObsidianSkills管理本库.md",
+      "color": "6"
+    }
+  ],
+  "edges": [
+    {
+      "id": "a0b1c2d3e4f56789",
+      "fromNode": "0a1b2c3d4e5f6789",
+      "fromSide": "bottom",
+      "toNode": "1a2b3c4d5e6f7890",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "进入前端知识"
+    },
+    {
+      "id": "b1c2d3e4f5a67890",
+      "fromNode": "0a1b2c3d4e5f6789",
+      "fromSide": "bottom",
+      "toNode": "2a3b4c5d6e7f8901",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "进入读书笔记"
+    },
+    {
+      "id": "c2d3e4f5a6b78901",
+      "fromNode": "0a1b2c3d4e5f6789",
+      "fromSide": "right",
+      "toNode": "3a4b5c6d7e8f9012",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "查看管理视图"
+    },
+    {
+      "id": "d3e4f5a6b7c89012",
+      "fromNode": "1a2b3c4d5e6f7890",
+      "fromSide": "bottom",
+      "toNode": "4a5b6c7d8e9f0123",
+      "toSide": "top",
+      "toEnd": "arrow"
+    },
+    {
+      "id": "e4f5a6b7c8d90123",
+      "fromNode": "2a3b4c5d6e7f8901",
+      "fromSide": "bottom",
+      "toNode": "5a6b7c8d9e0f1234",
+      "toSide": "top",
+      "toEnd": "arrow"
+    },
+    {
+      "id": "f5a6b7c8d9e01234",
+      "fromNode": "3a4b5c6d7e8f9012",
+      "fromSide": "bottom",
+      "toNode": "6a7b8c9d0e1f2345",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "学习怎么协作"
+    }
+  ]
+}

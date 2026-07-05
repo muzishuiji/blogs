@@ -1,0 +1,62 @@
+filters:
+  and:
+    - 'file.ext == "md"'
+    - or:
+        - 'file.inFolder("myself-records/daily-reading")'
+        - 'file.inFolder("reading-notes")'
+
+formulas:
+  days_since_update: '(today() - file.mtime).days.round(0)'
+  reading_area: 'if(file.inFolder("reading-notes"), "技术书", "通识阅读")'
+
+properties:
+  file.name:
+    displayName: "书/笔记"
+  file.folder:
+    displayName: "目录"
+  file.mtime:
+    displayName: "最后修改"
+  status:
+    displayName: "状态"
+  rating:
+    displayName: "评分"
+  source:
+    displayName: "来源"
+  formula.reading_area:
+    displayName: "阅读类型"
+  formula.days_since_update:
+    displayName: "距上次修改天数"
+
+views:
+  - type: table
+    name: "全部读书笔记"
+    order:
+      - file.name
+      - formula.reading_area
+      - status
+      - rating
+      - source
+      - file.mtime
+      - formula.days_since_update
+
+  - type: table
+    name: "通识阅读"
+    filters:
+      and:
+        - 'file.inFolder("myself-records/daily-reading")'
+    order:
+      - file.name
+      - status
+      - rating
+      - file.mtime
+
+  - type: table
+    name: "技术书"
+    filters:
+      and:
+        - 'file.inFolder("reading-notes")'
+    order:
+      - file.name
+      - status
+      - file.folder
+      - file.mtime

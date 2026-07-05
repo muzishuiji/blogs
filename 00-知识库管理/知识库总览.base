@@ -1,0 +1,66 @@
+filters:
+  and:
+    - 'file.ext == "md"'
+    - not:
+        - 'file.inFolder(".git")'
+
+formulas:
+  days_since_update: '(today() - file.mtime).days.round(0)'
+  folder: 'file.folder'
+
+properties:
+  file.name:
+    displayName: "笔记"
+  file.folder:
+    displayName: "目录"
+  file.mtime:
+    displayName: "最后修改"
+  file.tags:
+    displayName: "标签"
+  formula.days_since_update:
+    displayName: "距上次修改天数"
+  formula.folder:
+    displayName: "所在目录"
+
+views:
+  - type: table
+    name: "全部 Markdown"
+    order:
+      - file.name
+      - file.folder
+      - file.mtime
+      - file.tags
+      - formula.days_since_update
+
+  - type: table
+    name: "前端知识"
+    filters:
+      and:
+        - 'file.inFolder("fe")'
+    order:
+      - file.name
+      - file.folder
+      - file.mtime
+      - formula.days_since_update
+
+  - type: table
+    name: "读书与自我记录"
+    filters:
+      or:
+        - 'file.inFolder("myself-records/daily-reading")'
+        - 'file.inFolder("reading-notes")'
+    order:
+      - file.name
+      - file.folder
+      - file.mtime
+      - formula.days_since_update
+
+  - type: table
+    name: "管理文件"
+    filters:
+      and:
+        - 'file.inFolder("00-知识库管理")'
+    order:
+      - file.name
+      - file.mtime
+      - file.tags
