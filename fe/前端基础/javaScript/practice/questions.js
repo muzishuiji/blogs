@@ -90,6 +90,7 @@ class LRU {
          let data = this.hashMap.get(key);
          data.time = Date.now();
          data.value = value;
+         return;
        } 
        // 删除过期数据
        if(this.hashMap.size === this.capacity) {
@@ -108,6 +109,71 @@ class LRU {
        })
     }
 }
+
+// LRU的链表实现
+class CustomListNode {
+
+}
+class LRUCache{ 
+    capacity: numArr;
+    dummyHead: CustomListNode;
+    dummyTail: CustomListNode;
+    hashMap;
+
+    constructor(capacity) {
+        this.capacity = capacity;
+        this.dummyHead = new CustomListNode();
+        this.dummyTail = new CustomListNode();
+        this.dummyHead.next = this.dummyTail;
+        this.dummyTail.prev = this.dummyHead;
+        this.hashMap = new Map();
+    }
+
+    get(key) {
+        if(!this.hashMap.has(key)) {
+            return -1;
+        }
+        let node = this.hashMap.get(key);
+        this.moveToHead(node);
+        return node.value;
+    }
+
+    moveToHead(node) {
+        this.removeNode(node);
+        this.addToHead(node);
+    }
+
+    removeNode(node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+
+    addToHead(node) {
+        node.prev = this.dummyHead;
+        node.next = this.dummyHead.next;
+        this.dummyHead.next.prev = node;
+        this.dummyHead.next = node;
+    }
+
+    put(key: number, value: number) {
+        let node = this.hashMap.get(key);
+        if(node) {
+            node.val = value;
+            this.moveToHead(node);
+            return;
+        }
+        if(this.capacity === this.hashMap.size) {
+            let removeNode = this.dummyTail.prev;
+            this.hashMap.delete(removeNode.key);
+            this.removeNode(removeNode);
+        }
+        node = new CustomListNode(key, value);
+        this.hashMap.set(key, node);
+        this.addToHead(node)
+    }
+}
+
+
 let lru = new LRU();
 lru.set('1', '3');
 lru.set('2', '2');
@@ -122,6 +188,9 @@ lru.set('10', '10');
 setTimeout(() => {
     lru.set('11', '11'); 
 }, 3000);
+
+// 降低计算成本，突破长文本限制
+// toc - 
 
 /**
  * 问题四：给定 path 列表（linux 格式，每个 path 都从根目录（/）开始，指向某个文件），还原文件树。path 里除了最后一级，前边各级表示文件夹嵌套关系，
